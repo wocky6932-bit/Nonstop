@@ -390,7 +390,24 @@ function getValidImageUrl(imageUrl, placeholder = "/placeholder.svg") {
     if (!imageUrl || typeof imageUrl !== 'string' || imageUrl.trim() === '') {
         return placeholder;
     }
-    return imageUrl.trim();
+    // Nettoyer les espaces multiples et les espaces de début/fin
+    const cleaned = imageUrl.trim().replace(/\s+/g, ' ');
+    // Encoder les URLs pour gérer les caractères spéciaux
+    try {
+        // Si c'est déjà une URL absolue, s'assurer qu'elle est bien encodée
+        if (cleaned.startsWith('http')) {
+            // Éviter de ré-encoder si c'est déjà fait
+            if (cleaned.includes('%')) return cleaned;
+            return encodeURI(cleaned);
+        }
+        // Pour les images locales /images/..., s'assurer du slash initial
+        const finalPath = cleaned.startsWith('/') ? cleaned : `/${cleaned}`;
+        // Encoder les caractères spéciaux (notamment les espaces pour WhatsApp images)
+        return encodeURI(finalPath).replace(/%20/g, ' ') // Next.js Image gère souvent mieux les espaces que l'encodage complet selon la config
+        ;
+    } catch  {
+        return cleaned;
+    }
 }
 function isValidImageUrl(imageUrl) {
     return !!(imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '');

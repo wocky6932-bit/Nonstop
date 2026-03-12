@@ -1404,3 +1404,64 @@ Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
 Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
 [00:25:56.117] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
 [00:25:56.118] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[00:49:25.980] Browser LOG     %c[Vercel Web Analytics]%c [view] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1773328104426} /_vercel/insights/view
+[00:49:36.984] Browser LOG     Go to next clicked! Current: 0
+[00:49:36.985] Browser LOG     Next index: 1
+[00:49:36.985] Browser LOG     Next index: 1
+[00:49:36.985] Browser WARN    Image with src "/uploads/1773326403395_WhatsApp_Image_2025-11-25_at_18_04_49.jpeg" is using quality "85" which is not configured in images.qualities [75]. Please update your config to [75, 85].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
+[00:49:37.746] Browser LOG     Go to next clicked! Current: 1
+[00:49:37.746] Browser LOG     Next index: 2
+[00:49:37.746] Browser LOG     Next index: 2
+[00:49:37.746] Browser WARN    Image with src "/uploads/1773326412917_WhatsApp_Image_2025-11-25_at_18_04_49__1_.jpeg" is using quality "85" which is not configured in images.qualities [75]. Please update your config to [75, 85].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
+[00:49:39.902] Browser LOG     Go to next clicked! Current: 0
+[00:49:39.902] Browser LOG     Next index: 1
+[00:49:39.902] Browser LOG     Next index: 1
+[00:49:39.902] Browser WARN    Image with src "/uploads/1773326121517_WhatsApp_Image_2026-03-12_at_01_03_24__2_.jpeg" is using quality "85" which is not configured in images.qualities [75]. Please update your config to [75, 85].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
+[00:49:40.551] Browser LOG     Go to next clicked! Current: 1
+[00:49:40.551] Browser LOG     Next index: 2
+[00:49:40.551] Browser LOG     Next index: 2
+[00:49:40.551] Browser WARN    Image with src "/uploads/1773326128908_WhatsApp_Image_2026-03-12_at_01_03_24__3_.jpeg" is using quality "85" which is not configured in images.qualities [75]. Please update your config to [75, 85].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
+[00:49:41.101] Browser LOG     Go to next clicked! Current: 2
+[00:49:41.101] Browser LOG     Next index: 3
+[00:49:41.101] Browser LOG     Next index: 3
+[00:49:41.101] Browser WARN    Image with src "/uploads/1773326135564_WhatsApp_Image_2026-03-12_at_01_03_24__4_.jpeg" is using quality "85" which is not configured in images.qualities [75]. Please update your config to [75, 85].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
+[00:49:43.037] Browser LOG     Go to next clicked! Current: 0
+[00:49:43.037] Browser LOG     Next index: 1
+[00:49:43.037] Browser LOG     Next index: 1
+[00:49:43.037] Browser WARN    Image with src "/uploads/1773326253799_WhatsApp_Image_2026-03-12_at_14_36_53.jpeg" is using quality "85" which is not configured in images.qualities [75]. Please update your config to [75, 85].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
+[00:49:43.423] Browser LOG     Go to next clicked! Current: 1
+[00:49:43.423] Browser LOG     Next index: 2
+[00:49:43.423] Browser LOG     Next index: 2
+[00:49:43.423] Browser WARN    Image with src "/uploads/1773326259945_WhatsApp_Image_2026-03-12_at_14_37_09.jpeg" is using quality "85" which is not configured in images.qualities [75]. Please update your config to [75, 85].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
+[00:49:43.968] Browser LOG     Go to next clicked! Current: 2
+[00:49:43.968] Browser LOG     Next index: 3
+[00:49:43.968] Browser LOG     Next index: 3
+[00:49:43.968] Browser WARN    Image with src "/uploads/1773326279701_WhatsApp_Image_2026-03-12_at_01_03_24__6_.jpeg" is using quality "85" which is not configured in images.qualities [75]. Please update your config to [75, 85].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
+[00:49:46.154] Browser LOG     Go to next clicked! Current: 0
+[00:49:46.155] Browser LOG     Next index: 1
+[00:49:46.155] Browser LOG     Next index: 1
+[00:49:46.155] Browser WARN    Image with src "/uploads/1773326332762_WhatsApp_Image_2026-03-12_at_00_20_49__4_.jpeg" is using quality "85" which is not configured in images.qualities [75]. Please update your config to [75, 85].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
+[00:49:46.535] Browser LOG     Go to next clicked! Current: 1
+[00:49:46.535] Browser LOG     Next index: 2
+[00:49:46.535] Browser LOG     Next index: 2
+[00:49:46.535] Browser WARN    Image with src "/uploads/1773326339080_WhatsApp_Image_2026-03-12_at_00_20_49__5_.jpeg" is using quality "85" which is not configured in images.qualities [75]. Please update your config to [75, 85].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
+[00:49:47.154] Browser LOG     Go to next clicked! Current: 2
+[00:49:47.154] Browser LOG     Next index: 0
+[00:49:47.154] Browser LOG     Next index: 0
+[00:49:51.253] Browser LOG     %c[Vercel Web Analytics]%c [view] http://localhost:3000/shop color: rgb(120, 120, 120) color: inherit {"dp":"/shop","o":"http://localhost:3000/shop","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1773328129710} /_vercel/insights/view
+[00:50:00.156] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[00:50:00.156] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[00:50:04.420] Browser LOG     %c[Vercel Web Analytics]%c [view] http://localhost:3000/checkout color: rgb(120, 120, 120) color: inherit {"dp":"/checkout","o":"http://localhost:3000/checkout","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1773328142881} /_vercel/insights/view
+[00:50:20.130] Browser LOG     %c[Vercel Web Analytics]%c [view] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1773328158581} /_vercel/insights/view
+[00:50:23.712] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[00:50:23.712] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
