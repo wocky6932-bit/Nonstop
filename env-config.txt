@@ -1,0 +1,8 @@
+# Configuration MySQL
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=M@tzo2705
+MYSQL_DATABASE=nonstop_ecommerce
+
+# Autres variables (si nécessaire)
+NEXT_PUBLIC_APP_URL=http://localhost:3000

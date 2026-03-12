@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Upload Image</title>
+</head>
+<body>
+    <h1>Test Upload d'Image</h1>
+    
+    <input type="file" id="fileInput" accept="image/*">
+    <button onclick="uploadImage()">Uploader</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function uploadImage() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Veuillez choisir un fichier');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/api/upload/image', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                console.log('Response:', result);
+                
+                if (result.success) {
+                    document.getElementById('result').innerHTML = `
+                        <h3>✅ Upload réussi!</h3>
+                        <p>URL: ${result.url}</p>
+                        <img src="${result.url}" style="max-width: 200px;">
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <h3>❌ Erreur:</h3>
+                        <p>${result.error}</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `
+                    <h3>❌ Erreur réseau:</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
