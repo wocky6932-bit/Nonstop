@@ -2,6 +2,8 @@
 
 Ce dépôt contient le code source de la boutique en ligne et du système d'administration sur-mesure développés pour **Nostopp** (une marque indépendante créée par [Noms de tes amis ou de l'équipe fondatrice]).
 
+https://github.com/user-attachments/assets/6c46c80d-e301-4b9b-b446-588b4404dde1
+
  📖 À propos du projet
 
 L'objectif de ce projet est de fournir à la marque Nostopp une plateforme e-commerce totalement personnalisée, performante et indépendante. Contrairement à des solutions comme Shopify, cette application "from scratch" permet un contrôle total sur le design ("Shop the look", collections mises en avant) et sur la gestion interne (commandes, produits, clients).
