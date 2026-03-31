@@ -327,8 +327,12 @@ export async function getAllOrders() {
 export async function getOrderById(orderId: string) {
   try {
     const orderSql = `
-      SELECT o.*, u.nom as client_name, u.email as client_email, u.telephone as client_phone,
-             u.adresse as client_address, u.ville as client_city
+      SELECT o.*, 
+             COALESCE(o.client_name, u.nom) as client_name, 
+             COALESCE(o.client_email, u.email) as client_email, 
+             COALESCE(o.client_phone, u.telephone) as client_phone,
+             COALESCE(o.client_address, u.adresse) as client_address, 
+             COALESCE(o.client_city, u.ville) as client_city
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id
       WHERE o.id = ?
