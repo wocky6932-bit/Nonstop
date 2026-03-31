@@ -10,7 +10,7 @@ async function initializeDatabase() {
   try {
     // Connexion à MySQL sans spécifier de base de données
     const connection = await mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
+      database: process.env.DB_NAME || 'nonstop',
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || ''
     });

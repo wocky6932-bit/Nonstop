@@ -1,6 +1,6 @@
--- Base de données pour l'application Nonstop E-commerce (MySQL)
-CREATE DATABASE IF NOT EXISTS nonstop_ecommerce;
-USE nonstop_ecommerce;
+-- Base de données pour l'application Nonstop (MySQL)
+CREATE DATABASE IF NOT EXISTS nonstop;
+USE nonstop;
 
 -- Table des utilisateurs
 CREATE TABLE IF NOT EXISTS users (
