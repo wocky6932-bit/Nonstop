@@ -75,6 +75,7 @@
 }
 
 @theme inline {
+  --breakpoint-xs: 400px;
   --font-sans: var(--font-sans), 'Inter', system-ui, sans-serif;
   --font-serif: var(--font-serif), 'Cormorant Garamond', serif;
   --color-background: var(--background);

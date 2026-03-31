@@ -139,20 +139,20 @@ export default function HomePage() {
                 <Image
                   src="/nonstop-logo.png"
                   alt="Nonstop"
-                  width={50}
-                  height={50}
-                  className="h-10 w-auto"
+                  width={40}
+                  height={40}
+                  className="h-8 w-8 sm:h-10 sm:w-auto"
                 />
-                <span className="text-xl font-bold tracking-wider">Nonstop</span>
+                <span className="text-lg sm:text-xl font-bold tracking-wider hidden xs:inline-block">Nonstop</span>
               </Link>
             </div>
 
             {/* Right Icons */}
-            <div className="flex items-center gap-3 sm:gap-6 justify-self-end">
+            <div className="flex items-center gap-2 sm:gap-6 justify-self-end">
               <CurrencySelector 
-                className="text-sm"
+                className="text-xs sm:text-sm"
               />
-              <Link href="/auth/login">
+              <Link href="/auth/login" className="hidden sm:block">
                   <button aria-label="Se connecter">
                     <User className="h-5 w-5" />
                   </button>
@@ -160,7 +160,7 @@ export default function HomePage() {
               <button
                 aria-label="Search"
                 onClick={() => setSearchOpen(true)}
-                className="hover:opacity-70 transition-opacity"
+                className="hover:opacity-70 transition-opacity hidden xs:block"
               >
                 <Search className="h-5 w-5" />
               </button>

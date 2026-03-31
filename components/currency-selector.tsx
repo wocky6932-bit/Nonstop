@@ -27,13 +27,13 @@ export function CurrencySelector({ className = "" }: CurrencySelectorProps) {
         variant="ghost" 
         size="sm"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 text-sm hover:bg-gray-100"
+        className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm hover:bg-gray-100 px-1 sm:px-3"
       >
         <span className="text-xs">{selectedCurrency.flag}</span>
         <span className="hidden sm:inline">
           {selectedCurrency.code}
         </span>
-        <ChevronDown className="h-3 w-3" />
+        <ChevronDown className="h-3 w-3 opacity-50" />
       </Button>
 
       {isOpen && (
