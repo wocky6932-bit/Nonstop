@@ -147,22 +147,6 @@ export default function LoginPage() {
               </Button>
             </div>
 
-            {/* Bouton de test pour débogage */}
-            <div className="mt-4">
-              <Button
-                type="button"
-                onClick={() => {
-                  console.log('Test button clicked');
-                  console.log('Current email:', email);
-                  console.log('Current password:', password);
-                }}
-                variant="outline"
-                className="w-full"
-              >
-                🐛 Debug: Voir les valeurs
-              </Button>
-            </div>
-
             <div className="text-center">
               <p className="text-sm text-gray-600">
                 Pas encore de compte ?{' '}
