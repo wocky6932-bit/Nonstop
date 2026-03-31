@@ -8,8 +8,8 @@ export async function POST(request: NextRequest) {
 
     console.log('[API Orders] Received order request (MySQL):', { formData, cart, totalPrice })
 
-    // Utiliser 'guest' si l'ID utilisateur est invalide
-    const userId = (formData.userId && formData.userId !== '0') ? formData.userId : 'guest'
+    // Utiliser null si l'ID utilisateur est invalide (commande invité)
+    const userId = (formData.userId && formData.userId !== '0' && formData.userId !== 'guest') ? formData.userId : null
 
     // Sauvegarder dans MySQL
     const result = await createOrder({

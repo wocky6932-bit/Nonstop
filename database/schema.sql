@@ -31,12 +31,11 @@ CREATE TABLE IF NOT EXISTS products (
 -- Table des commandes
 CREATE TABLE IF NOT EXISTS orders (
     id VARCHAR(255) PRIMARY KEY,
-    user_id VARCHAR(255) NOT NULL,
+    user_id VARCHAR(255),
     total DECIMAL(10, 2) NOT NULL,
     status ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
     notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Table des articles de commande
