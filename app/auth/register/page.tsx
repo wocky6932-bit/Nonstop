@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from "react";
 
 export default function RegisterPage() {
+  const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -55,7 +56,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           email,
           password,
-          nom: email.split('@')[0], // Utiliser la partie email comme nom par défaut
+          nom,
           telephone,
           adresse,
           ville
@@ -122,8 +123,24 @@ export default function RegisterPage() {
           <form className="mt-8 space-y-6" onSubmit={handleRegister}>
             <div className="space-y-4">
               <div>
+                <Label htmlFor="nom" className="text-sm font-medium text-gray-700">
+                  Nom complet *
+                </Label>
+                <Input
+                  id="nom"
+                  name="nom"
+                  type="text"
+                  required
+                  className="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
+                  placeholder="Votre nom complet"
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value)}
+                />
+              </div>
+
+              <div>
                 <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                  Adresse email
+                  Adresse email *
                 </Label>
                 <Input
                   id="email"
