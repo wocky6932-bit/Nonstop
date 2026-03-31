@@ -205,7 +205,7 @@ export async function deleteProduct(id: string) {
 }
 
 export async function createOrder(orderData: {
-  userId: string
+  userId: string | null
   items: Array<{
     id: string
     name: string
@@ -215,20 +215,33 @@ export async function createOrder(orderData: {
   }>
   total: number
   notes?: string
+  client_name?: string
+  client_phone?: string
+  client_address?: string
+  client_city?: string
 }) {
   const connection = await getConnection()
 
   try {
     await connection.beginTransaction()
 
-    // Créer la commande
+    // Créer la commande avec les infos de livraison
     const orderId = Date.now().toString()
     const orderSql = `
-      INSERT INTO orders (id, user_id, total, notes)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO orders (id, user_id, client_name, client_phone, client_address, client_city, total, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `
 
-    await connection.execute(orderSql, [orderId, orderData.userId, orderData.total, orderData.notes || null])
+    await connection.execute(orderSql, [
+      orderId, 
+      orderData.userId, 
+      orderData.client_name || null,
+      orderData.client_phone || null,
+      orderData.client_address || null,
+      orderData.client_city || null,
+      orderData.total, 
+      orderData.notes || null
+    ])
 
     // Ajouter les articles
     const itemSql = `
@@ -291,7 +304,10 @@ export async function getClients() {
 export async function getAllOrders() {
   try {
     const sql = `
-      SELECT o.*, u.nom as client_name, u.email as client_email,
+      SELECT o.*, 
+             COALESCE(o.client_name, u.nom) as client_name, 
+             COALESCE(o.client_phone, u.telephone) as client_phone,
+             COALESCE(o.client_email, u.email) as client_email,
              COUNT(oi.id) as item_count
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id

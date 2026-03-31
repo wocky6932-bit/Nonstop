@@ -11,9 +11,13 @@ export async function POST(request: NextRequest) {
     // Utiliser null si l'ID utilisateur est invalide (commande invité)
     const userId = (formData.userId && formData.userId !== '0' && formData.userId !== 'guest') ? formData.userId : null
 
-    // Sauvegarder dans MySQL
+    // Sauvegarder dans MySQL avec les infos de livraison
     const result = await createOrder({
       userId: userId,
+      client_name: formData.nom,
+      client_phone: formData.telephone,
+      client_address: formData.adresse,
+      client_city: formData.ville,
       items: cart.map((item: any) => ({
         id: item.id,
         name: item.name,
