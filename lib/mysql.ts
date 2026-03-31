@@ -307,14 +307,14 @@ export async function getAllOrders() {
   try {
     const sql = `
       SELECT o.*, 
-             COALESCE(o.client_name, u.nom) as client_name, 
-             COALESCE(o.client_phone, u.telephone) as client_phone,
-             COALESCE(o.client_email, u.email) as client_email,
+             MAX(COALESCE(o.client_name, u.nom)) as client_name, 
+             MAX(COALESCE(o.client_phone, u.telephone)) as client_phone,
+             MAX(COALESCE(o.client_email, u.email)) as client_email,
              COUNT(oi.id) as item_count
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id
       LEFT JOIN order_items oi ON o.id = oi.order_id
-      GROUP BY o.id
+      GROUP BY o.id, o.user_id, o.total, o.status, o.notes, o.created_at, o.client_name, o.client_phone, o.client_email, o.client_address, o.client_city
       ORDER BY o.created_at DESC
     `
     return await query(sql)
