@@ -4,13 +4,6 @@ import { config } from 'dotenv'
 // Charger les variables d'environnement
 config({ path: '.env' })
 
-// Afficher les variables pour débogage
-console.log('Variables d\'environnement:')
-console.log('DB_HOST:', process.env.DB_HOST)
-console.log('DB_USER:', process.env.DB_USER)
-console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '***' : 'NON DEFINI')
-console.log('DB_NAME:', process.env.DB_NAME)
-
 // Configuration de la base de données
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
