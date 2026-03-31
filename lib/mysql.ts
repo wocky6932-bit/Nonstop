@@ -252,7 +252,7 @@ export async function createOrder(orderData: {
   } catch (error) {
     await connection.rollback()
     console.error('Error creating order:', error)
-    return { success: false, error: 'Erreur lors de la création de la commande' }
+    return { success: false, error: error instanceof Error ? error.message : 'Erreur inconnue' }
   } finally {
     connection.release()
   }
