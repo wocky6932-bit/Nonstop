@@ -217,6 +217,7 @@ export async function createOrder(orderData: {
   notes?: string
   client_name?: string
   client_phone?: string
+  client_email?: string
   client_address?: string
   client_city?: string
 }) {
@@ -225,11 +226,11 @@ export async function createOrder(orderData: {
   try {
     await connection.beginTransaction()
 
-    // Créer la commande avec les infos de livraison
+    // Créer la commande avec les infos de livraison (dont l'email)
     const orderId = Date.now().toString()
     const orderSql = `
-      INSERT INTO orders (id, user_id, client_name, client_phone, client_address, client_city, total, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO orders (id, user_id, client_name, client_phone, client_email, client_address, client_city, total, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
 
     await connection.execute(orderSql, [
@@ -237,6 +238,7 @@ export async function createOrder(orderData: {
       orderData.userId, 
       orderData.client_name || null,
       orderData.client_phone || null,
+      orderData.client_email || null,
       orderData.client_address || null,
       orderData.client_city || null,
       orderData.total, 

@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS orders (
     user_id VARCHAR(255),
     client_name VARCHAR(255),
     client_phone VARCHAR(255),
+    client_email VARCHAR(255),
     client_address TEXT,
     client_city VARCHAR(255),
     total DECIMAL(10, 2) NOT NULL,

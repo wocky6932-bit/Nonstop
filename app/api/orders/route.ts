@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
       userId: userId,
       client_name: formData.nom,
       client_phone: formData.telephone,
+      client_email: formData.email,
       client_address: formData.adresse,
       client_city: formData.ville,
       items: cart.map((item: any) => ({
