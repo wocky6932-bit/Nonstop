@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "start": "next start",
     "init-db": "tsx scripts/init-db.ts",
-    "init-remote-db": "tsx scripts/init-remote-db.ts"
+    "init-remote-db": "tsx scripts/init-remote-db.ts",
+    "import-demo-products": "tsx scripts/import-demo-products.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

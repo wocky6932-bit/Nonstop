@@ -14,9 +14,13 @@ console.log('DB_NAME:', process.env.DB_NAME)
 // Configuration de la base de données
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '4000'),
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'nonstop',
+  ssl: {
+    rejectUnauthorized: true
+  }
 }
 
 async function createAdmin() {
