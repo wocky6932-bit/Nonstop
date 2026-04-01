@@ -15,6 +15,8 @@ export const SUPPORTED_CURRENCIES: Currency[] = [
   { code: 'FCFA', name: 'Franc CFA', symbol: 'CFA', flag: '🇸🇳', country: 'Sénégal' },
   { code: 'EUR', name: 'Euro', symbol: '€', flag: '🇪🇺', country: 'Europe' },
   { code: 'GMD', name: 'Dalasi', symbol: 'D', flag: '🇬🇲', country: 'Gambie' },
+  { code: 'USD', name: 'US Dollar', symbol: '$', flag: '🇺🇸', country: 'USA' },
+  { code: 'CAD', name: 'CA Dollar', symbol: 'C$', flag: '🇨🇦', country: 'Canada' },
 ]
 
 // Taux de change approximatifs (en pratique, vous utiliseriez une API)
@@ -22,6 +24,8 @@ const EXCHANGE_RATES: ExchangeRates = {
   'FCFA': 655.957, // 1 EUR = 655.957 FCFA
   'EUR': 1,
   'GMD': 70.0,     // 1 EUR = 70 GMD approx
+  'USD': 1.08,    // 1 EUR = 1.08 USD approx
+  'CAD': 1.47,    // 1 EUR = 1.47 CAD approx
 }
 
 export const BASE_CURRENCY = 'EUR' // Euro comme devise de base
