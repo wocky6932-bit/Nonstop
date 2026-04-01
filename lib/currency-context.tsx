@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, ReactNode } from 'react'
-import { Currency, SUPPORTED_CURRENCIES } from './currency-converter'
+import { Currency, SUPPORTED_CURRENCIES, convertPrice as convertPriceHelper } from './currency-converter'
 
 interface CurrencyContextType {
   selectedCurrency: Currency
@@ -17,37 +17,11 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
   const convertPrice = (price: number | undefined | null, fromCurrency: string): number => {
     // Si pas de prix, prix invalide, ou devise invalide, retourner un prix par défaut
-    if (!price || isNaN(price) || price <= 0 || !fromCurrency) {
-      return 10000 // Prix par défaut en FCFA
+    if (price === undefined || price === null || isNaN(price) || !fromCurrency) {
+      return 0
     }
     
-    // Si la devise source est la même que la devise cible, retourner le prix tel quel
-    if (fromCurrency === selectedCurrency.code) {
-      return price
-    }
-    
-    // Taux de change approximatifs (en pratique, vous utiliseriez une API)
-    const EXCHANGE_RATES: { [key: string]: number } = {
-      'FCFA': 655.957, // 1 EUR = 655.957 FCFA
-      'EUR': 1,
-      'GMD': 70.0,     // 1 EUR = 70 GMD approx
-    }
-    
-    // Vérifier que les devises existent dans les taux
-    if (!EXCHANGE_RATES[fromCurrency] || !EXCHANGE_RATES[selectedCurrency.code]) {
-      return price // Retourner le prix original si devise non supportée
-    }
-    
-    // Convertir vers l'EUR puis vers la devise cible
-    const basePrice = price / EXCHANGE_RATES[fromCurrency]
-    const convertedPrice = basePrice * EXCHANGE_RATES[selectedCurrency.code]
-    
-    // Vérifier que le résultat est valide
-    if (isNaN(convertedPrice) || !isFinite(convertedPrice) || convertedPrice <= 0) {
-      return 10000 // Prix par défaut
-    }
-    
-    return Math.round(convertedPrice * 100) / 100
+    return convertPriceHelper(price, fromCurrency, selectedCurrency.code)
   }
 
   const formatPrice = (price: number, currencyCode?: string): string => {
