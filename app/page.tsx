@@ -317,6 +317,9 @@ export default function HomePage() {
             <p className="text-sm text-gray-400">
               © 2025 Nonstop. Tous droits réservés.
             </p>
+            <p className="text-xs text-gray-500 mt-2">
+              Réalisé par <a href="https://github.com/mactar27" target="_blank" rel="noopener noreferrer" className="hover:text-white underline">mactar27</a>
+            </p>
           </div>
         </div>
       </footer>
