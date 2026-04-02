@@ -1,3 +1,4 @@
+"use client"
 import { useRouter } from 'next/navigation'
 import { useSession } from "@/hooks/use-session"
 import { Button } from "@/components/ui/button"
