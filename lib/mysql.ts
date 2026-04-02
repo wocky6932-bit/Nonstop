@@ -362,3 +362,59 @@ export async function updateOrderStatus(orderId: string, status: string) {
   }
 }
 
+export async function getAdminStats() {
+  try {
+    // 1. Total des ventes et commandes (hors annulées)
+    const totalsSql = `
+      SELECT 
+        SUM(total) as totalRevenue,
+        COUNT(id) as totalOrders
+      FROM orders
+      WHERE status != 'annulée'
+    `
+    const [totals] = await query(totalsSql) as any[]
+
+    // 2. Ventes par mois (12 derniers mois) pour le graphique
+    const monthlySql = `
+      SELECT 
+        DATE_FORMAT(created_at, '%Y-%m') as label,
+        SUM(total) as amount
+      FROM orders
+      WHERE status != 'annulée'
+      GROUP BY label
+      ORDER BY label ASC
+      LIMIT 12
+    `
+    const monthlyStats = await query(monthlySql)
+
+    // 3. Ventes de l'année en cours
+    const yearlySql = `
+      SELECT SUM(total) as revenue
+      FROM orders
+      WHERE status != 'annulée' AND YEAR(created_at) = YEAR(CURRENT_DATE())
+    `
+    const [yearly] = await query(yearlySql) as any[]
+
+    // 4. Ventes du mois en cours
+    const currentMonthSql = `
+      SELECT SUM(total) as revenue
+      FROM orders
+      WHERE status != 'annulée' 
+      AND YEAR(created_at) = YEAR(CURRENT_DATE())
+      AND MONTH(created_at) = MONTH(CURRENT_DATE())
+    `
+    const [currentMonth] = await query(currentMonthSql) as any[]
+
+    return {
+      totalRevenue: totals?.totalRevenue || 0,
+      totalOrders: totals?.totalOrders || 0,
+      yearlyRevenue: yearly?.revenue || 0,
+      currentMonthRevenue: currentMonth?.revenue || 0,
+      monthlyChartData: monthlyStats
+    }
+  } catch (error) {
+    console.error('Error fetching admin stats:', error)
+    throw error
+  }
+}
+
