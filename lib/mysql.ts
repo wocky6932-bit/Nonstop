@@ -370,7 +370,7 @@ export async function getAdminStats() {
         SUM(total) as totalRevenue,
         COUNT(id) as totalOrders
       FROM orders
-      WHERE status != 'annulée'
+      WHERE status != 'cancelled'
     `
     const [totals] = await query(totalsSql) as any[]
 
@@ -380,7 +380,7 @@ export async function getAdminStats() {
         DATE_FORMAT(created_at, '%Y-%m') as label,
         SUM(total) as amount
       FROM orders
-      WHERE status != 'annulée'
+      WHERE status != 'cancelled'
       GROUP BY label
       ORDER BY label ASC
       LIMIT 12
@@ -391,7 +391,7 @@ export async function getAdminStats() {
     const yearlySql = `
       SELECT SUM(total) as revenue
       FROM orders
-      WHERE status != 'annulée' AND YEAR(created_at) = YEAR(CURRENT_DATE())
+      WHERE status != 'cancelled' AND YEAR(created_at) = YEAR(CURRENT_DATE())
     `
     const [yearly] = await query(yearlySql) as any[]
 
@@ -399,7 +399,7 @@ export async function getAdminStats() {
     const currentMonthSql = `
       SELECT SUM(total) as revenue
       FROM orders
-      WHERE status != 'annulée' 
+      WHERE status != 'cancelled' 
       AND YEAR(created_at) = YEAR(CURRENT_DATE())
       AND MONTH(created_at) = MONTH(CURRENT_DATE())
     `
