@@ -73,9 +73,9 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-neutral-50 pb-20">
       <div className="border-b bg-white">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-wide">NONSTOP ADMIN</h1>
-          <div className="flex items-center gap-2">
+        <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-center sm:text-left">NONSTOP ADMIN</h1>
+          <div className="flex items-center gap-2 flex-wrap justify-center">
             <Link href="/">
               <Button variant="outline" size="sm">
                 <Home className="h-4 w-4 mr-2" />
@@ -90,11 +90,11 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 sm:py-12">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl tracking-wide">Tableau de bord</h2>
-            <Button variant="outline" onClick={fetchStats} disabled={loadingStats}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+            <h2 className="text-2xl sm:text-3xl tracking-wide">Tableau de bord</h2>
+            <Button variant="outline" onClick={fetchStats} disabled={loadingStats} className="w-full sm:w-auto">
               Actualiser les données
             </Button>
           </div>
