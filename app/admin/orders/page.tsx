@@ -145,10 +145,10 @@ export default function AdminOrdersPage() {
                             </Button>
                           </Link>
                           <Button 
-                            variant="outline" 
+                            variant="default" 
                             size="sm" 
                             title="Envoyer le reçu sur WhatsApp"
-                            className="text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
+                            className="bg-green-500 hover:bg-green-600 text-white flex items-center justify-center gap-1 min-w-max"
                             onClick={() => {
                               // Formater le numéro de téléphone (enlever espaces et ajouter l'indicatif si manquant)
                               let phone = order.client_phone.replace(/\s+/g, '')
@@ -165,6 +165,7 @@ export default function AdminOrdersPage() {
                             }}
                           >
                             <MessageCircle className="h-4 w-4" />
+                            <span className="hidden sm:inline">WhatsApp</span>
                           </Button>
                           <UpdateOrderStatusButton
                             orderId={order.id}
