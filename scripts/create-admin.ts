@@ -41,8 +41,8 @@ async function createAdmin() {
     }
     
     // Insérer l'administrateur
-    const adminEmail = 'adminnonstop@gmail.com'
-    const adminPassword = 'admin123' // Mot de passe simple pour l'admin
+    const adminEmail = 'Omarlae125678@icloud.com'
+    const adminPassword = 'Laetitia2022@' // Mot de passe simple pour l'admin
     const adminId = Date.now().toString()
     
     // Supprimer l'admin s'il existe déjà

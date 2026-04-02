@@ -15,7 +15,7 @@ export async function createSession(user: User) {
     telephone: user.telephone,
     adresse: user.adresse,
     ville: user.ville,
-    isAdmin: user.email === 'adminnonstop@gmail.com'
+    isAdmin: user.email.toLowerCase() === 'omarlae125678@icloud.com'
   }), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
           adresse: userData.adresse,
           ville: userData.ville
         },
-        isAdmin: email === 'adminnonstop@gmail.com'
+        isAdmin: email.toLowerCase() === 'omarlae125678@icloud.com'
       })
     } else {
       return NextResponse.json({ 

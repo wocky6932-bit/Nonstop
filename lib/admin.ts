@@ -2,7 +2,7 @@
 // This avoids direct database calls to the admins table to prevent RLS recursion
 
 const ADMIN_EMAILS = [
-  'adminnonstop@gmail.com',
+  'Omarlae125678@icloud.com',
   // Add other admin emails here as needed
 ]
 

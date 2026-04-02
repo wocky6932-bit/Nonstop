@@ -21,7 +21,7 @@ export async function authenticateUser(email: string, password: string) {
       return {
         success: true,
         user: result.user,
-        isAdmin: email === 'adminnonstop@gmail.com'
+        isAdmin: email.toLowerCase() === 'omarlae125678@icloud.com'
       }
     } else {
       return {
