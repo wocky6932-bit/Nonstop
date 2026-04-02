@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from "@/hooks/use-session"
 import Link from "next/link"
-import { ArrowLeft, Eye, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Eye, RefreshCw, MessageCircle } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { UpdateOrderStatusButton } from "@/components/admin/update-order-status-button"
 
@@ -140,10 +140,32 @@ export default function AdminOrdersPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <Link href={`/admin/orders/${order.id}`}>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" title="Voir les détails">
                               <Eye className="h-4 w-4" />
                             </Button>
                           </Link>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            title="Envoyer le reçu sur WhatsApp"
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
+                            onClick={() => {
+                              // Formater le numéro de téléphone (enlever espaces et ajouter l'indicatif si manquant)
+                              let phone = order.client_phone.replace(/\s+/g, '')
+                              if (!phone.startsWith('+')) {
+                                // Assuming Senegal by default if no code is provided, but safe to just leave it as is if it's 9 digits
+                                if (phone.length === 9) phone = '221' + phone
+                              } else {
+                                phone = phone.substring(1) // enlever le + pour l'API WhatsApp
+                              }
+                              
+                              const message = `Bonjour *${order.client_name || 'Client'}*,\n\nNous avons bien reçu votre commande *#${order.id.slice(-6).toUpperCase()}* d'un montant de *${order.total.toLocaleString()} CFA* sur la boutique Nonstop.\n\nNous préparons votre livraison !\nMerci de votre confiance. 🛒`
+                              
+                              window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`, '_blank')
+                            }}
+                          >
+                            <MessageCircle className="h-4 w-4" />
+                          </Button>
                           <UpdateOrderStatusButton
                             orderId={order.id}
                             currentStatus={order.status}
