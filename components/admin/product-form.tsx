@@ -71,15 +71,18 @@ export function ProductForm({ product }: { product?: Product }) {
   console.log('🔍 Product images:', product?.images)
   console.log('🔍 Product image:', product?.image)
 
-  const parsedImages = parseImages(product?.images)
-  console.log('🔍 Parsed images:', parsedImages)
+  const initialImages = parseImages(product?.images)
+  // Si l'image principale n'est pas dans la liste des images, on l'ajoute au début
+  if (product?.image && product.image.trim() !== '' && !initialImages.includes(product.image)) {
+    initialImages.unshift(product.image)
+  }
 
   const [formData, setFormData] = useState({
     name: product?.name || "",
     price: product?.price || 0,
     currency: product?.currency || "XOF",
     image: product?.image || "",
-    images: parsedImages,
+    images: initialImages,
     category: product?.category || "general",
     soldOut: product?.soldOut || false,
   })

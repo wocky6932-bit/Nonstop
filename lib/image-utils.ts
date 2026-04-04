@@ -17,23 +17,29 @@ export function getValidImageUrl(
     return placeholder
   }
 
-  // Nettoyer les espaces multiples et les espaces de début/fin
-  const cleaned = imageUrl.trim().replace(/\s+/g, ' ')
+  // Nettoyer uniquement les espaces de début/fin
+  const cleaned = imageUrl.trim()
 
   // Encoder les URLs pour gérer les caractères spéciaux
   try {
-    // Si c'est déjà une URL absolue, s'assurer qu'elle est bien encodée
+    // Si c'est déjà une URL absolue, normaliser l'encodage
     if (cleaned.startsWith('http')) {
-      // Éviter de ré-encoder si c'est déjà fait
-      if (cleaned.includes('%')) return cleaned
-      return encodeURI(cleaned)
+      try {
+        return encodeURI(decodeURI(cleaned))
+      } catch {
+        return encodeURI(cleaned)
+      }
     }
 
     // Pour les images locales /images/..., s'assurer du slash initial
     const finalPath = cleaned.startsWith('/') ? cleaned : `/${cleaned}`
 
-    // Encoder les caractères spéciaux (notamment les espaces pour WhatsApp images)
-    return encodeURI(finalPath).replace(/%20/g, ' ') // Next.js Image gère souvent mieux les espaces que l'encodage complet selon la config
+    // Normaliser l'encodage (décode si déjà encodé, puis ré-encode proprement)
+    try {
+      return encodeURI(decodeURI(finalPath))
+    } catch {
+      return encodeURI(finalPath)
+    }
   } catch {
     return cleaned
   }
