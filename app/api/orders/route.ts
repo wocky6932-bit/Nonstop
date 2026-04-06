@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
         name: item.name,
         price: item.price,
         quantity: item.quantity,
-        image: item.image
+        image: item.image,
+        size: item.selectedSize || null   // Taille choisie par le client
       })),
       total: Math.round(totalPrice),
       notes: formData.notes
@@ -53,7 +54,10 @@ export async function POST(request: NextRequest) {
       })
 
       // Construction du contenu de l'email
-      const itemsList = cart.map((item: any) => `- ${item.quantity}x ${item.name} (${item.price} CFA)`).join('\n')
+      const itemsList = cart.map((item: any) => {
+        const sizeStr = item.selectedSize ? ` (Taille: ${item.selectedSize})` : ''
+        return `- ${item.quantity}x ${item.name}${sizeStr} (${item.price} CFA)`
+      }).join('\n')
       
       const mailOptions = {
         from: process.env.SMTP_USER || '"Boutique Nonstop" <noreply@nonstopp.shop>',
@@ -71,7 +75,10 @@ export async function POST(request: NextRequest) {
           </ul>
           <h3>Détails de la commande</h3>
           <ul>
-            ${cart.map((item: any) => `<li>${item.quantity}x ${item.name} - ${item.price} CFA</li>`).join('')}
+            ${cart.map((item: any) => {
+              const sizeLabel = item.selectedSize ? ` <em style="color:#555">(Taille: ${item.selectedSize})</em>` : ''
+              return `<li>${item.quantity}x ${item.name}${sizeLabel} - ${item.price} CFA</li>`
+            }).join('')}
           </ul>
           <p><strong>Total: ${Math.round(totalPrice)} CFA</strong></p>
           ${formData.notes ? `<p><strong>Notes du client:</strong> ${formData.notes}</p>` : ''}
@@ -100,12 +107,15 @@ export async function POST(request: NextRequest) {
                 
                 <h3 style="background-color: #f5f5f5; padding: 10px; margin-top: 20px;">Détails de vos achats</h3>
                 <ul style="list-style-type: none; padding-left: 0;">
-                  ${cart.map((item: any) => `
-                    <li style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                      <strong>${item.name}</strong><br/>
-                      Quantité : ${item.quantity}  |  Prix unitaire : ${item.price} CFA
-                    </li>
-                  `).join('')}
+                  ${cart.map((item: any) => {
+                      const sizeLabel = item.selectedSize ? `<br/>Taille : <strong>${item.selectedSize}</strong>` : ''
+                      return `
+                        <li style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                          <strong>${item.name}</strong>${sizeLabel}<br/>
+                          Quantité : ${item.quantity}  |  Prix unitaire : ${item.price} CFA
+                        </li>
+                      `
+                    }).join('')}
                 </ul>
                 
                 <h3 style="color: #d32f2f; font-size: 1.2em;">Total à payer : ${Math.round(totalPrice)} CFA</h3>

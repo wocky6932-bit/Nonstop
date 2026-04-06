@@ -11,19 +11,22 @@ export interface Product {
   price: number
   currency: string
   image: string
-  images?: string[] // Array of image URLs for carousel
+  images?: string[]
   sold_out: boolean
+  sizes?: string[]       // Tailles disponibles (ex: ["S","M","L","XL"])
+  selectedSize?: string  // Taille choisie par le client
 }
 
 export interface CartItem extends Product {
+  cartItemId: string // ID unique : productId + taille (ex: "123-M")
   quantity: number
 }
 
 interface CartContextType {
   cart: CartItem[]
   addToCart: (product: Product) => void
-  removeFromCart: (productId: string) => void
-  updateQuantity: (productId: string, quantity: number) => void
+  removeFromCart: (cartItemId: string) => void
+  updateQuantity: (cartItemId: string, quantity: number) => void
   clearCart: () => void
   getTotalPrice: () => number
   getCartCount: () => number
@@ -38,21 +41,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([])
   const isAuthenticated = !!session
 
-  // Load cart from localStorage on mount
+  // Charger le panier depuis localStorage au démarrage
   useEffect(() => {
     const savedCart = localStorage.getItem('nonstop-cart')
     if (savedCart) {
-      setCart(JSON.parse(savedCart))
+      try {
+        setCart(JSON.parse(savedCart))
+      } catch {
+        localStorage.removeItem('nonstop-cart')
+      }
     }
   }, [])
 
-  // Save cart to localStorage whenever it changes
+  // Sauvegarder le panier dans localStorage à chaque changement
   useEffect(() => {
     localStorage.setItem('nonstop-cart', JSON.stringify(cart))
   }, [cart])
 
   const addToCart = (product: Product) => {
-    // Vérifier l'authentification avant d'ajouter au panier
     if (!isAuthenticated) {
       toast({
         title: 'Connexion requise',
@@ -63,21 +69,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
+    // ID unique = id produit + taille choisie (ou juste l'id si pas de taille)
+    const cartItemId = product.selectedSize
+      ? `${product.id}-${product.selectedSize}`
+      : product.id
+
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id)
+      const existingItem = prevCart.find((item) => item.cartItemId === cartItemId)
       if (existingItem) {
         return prevCart.map((item) =>
-          item.id === product.id
+          item.cartItemId === cartItemId
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
       }
-      return [...prevCart, { ...product, quantity: 1 }]
+      return [...prevCart, { ...product, cartItemId, quantity: 1 }]
     })
   }
 
-  const removeFromCart = (productId: string) => {
-    // Vérifier l'authentification
+  const removeFromCart = (cartItemId: string) => {
     if (!isAuthenticated) {
       toast({
         title: 'Connexion requise',
@@ -87,12 +97,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       router.push('/auth/login')
       return
     }
-
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productId))
+    setCart((prevCart) => prevCart.filter((item) => item.cartItemId !== cartItemId))
   }
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    // Vérifier l'authentification
+  const updateQuantity = (cartItemId: string, quantity: number) => {
     if (!isAuthenticated) {
       toast({
         title: 'Connexion requise',
@@ -102,20 +110,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       router.push('/auth/login')
       return
     }
-
     if (quantity <= 0) {
-      removeFromCart(productId)
+      removeFromCart(cartItemId)
       return
     }
     setCart((prevCart) =>
       prevCart.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
+        item.cartItemId === cartItemId ? { ...item, quantity } : item
       )
     )
   }
 
   const clearCart = () => {
-    // Vérifier l'authentification
     if (!isAuthenticated) {
       toast({
         title: 'Connexion requise',
@@ -125,16 +131,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       router.push('/auth/login')
       return
     }
-
     setCart([])
   }
 
   const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + item.price * item.quantity, 0)
+    return cart.reduce((total: number, item: CartItem) => total + item.price * item.quantity, 0)
   }
 
   const getCartCount = () => {
-    return cart.reduce((count, item) => count + item.quantity, 0)
+    return cart.reduce((count: number, item: CartItem) => count + item.quantity, 0)
   }
 
   return (

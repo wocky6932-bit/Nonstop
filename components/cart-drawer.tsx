@@ -87,7 +87,7 @@ export function CartDrawer() {
             <div className="flex-1 overflow-y-auto py-4">
               <div className="space-y-4">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex gap-4 border-b pb-4">
+                  <div key={item.cartItemId} className="flex gap-4 border-b pb-4">
                     <div className="relative w-20 h-20 bg-gray-100 flex-shrink-0">
                       <Image
                         src={item.image || "/placeholder.svg"}
@@ -97,13 +97,18 @@ export function CartDrawer() {
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-sm font-medium mb-1">{item.name}</h3>
+                      <h3 className="text-sm font-medium mb-0.5">{item.name}</h3>
+                      {item.selectedSize && (
+                        <span className="inline-block text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded mb-1">
+                          Taille : {item.selectedSize}
+                        </span>
+                      )}
                       <p className="text-sm text-gray-600 mb-2">
                         {formatPrice(convertPrice(item.price, item.currency))}
                       </p>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
                           className="h-6 w-6 border border-gray-300 flex items-center justify-center hover:bg-gray-100"
                           aria-label="Decrease quantity"
                         >
@@ -111,7 +116,7 @@ export function CartDrawer() {
                         </button>
                         <span className="text-sm w-8 text-center">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
                           className="h-6 w-6 border border-gray-300 flex items-center justify-center hover:bg-gray-100"
                           aria-label="Increase quantity"
                         >
@@ -120,7 +125,7 @@ export function CartDrawer() {
                       </div>
                     </div>
                     <button
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => removeFromCart(item.cartItemId)}
                       className="text-gray-400 hover:text-red-500 transition-colors"
                       aria-label="Remove item"
                     >

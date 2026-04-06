@@ -28,6 +28,8 @@ export default function ShopPage() {
     const [activeCategory, setActiveCategory] = useState('Tous')
     const [searchQuery, setSearchQuery] = useState('')
     const [searchOpen, setSearchOpen] = useState(false)
+    // Stocke la taille sélectionnée pour chaque produit : { [productId]: "M" }
+    const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({})
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -52,10 +54,24 @@ export default function ShopPage() {
 
     const handleAddToCart = (product: any) => {
         const normalized = normalizeProductData(product)
-        addToCart(normalized)
+        const hasSizes = normalized.sizes && normalized.sizes.length > 0
+        const selectedSize = selectedSizes[product.id]
+
+        if (hasSizes && !selectedSize) {
+            toast({
+                title: 'Choisissez une taille',
+                description: `Veuillez sélectionner une taille pour ${product.name}`,
+                variant: 'destructive',
+            })
+            return
+        }
+
+        addToCart({ ...normalized, selectedSize: selectedSize || undefined })
         toast({
             title: 'Ajouté au panier',
-            description: `${product.name} a été ajouté à votre panier`,
+            description: selectedSize
+                ? `${product.name} - Taille ${selectedSize} ajouté au panier`
+                : `${product.name} ajouté au panier`,
         })
     }
 
@@ -267,9 +283,34 @@ export default function ShopPage() {
                                     <h2 className="text-base font-medium text-gray-900 mb-2 tracking-wide group-hover:text-gray-600 transition-colors">
                                         {product.name}
                                     </h2>
-                                    <p className="text-lg font-bold text-gray-900 mb-4">
+                                    <p className="text-lg font-bold text-gray-900 mb-3">
                                         {formatPrice(convertPrice(product.price, product.currency))}
                                     </p>
+
+                                    {/* Sélecteur de taille */}
+                                    {product.sizes && product.sizes.length > 0 && (
+                                        <div className="mb-3">
+                                            <p className="text-xs text-gray-500 mb-1.5 tracking-widest uppercase">Taille</p>
+                                            <div className="flex flex-wrap gap-1.5 justify-center">
+                                                {product.sizes.map((size: string) => (
+                                                    <button
+                                                        key={size}
+                                                        onClick={() => setSelectedSizes(prev => ({
+                                                            ...prev,
+                                                            [product.id]: prev[product.id] === size ? '' : size
+                                                        }))}
+                                                        className={`px-2.5 py-1 text-xs border rounded transition-all duration-150 ${
+                                                            selectedSizes[product.id] === size
+                                                                ? 'bg-black text-white border-black font-bold'
+                                                                : 'border-gray-300 text-gray-600 hover:border-black'
+                                                        }`}
+                                                    >
+                                                        {size}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {!product.sold_out ? (
                                         <Button

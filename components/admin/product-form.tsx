@@ -19,8 +19,11 @@ interface Product {
   image: string
   images?: string[] // Array of image URLs for carousel
   category?: string // Product category for filtering
+  sizes?: string[] // Available sizes
   soldOut: boolean
 }
+
+const AVAILABLE_SIZES = ['TU', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
 
 // Helper pour parser les images depuis MySQL (handles single & double JSON encoding)
 const parseImages = (images: any): string[] => {
@@ -89,8 +92,19 @@ export function ProductForm({ product }: { product?: Product }) {
     image: product?.image || "",
     images: initialImages,
     category: product?.category || "general",
+    sizes: product?.sizes || [],
     soldOut: product?.soldOut || false,
   })
+
+  const handleSizeToggle = (size: string) => {
+    setFormData(prev => {
+      if (prev.sizes.includes(size)) {
+        return { ...prev, sizes: prev.sizes.filter(s => s !== size) }
+      } else {
+        return { ...prev, sizes: [...prev.sizes, size] }
+      }
+    })
+  }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || [])
@@ -215,6 +229,7 @@ export function ProductForm({ product }: { product?: Product }) {
         currency: formData.currency,
         image: mainImage,   // always use first uploaded image as the main one
         images: JSON.stringify(validImages), // store clean array as JSON string
+        sizes: formData.sizes,
         sold_out: formData.soldOut, // Utiliser sold_out pour MySQL
       }
 
@@ -320,6 +335,29 @@ export function ProductForm({ product }: { product?: Product }) {
         />
         <div className="text-sm text-gray-600 mt-1">
           💡 Exemples: clothing, accessories, general, etc.
+        </div>
+      </div>
+
+      <div>
+        <Label>Tailles disponibles</Label>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {AVAILABLE_SIZES.map(size => (
+            <button
+              key={size}
+              type="button"
+              onClick={() => handleSizeToggle(size)}
+              className={`px-3 py-1.5 border rounded-md text-sm font-medium transition-colors ${
+                formData.sizes.includes(size)
+                  ? 'bg-black text-white border-black'
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {size}
+            </button>
+          ))}
+        </div>
+        <div className="text-sm text-gray-600 mt-2">
+          💡 Sélectionnez les tailles disponibles pour cet article. Si aucune n'est sélectionnée, l'option de taille n'apparaîtra pas.
         </div>
       </div>
 

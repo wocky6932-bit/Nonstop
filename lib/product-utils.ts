@@ -23,7 +23,9 @@ export function normalizeProductForCart(product: any): Product {
     currency: product.currency || 'XOF',
     image: productImage,
     images: product.images || [],
-    sold_out: product.sold_out || false
+    sold_out: product.sold_out || false,
+    sizes: product.sizes && Array.isArray(product.sizes) ? product.sizes : [],
+    selectedSize: product.selectedSize
   }
 
   return normalizedProduct
@@ -71,6 +73,22 @@ export function normalizeProductData(product: any): Product {
     productImages = [product.thumbnail]
   }
 
+  // Gérer la propriété sizes
+  let productSizes: string[] = []
+  let rawSizes = product.sizes
+  if (typeof rawSizes === 'string' && rawSizes.trim() !== '') {
+    // Parse the JSON string
+    let currentSize: any = rawSizes
+    for (let i = 0; i < 3; i++) {
+      if (Array.isArray(currentSize)) break
+      if (typeof currentSize !== 'string') break
+      try { currentSize = JSON.parse(currentSize) } catch { break }
+    }
+    productSizes = Array.isArray(currentSize) ? currentSize : []
+  } else if (Array.isArray(rawSizes)) {
+    productSizes = rawSizes
+  }
+
   return {
     id: product.id,
     name: product.name,
@@ -78,6 +96,7 @@ export function normalizeProductData(product: any): Product {
     currency: product.currency || 'XOF',
     image: productImage,
     images: productImages,
+    sizes: productSizes,
     sold_out: product.sold_out === 1 || product.sold_out === true
   }
 }

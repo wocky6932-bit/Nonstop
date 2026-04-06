@@ -210,7 +210,7 @@ export default function CheckoutPage() {
 
               <div className="space-y-4 mb-6">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex gap-4">
+                  <div key={item.cartItemId} className="flex gap-4">
                     <div className="relative w-20 h-20 bg-gray-200 flex-shrink-0">
                       <img
                         src={getValidImageUrl(item.image)}
@@ -222,7 +222,12 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-sm font-medium mb-1">{item.name}</h3>
+                      <h3 className="text-sm font-medium mb-0.5">{item.name}</h3>
+                      {item.selectedSize && (
+                        <span className="inline-block text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded mb-1">
+                          Taille : {item.selectedSize}
+                        </span>
+                      )}
                       <p className="text-sm text-gray-600">
                         {item.price.toLocaleString()} XOF × {item.quantity}
                       </p>

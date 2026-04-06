@@ -138,12 +138,13 @@ export async function createProduct(productData: {
   images?: string[]
   description?: string
   category?: string
+  sizes?: string[]
 }) {
   try {
     const id = Date.now().toString()
     const sql = `
-      INSERT INTO products (id, name, price, currency, image, images, description, category)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (id, name, price, currency, image, images, description, category, sizes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
 
     await query(sql, [
@@ -154,7 +155,8 @@ export async function createProduct(productData: {
       productData.image,
       JSON.stringify(productData.images || []),
       productData.description || '',
-      productData.category || 'general'
+      productData.category || 'general',
+      JSON.stringify(productData.sizes || [])
     ])
 
     return { success: true, product: { id, ...productData } }
@@ -172,7 +174,7 @@ export async function updateProduct(id: string, productData: any) {
     for (const [key, value] of Object.entries(productData)) {
       if (key === 'id') continue
       fields.push(`${key} = ?`)
-      if (key === 'images') {
+      if (key === 'images' || key === 'sizes') {
         // Avoid double-encoding: only stringify if it's an actual array
         params.push(Array.isArray(value) ? JSON.stringify(value) : value)
       } else {
@@ -212,6 +214,7 @@ export async function createOrder(orderData: {
     price: number
     quantity: number
     image: string
+    size?: string
   }>
   total: number
   notes?: string
@@ -247,8 +250,8 @@ export async function createOrder(orderData: {
 
     // Ajouter les articles
     const itemSql = `
-      INSERT INTO order_items (order_id, product_id, product_name, product_price, quantity, product_image)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO order_items (order_id, product_id, product_name, product_price, quantity, product_image, size)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `
 
     for (const item of orderData.items) {
@@ -258,7 +261,8 @@ export async function createOrder(orderData: {
         item.name,
         item.price,
         item.quantity,
-        item.image
+        item.image,
+        item.size || null
       ])
     }
 
