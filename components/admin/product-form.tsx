@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
-import { Plus, X, GripVertical } from 'lucide-react'
-import { getValidImageUrl } from "@/lib/image-utils"
+import { Loader2, Plus, X, GripVertical, CheckCircle2 } from 'lucide-react'
+import { getValidImageUrl, compressImage } from "@/lib/image-utils"
+import { Progress } from "@/components/ui/progress"
 
 interface Product {
   id: string
@@ -61,10 +62,14 @@ const parseImages = (images: any): string[] => {
 }
 
 export function ProductForm({ product }: { product?: Product }) {
-  const router = useRouter()
   const { toast } = useToast()
+  const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState("")
+  const [uploadPercentage, setUploadPercentage] = useState(0)
+  const [compressionSummary, setCompressionSummary] = useState("")
 
   // Debug: voir les données du produit
   console.log('🔍 Product data received:', product)
@@ -88,48 +93,87 @@ export function ProductForm({ product }: { product?: Product }) {
   })
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const selectedFiles = Array.from(e.target.files || [])
+    if (selectedFiles.length === 0) return
 
     setIsUploading(true)
+    setUploadPercentage(0)
+    const newAddedImages: string[] = []
+    let totalOriginalSize = 0
+    let totalCompressedSize = 0
 
     try {
-      const formDataUpload = new FormData()
-      formDataUpload.append('file', file)
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i]
+        totalOriginalSize += file.size
+        setUploadProgress(`Optimisation ${i + 1}/${selectedFiles.length} : ${file.name}`)
+        setUploadPercentage(((i) / selectedFiles.length) * 100)
 
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formDataUpload,
-      })
+        // 1. Compression client-side
+        let fileToUpload: Blob | File = file
+        if (file.type.startsWith('image/')) {
+          try {
+            console.log(`⏳ Compression de ${file.name}...`)
+            fileToUpload = await compressImage(file, 1600, 1600, 0.75) // Paramètres optis pour mobile
+            totalCompressedSize += fileToUpload.size
+            console.log(`✅ Compression réussie : ${(file.size / 1024 / 1024).toFixed(2)}Mo -> ${(fileToUpload.size / 1024 / 1024).toFixed(2)}Mo`)
+          } catch (err) {
+            console.warn(`⚠️ Échec compression pour ${file.name}, envoi original`, err)
+            totalCompressedSize += file.size
+          }
+        } else {
+          totalCompressedSize += file.size
+        }
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erreur lors de l\'upload')
+        // 2. Upload
+        setUploadProgress(`Upload ${i + 1}/${selectedFiles.length}...`)
+        const formDataUpload = new FormData()
+        formDataUpload.append('file', fileToUpload, file.name)
+
+        const response = await fetch('/api/upload/image', {
+          method: 'POST',
+          body: formDataUpload,
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || `Erreur sur ${file.name}`)
+        }
+
+        const result = await response.json()
+        newAddedImages.push(result.url)
+        setUploadPercentage(((i + 1) / selectedFiles.length) * 100)
       }
 
-      const result = await response.json()
-      console.log('✅ Image uploadée:', result.url)
-
-      // Ajouter la nouvelle image à la liste
-      const newImages = [...formData.images, result.url]
-      setFormData({ ...formData, images: newImages })
-
-      toast({
-        title: "Image uploadée",
-        description: `${file.name} a été ajoutée avec succès.`,
+      // 3. Update state
+      const updatedImages = [...formData.images, ...newAddedImages]
+      setFormData({ 
+        ...formData, 
+        images: updatedImages,
+        image: formData.image || newAddedImages[0]
       })
 
-      // Réinitialiser le champ input pour permettre de re-sélectionner le même fichier
-      e.target.value = ''
+      const gain = ((1 - totalCompressedSize / totalOriginalSize) * 100).toFixed(0)
+      const ratio = `${(totalOriginalSize / 1024 / 1024).toFixed(1)}Mo -> ${(totalCompressedSize / 1024 / 1024).toFixed(1)}Mo`
+      
+      toast({
+        title: selectedFiles.length > 1 ? "Images ajoutées" : "Image ajoutée",
+        description: `Gain de ${gain}% (${ratio}). Prêt pour le web !`,
+      })
     } catch (error: any) {
       console.error('❌ Erreur upload:', error)
       toast({
         title: "Erreur d'upload",
-        description: error.message || "Impossible d'uploader l'image.",
+        description: error.message || "Impossible d'uploader les images.",
         variant: "destructive",
       })
     } finally {
       setIsUploading(false)
+      setUploadProgress("")
+      setUploadPercentage(0)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
     }
   }
 
@@ -285,8 +329,10 @@ export function ProductForm({ product }: { product?: Product }) {
           {/* Upload button */}
           <input
             type="file"
+            ref={fileInputRef}
             id="image-upload"
             accept="image/*"
+            multiple
             onChange={handleImageUpload}
             className="hidden"
             disabled={isUploading}
@@ -294,24 +340,32 @@ export function ProductForm({ product }: { product?: Product }) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => document.getElementById('image-upload')?.click()}
+            onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
             className="w-full flex items-center gap-2"
           >
-            <Plus className="h-4 w-4" />
-            {isUploading ? 'Upload en cours...' : `Ajouter une image (${formData.images.filter(img => img && img.trim() !== '').length} actuellement)`}
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
+            {isUploading ? 'Traitement en cours...' : `Ajouter des images (${formData.images.filter(img => img && img.trim() !== '').length} actuellement)`}
           </Button>
 
           {/* Upload progress */}
           {isUploading && (
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex items-center gap-3">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                <div className="text-sm text-blue-600 font-medium">Upload en cours...</div>
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <span className="text-sm font-medium text-blue-800">{uploadProgress}</span>
+                </div>
+                <span className="text-xs font-bold text-blue-600">{Math.round(uploadPercentage)}%</span>
               </div>
-              <div className="mt-2 text-xs text-blue-500">
-                Veuillez patienter, l'image est en cours de traitement...
-              </div>
+              <Progress value={uploadPercentage} className="h-1.5 bg-blue-100" />
+              <p className="mt-2 text-[10px] text-blue-400 uppercase tracking-widest text-center">
+                Optimisation pour mobile en cours...
+              </p>
             </div>
           )}
 

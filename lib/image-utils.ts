@@ -53,3 +53,52 @@ export function getValidImageUrl(
 export function isValidImageUrl(imageUrl: string | null | undefined): boolean {
   return !!(imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '')
 }
+
+/**
+ * Compresse une image côté client pour éviter de dépasser les limites du serveur (4Mo)
+ */
+export async function compressImage(
+  file: File,
+  maxWidth: number = 1920,
+  maxHeight: number = 1080,
+  quality: number = 0.8
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = (e) => {
+      const img = new Image()
+      img.src = e.target?.result as string
+      img.onload = () => {
+        const canvas = document.createElement("canvas")
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width
+            width = maxWidth
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height
+            height = maxHeight
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext("2d")
+        if (!ctx) return reject(new Error("Canvas context is null"))
+
+        ctx.drawImage(img, 0, 0, width, height)
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob)
+          else reject(new Error("Compression failed"))
+        }, file.type || "image/jpeg", quality)
+      }
+      img.onerror = reject
+    }
+    reader.onerror = reject
+  })
+}
