@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,47 +14,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Le fichier doit être une image' }, { status: 400 })
     }
 
-    // Créer le dossier uploads s'il n'existe pas
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
-    try {
-      await mkdir(uploadsDir, { recursive: true })
-    } catch {
-      // Le dossier existe déjà
-    }
-
-    // Générer un nom de fichier unique avec le nom original
-    const timestamp = Date.now()
-    const originalName = file.name
-    const extension = path.extname(originalName)
-    const baseName = path.basename(originalName, extension)
+    // Convertir l'image en Base64
+    // Sur Vercel (Serverless), nous ne pouvons pas écrire dans /public/uploads 
+    // car le système de fichiers est en lecture seule ("Read-Only File System").
+    // La solution est de stocker l'image directement en Base64 dans la base de données.
     
-    // Remplacer les caractères problématiques dans le nom
-    const safeBaseName = baseName.replace(/[^a-zA-Z0-9-_]/g, '_')
-    const fileName = `${timestamp}_${safeBaseName}${extension}`
-    
-    // Chemin complet du fichier
-    const filePath = path.join(uploadsDir, fileName)
-    
-    // Sauvegarder le fichier
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    await writeFile(filePath, buffer)
-
-    // Retourner l'URL publique
-    const publicUrl = `/uploads/${fileName}`
     
-    console.log('✅ Image uploadée:', publicUrl)
+    // Créer le Data URI (Base64)
+    const base64Data = buffer.toString('base64')
+    const mimeType = file.type || 'image/jpeg'
+    const publicUrl = `data:${mimeType};base64,${base64Data}`
+    
+    console.log('✅ Image convertie en Base64 (taille:', Math.round(base64Data.length / 1024), 'KB)')
     
     return NextResponse.json({ 
       success: true, 
       url: publicUrl,
-      fileName: fileName
+      fileName: file.name
     })
 
   } catch (error) {
-    console.error('❌ Erreur upload:', error)
+    console.error('❌ Erreur conversion image:', error)
     return NextResponse.json(
-      { error: 'Erreur lors de l\'upload de l\'image' },
+      { error: 'Erreur lors du traitement de l\'image' },
       { status: 500 }
     )
   }

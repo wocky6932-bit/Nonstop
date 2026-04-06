@@ -114,7 +114,7 @@ export function ProductForm({ product }: { product?: Product }) {
         if (file.type.startsWith('image/')) {
           try {
             console.log(`⏳ Compression de ${file.name}...`)
-            fileToUpload = await compressImage(file, 1600, 1600, 0.75) // Paramètres optis pour mobile
+            fileToUpload = await compressImage(file, 800, 800, 0.7) // Taille réduite pour le Base64
             totalCompressedSize += fileToUpload.size
             console.log(`✅ Compression réussie : ${(file.size / 1024 / 1024).toFixed(2)}Mo -> ${(fileToUpload.size / 1024 / 1024).toFixed(2)}Mo`)
           } catch (err) {
