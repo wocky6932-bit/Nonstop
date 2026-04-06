@@ -20,6 +20,11 @@ export function getValidImageUrl(
   // Nettoyer uniquement les espaces de début/fin
   const cleaned = imageUrl.trim()
 
+  // Si c'est une string Base64 (Data URI), on la retourne telle quelle
+  if (cleaned.startsWith('data:')) {
+    return cleaned
+  }
+
   // Encoder les URLs pour gérer les caractères spéciaux
   try {
     // Si c'est déjà une URL absolue, normaliser l'encodage
