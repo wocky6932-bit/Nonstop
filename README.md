@@ -1,7 +1,6 @@
  🛍️ Nostopp - Plateforme E-commerce Officielle
 
-Ce dépôt contient le code source de la boutique en ligne et du système d'administration sur-mesure développés pour **Nostopp** (une marque indépendante créée par [Noms de tes amis ou de l'équipe fondatrice]).
-
+Ce dépôt contient le code source de la boutique en ligne et du système d'administration sur-mesure développés pour **Nostopp**
 https://github.com/user-attachments/assets/6c46c80d-e301-4b9b-b446-588b4404dde1
 
  📖 À propos du projet
