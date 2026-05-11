@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { CartProvider } from '@/lib/cart-context'
 import { CurrencyProvider } from '@/lib/currency-context'
+import { SplashScreen } from '@/components/ui/splash-screen'
 
 const cormorant = Cormorant_Garamond({ 
   weight: ['400', '500', '600', '700'],
@@ -38,6 +39,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${inter.variable} ${cormorant.variable} font-sans antialiased`}>
+        <SplashScreen />
         <CurrencyProvider>
           <CartProvider>
             {children}

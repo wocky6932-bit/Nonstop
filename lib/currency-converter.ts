@@ -12,7 +12,7 @@ export interface ExchangeRates {
 }
 
 export const SUPPORTED_CURRENCIES: Currency[] = [
-  { code: 'FCFA', name: 'Franc CFA', symbol: 'CFA', flag: '🇸🇳', country: 'Sénégal' },
+  { code: 'XOF', name: 'Franc CFA', symbol: 'CFA', flag: '🇸🇳', country: 'Sénégal' },
   { code: 'EUR', name: 'Euro', symbol: '€', flag: '🇪🇺', country: 'Europe' },
   { code: 'GMD', name: 'Dalasi', symbol: 'D', flag: '🇬🇲', country: 'Gambie' },
   { code: 'USD', name: 'US Dollar', symbol: '$', flag: '🇺🇸', country: 'USA' },
@@ -22,6 +22,7 @@ export const SUPPORTED_CURRENCIES: Currency[] = [
 // Taux de change approximatifs (en pratique, vous utiliseriez une API)
 const EXCHANGE_RATES: ExchangeRates = {
   'FCFA': 655.957, // 1 EUR = 655.957 FCFA
+  'XOF': 655.957,  // 1 EUR = 655.957 XOF
   'EUR': 1,
   'GMD': 70.0,     // 1 EUR = 70 GMD approx
   'USD': 1.08,    // 1 EUR = 1.08 USD approx
