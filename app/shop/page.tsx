@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -16,7 +16,7 @@ import { useCurrency } from '@/lib/currency-context'
 import { getValidImageUrl } from '@/lib/image-utils'
 import { normalizeProductData } from '@/lib/product-utils'
 
-export default function ShopPage() {
+function ShopContent() {
     const { addToCart } = useCart()
     const { toast } = useToast()
     const { convertPrice, formatPrice } = useCurrency()
@@ -406,5 +406,13 @@ export default function ShopPage() {
 
             <Toaster />
         </div>
+    )
+}
+
+export default function ShopPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" /></div>}>
+            <ShopContent />
+        </Suspense>
     )
 }
