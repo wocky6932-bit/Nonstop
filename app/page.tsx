@@ -34,8 +34,9 @@ export default function HomePage() {
         const response = await fetch('/api/admin/products')
         if (response.ok) {
           const data = await response.json()
-          // Normaliser les produits
+          // Normaliser les produits et exclure les pré-commandes (accessibles via la bannière)
           const normalizedProducts = data
+            .filter((p: any) => !p.is_preorder)
             .map((p: any) => normalizeProductData(p))
           setProducts(normalizedProducts)
           setConnectionError(false)
