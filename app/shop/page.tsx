@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Search, Menu, ShoppingBag, X, Instagram, Plus, Zap, ShieldCheck, Star, Headphones } from 'lucide-react'
@@ -26,6 +27,15 @@ export default function ShopPage() {
     const [searchQuery, setSearchQuery] = useState('')
     const [searchOpen, setSearchOpen] = useState(false)
     const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({})
+    const searchParams = useSearchParams()
+    const filterParam = searchParams.get('filter')
+    const [preorderFilter, setPreorderFilter] = useState(false)
+
+    useEffect(() => {
+        if (filterParam === 'preorder') {
+            setPreorderFilter(true)
+        }
+    }, [filterParam])
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -75,7 +85,8 @@ export default function ShopPage() {
     const filteredProducts = products.filter((p) => {
         const matchCat = activeCategory === 'Tous' || (p as any).category === activeCategory
         const matchSearch = !searchQuery.trim() || p.name.toLowerCase().includes(searchQuery.toLowerCase())
-        return matchCat && matchSearch
+        const matchPreorder = !preorderFilter || (p as any).is_preorder
+        return matchCat && matchSearch && matchPreorder
     })
 
     return (
@@ -173,10 +184,21 @@ export default function ShopPage() {
             <div className="border-b border-gray-100">
                 {/* Title */}
                 <div className="text-center py-8">
-                    <h1 className="text-xs tracking-[0.4em] uppercase text-black font-medium">Boutique</h1>
+                    <h1 className="text-xs tracking-[0.4em] uppercase text-black font-medium">
+                        {preorderFilter ? 'Pré-commandes' : 'Boutique'}
+                    </h1>
                     <p className="text-[11px] text-gray-400 mt-1 tracking-widest">
                         {filteredProducts.length} article{filteredProducts.length !== 1 ? 's' : ''}
                     </p>
+                    {preorderFilter && (
+                        <button
+                            onClick={() => setPreorderFilter(false)}
+                            className="mt-3 inline-flex items-center gap-2 text-[10px] tracking-widest uppercase bg-blue-600 text-white px-4 py-1.5 rounded-sm hover:bg-blue-700 transition-colors"
+                        >
+                            <X className="w-3 h-3" />
+                            Voir tous les produits
+                        </button>
+                    )}
                 </div>
 
                 {/* Category pills */}
