@@ -241,9 +241,10 @@ function ShopContent() {
                 ) : (
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-4 pt-4">
                         {filteredProducts.map((product) => (
-                            <div
+                            <Link
+                                href={`/shop/${product.id}`}
                                 key={product.id}
-                                className="group relative bg-white overflow-hidden min-w-0"
+                                className="group relative bg-white overflow-hidden min-w-0 block"
                             >
                                 {/* Wrapper image + badges + bouton */}
                                 <div className="relative">
@@ -335,7 +336,7 @@ function ShopContent() {
                                         {formatPrice(convertPrice(product.price, product.currency))}
                                     </p>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}
