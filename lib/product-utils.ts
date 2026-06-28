@@ -25,7 +25,8 @@ export function normalizeProductForCart(product: any): Product {
     images: product.images || [],
     sold_out: product.sold_out || false,
     sizes: product.sizes && Array.isArray(product.sizes) ? product.sizes : [],
-    selectedSize: product.selectedSize
+    selectedSize: product.selectedSize,
+    is_preorder: product.is_preorder === 1 || product.is_preorder === true
   }
 
   return normalizedProduct
@@ -97,6 +98,7 @@ export function normalizeProductData(product: any): Product {
     image: productImage,
     images: productImages,
     sizes: productSizes,
-    sold_out: product.sold_out === 1 || product.sold_out === true
+    sold_out: product.sold_out === 1 || product.sold_out === true,
+    is_preorder: product.is_preorder === 1 || product.is_preorder === true
   }
 }

@@ -4,7 +4,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useCart, Product } from '@/lib/cart-context'
 import { useToast } from '@/hooks/use-toast'
-import { Button } from '@/components/ui/button'
 import { useCurrency } from '@/lib/currency-context'
 import { ImageCarousel } from '@/components/image-carousel'
 import { getValidImageUrl } from '@/lib/image-utils'
@@ -15,8 +14,9 @@ export function ProductGrid({ products }: { products: Product[] }) {
   const { toast } = useToast()
   const { convertPrice, formatPrice } = useCurrency()
 
-  const handleAddToCart = (product: Product) => {
-    // S'assurer que l'image est correctement normalisée
+  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault()
+    e.stopPropagation()
     const normalizedProduct = normalizeProductData(product)
     addToCart(normalizedProduct)
     toast({
@@ -25,115 +25,89 @@ export function ProductGrid({ products }: { products: Product[] }) {
     })
   }
 
+  if (products.length === 0) {
+    return null
+  }
+
   return (
-    <section className="container mx-auto px-4 py-16">
-      {/* En-tête de section */}
-      <div className="text-center mb-16">
-        <div className="inline-block mb-4">
-          <div className="h-px w-16 bg-black mx-auto mb-2"></div>
-          <span className="text-sm font-medium tracking-[0.2em] text-gray-600 uppercase">
-            Collection
-          </span>
-        </div>
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl tracking-wider mb-6 font-light">
-          COLLECTION À LA UNE
-        </h2>
-        <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-          Découvrez notre sélection exclusive de produits premium, soigneusement choisis pour leur qualité exceptionnelle et leur style unique.
-        </p>
-      </div>
-
-      {/* Grille de produits */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-        {products.map((product, index) => (
-          <div 
-            key={product.id} 
-            className="group relative bg-white rounded-lg overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
-            style={{ animationDelay: `${index * 100}ms` }}
+    <section className="w-full">
+      {/* Grille — 2 colonnes mobile, 3 desktop */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+        {products.map((product) => (
+          <Link
+            key={product.id}
+            href={`/shop/${product.id}`}
+            className="group relative bg-white block"
           >
-            {/* Badge sold out */}
-            {product.sold_out && (
-              <div className="absolute top-4 left-4 z-20 bg-gray-900 text-white text-xs px-3 py-1 tracking-wider font-medium rounded-full">
-                ÉPUISÉ
-              </div>
-            )}
-
-            {/* Image du produit */}
-            <div className="group relative">
-              {/* Check if product has multiple images (images field) */}
-              {(product.images && product.images.length > 1) ? (
-                <ImageCarousel
-                  images={product.images}
-                  alt={product.name}
-                  className="transition-transform duration-700 group-hover:scale-105"
-                />
-              ) : (
-                <div className="relative aspect-[3/4] bg-gray-50 overflow-hidden">
-                  <Image
-                    src={getValidImageUrl(product.image)}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    loading="lazy"
-                    quality={85}
-                  />
-                  
-                  {/* Overlay au hover */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500" />
-                </div>
-              )}
-              
-
-            </div>
-            
-            {/* Informations produit */}
-            <div className="p-6">
-              <div className="text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-3 tracking-wide group-hover:text-gray-700 transition-colors duration-200">
-                  {product.name}
-                </h3>
-                <p className="text-xl font-bold text-gray-900 mb-4">
-                  {formatPrice(convertPrice(product.price, product.currency))}
-                </p>
+            {/* Wrapper image + badges */}
+            <div className="relative mb-3">
+              <div className="absolute top-3 left-3 z-20 flex flex-col gap-1 pointer-events-none">
+                {/* Badge SOLD OUT */}
+                {product.sold_out && (
+                  <div className="bg-black/80 text-white text-[10px] px-2 py-1 tracking-widest font-medium uppercase rounded-sm backdrop-blur-sm">
+                    SOLD OUT
+                  </div>
+                )}
                 
-                {/* Bouton principal */}
-                {!product.sold_out ? (
-                  <Button
-                    onClick={() => handleAddToCart(product)}
-                    className="w-full bg-black text-white hover:bg-gray-800 transition-colors duration-200 font-medium tracking-wide py-3"
-                  >
-                    AJOUTER AU PANIER
-                  </Button>
+                {/* Badge PRE-ORDER */}
+                {(product as any).is_preorder && !product.sold_out && (
+                  <div className="bg-blue-600/90 text-white text-[10px] px-2 py-1 tracking-widest font-medium uppercase rounded-sm backdrop-blur-sm">
+                    PRÉ-COMMANDE
+                  </div>
+                )}
+
+                {/* Badge NEW */}
+                {(product as any).is_new && !product.sold_out && !(product as any).is_preorder && (
+                  <div className="bg-white/90 text-black text-[10px] px-2 py-1 tracking-widest font-medium uppercase rounded-sm backdrop-blur-sm border border-gray-200">
+                    NEW
+                  </div>
+                )}
+              </div>
+
+              {/* Image */}
+              <div className="overflow-hidden bg-gray-50 rounded-sm">
+                {product.images && product.images.length > 1 ? (
+                  <ImageCarousel
+                    images={product.images}
+                    alt={product.name}
+                  />
                 ) : (
-                  <Button
-                    disabled
-                    className="w-full bg-gray-300 text-gray-500 cursor-not-allowed font-medium tracking-wide py-3"
-                  >
-                    PRODUIT ÉPUISÉ
-                  </Button>
+                  <div className="relative aspect-[3/4]">
+                    <Image
+                      src={getValidImageUrl(product.image)}
+                      alt={product.name}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                      loading="lazy"
+                      quality={85}
+                    />
+                  </div>
                 )}
               </div>
             </div>
-          </div>
+
+            {/* Infos produit */}
+            <div className="text-center pb-6">
+              <h3 className="text-sm font-bold tracking-wide text-black mb-1">
+                {product.name}
+              </h3>
+              <p className="text-xs text-gray-500 font-medium">
+                {formatPrice(convertPrice(product.price, product.currency))}
+              </p>
+            </div>
+          </Link>
         ))}
       </div>
 
-      {/* Section voir tout */}
-      <div className="text-center mt-16">
-        <div className="inline-block">
-          <div className="h-px w-16 bg-gray-300 mx-auto mb-6"></div>
-          <Link href="/shop">
-            <Button
-              size="lg"
-              className="group relative overflow-hidden bg-transparent border-2 border-black text-black hover:bg-black hover:text-white transition-all duration-300 tracking-wider font-medium px-12 py-6 text-sm"
-            >
-              <span className="relative z-10">VOIR TOUTE LA COLLECTION</span>
-              <div className="absolute inset-0 bg-black transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-            </Button>
-          </Link>
-          <div className="h-px w-16 bg-gray-300 mx-auto mt-6"></div>
-        </div>
+      {/* Voir toute la boutique */}
+      <div className="text-center mt-10">
+        <Link
+          href="/shop"
+          className="inline-block text-xs tracking-widest font-medium uppercase border border-black px-10 py-4 hover:bg-black hover:text-white transition-colors duration-300"
+        >
+          VOIR TOUT
+        </Link>
       </div>
     </section>
   )

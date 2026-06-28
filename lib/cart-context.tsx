@@ -15,6 +15,7 @@ export interface Product {
   sold_out: boolean
   sizes?: string[]       // Tailles disponibles (ex: ["S","M","L","XL"])
   selectedSize?: string  // Taille choisie par le client
+  is_preorder?: boolean
 }
 
 export interface CartItem extends Product {

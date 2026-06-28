@@ -39,9 +39,9 @@ export function CartDrawer() {
           className="relative"
           onClick={handleCartClick}
         >
-          <ShoppingCart className="h-5 w-5" />
+          <ShoppingCart className="h-5 w-5" strokeWidth={1.5} />
           {cartCount > 0 && isAuthenticated && (
-            <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+            <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center font-medium">
               {cartCount}
             </span>
           )}
@@ -98,11 +98,18 @@ export function CartDrawer() {
                     </div>
                     <div className="flex-1">
                       <h3 className="text-sm font-medium mb-0.5">{item.name}</h3>
-                      {item.selectedSize && (
-                        <span className="inline-block text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded mb-1">
-                          Taille : {item.selectedSize}
-                        </span>
-                      )}
+                      <div className="flex flex-wrap gap-2 mb-1">
+                        {item.is_preorder && (
+                          <span className="inline-block text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium tracking-widest uppercase">
+                            PRÉ-COMMANDE
+                          </span>
+                        )}
+                        {item.selectedSize && (
+                          <span className="inline-block text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                            Taille : {item.selectedSize}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-600 mb-2">
                         {formatPrice(convertPrice(item.price, item.currency))}
                       </p>

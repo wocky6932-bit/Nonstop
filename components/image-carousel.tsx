@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getValidImageUrl } from '@/lib/image-utils'
 
 interface ImageCarouselProps {
@@ -13,119 +12,122 @@ interface ImageCarouselProps {
 
 export function ImageCarousel({ images, alt, className = "" }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const touchStartX = useRef<number | null>(null)
+  const touchEndX = useRef<number | null>(null)
+  const MIN_SWIPE_DISTANCE = 40
 
-  // S'assurer que images est bien un tableau et valider chaque URL
-  const safeImages = Array.isArray(images) ? images : 
-                    (typeof images === 'string' ? [images] : [])
+  // Valider les images
+  const validImages = (Array.isArray(images) ? images : typeof images === 'string' ? [images] : [])
+    .filter((img) => img && typeof img === 'string' && img.trim() &&
+      (img.trim().startsWith('/') || img.trim().startsWith('http') || img.trim().startsWith('data:')))
 
-  // Filtrer les URLs invalides
-  const validImages = safeImages.filter(img => {
-    if (!img || typeof img !== 'string') return false
-    const trimmed = img.trim()
-    if (!trimmed) return false
-    // Vérifier si c'est une URL relative ou absolue valide
-    return trimmed.startsWith('/') || trimmed.startsWith('http') || trimmed.startsWith('data:')
-  })
+  const goNext = () => setCurrentIndex((i) => (i + 1) % validImages.length)
+  const goPrev = () => setCurrentIndex((i) => (i - 1 + validImages.length) % validImages.length)
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX
+    touchEndX.current = null
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX
+  }
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchEndX.current === null) return
+    const distance = touchStartX.current - touchEndX.current
+    if (Math.abs(distance) < MIN_SWIPE_DISTANCE) return
+    if (distance > 0) {
+      // Swipe gauche → image suivante
+      e.preventDefault()
+      e.stopPropagation()
+      goNext()
+    } else {
+      // Swipe droite → image précédente
+      e.preventDefault()
+      e.stopPropagation()
+      goPrev()
+    }
+    touchStartX.current = null
+    touchEndX.current = null
+  }
 
   if (validImages.length === 0) {
     return (
-      <div className={`w-full h-64 bg-gray-200 flex items-center justify-center ${className}`}>
-        <span className="text-gray-500">Aucune image</span>
+      <div className={`relative aspect-[3/4] bg-gray-100 ${className}`}>
+        <Image src="/placeholder.jpg" alt={alt} fill className="object-cover" />
       </div>
     )
   }
 
-  const goToPrevious = () => {
-    console.log('Go to previous clicked! Current:', currentIndex)
-    setCurrentIndex((prevIndex) => {
-      const newIndex = (prevIndex - 1 + validImages.length) % validImages.length
-      console.log('Previous index:', newIndex)
-      return newIndex
-    })
-  }
-
-  const goToNext = () => {
-    console.log('Go to next clicked! Current:', currentIndex)
-    setCurrentIndex((prevIndex) => {
-      const newIndex = (prevIndex + 1) % validImages.length
-      console.log('Next index:', newIndex)
-      return newIndex
-    })
-  }
-
-  if (validImages.length === 0) {
+  if (validImages.length === 1) {
     return (
-      <div className={`relative aspect-[3/4] bg-gray-50 ${className}`}>
+      <div className={`relative aspect-[3/4] bg-gray-50 overflow-hidden ${className}`}>
         <Image
-          src="/placeholder.svg"
+          src={getValidImageUrl(validImages[0])}
           alt={alt}
           fill
-          className="object-cover"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 1024px) 50vw, 33vw"
+          loading="lazy"
+          quality={85}
         />
       </div>
     )
   }
 
   return (
-    <div className={`relative aspect-[3/4] bg-gray-50 overflow-hidden ${className}`}>
+    <div
+      className={`relative aspect-[3/4] bg-gray-50 overflow-hidden ${className}`}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* Image */}
       <Image
         src={getValidImageUrl(validImages[currentIndex])}
-        alt={`${alt} - Image ${currentIndex + 1}`}
+        alt={`${alt} ${currentIndex + 1}`}
         fill
-        className="object-cover transition-all duration-500"
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+        className="object-cover transition-transform duration-500 group-hover:scale-105"
+        sizes="(max-width: 1024px) 50vw, 33vw"
         loading="lazy"
         quality={85}
       />
-      
-      {/* Boutons de navigation - style normal */}
-      {validImages.length > 1 && (
-        <>
+
+      {/* Pagination text (1 / 2) at top right */}
+      <div className="absolute top-3 right-3 z-20 text-black text-xs font-medium tracking-widest bg-white/50 px-2 py-0.5 rounded-sm backdrop-blur-sm">
+        {currentIndex + 1} / {validImages.length}
+      </div>
+
+      {/* Zone de click gauche / droite — pour desktop */}
+      <div
+        className="absolute left-0 top-0 w-1/2 h-full z-10 cursor-pointer"
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          goPrev()
+        }}
+      />
+      <div
+        className="absolute right-0 top-0 w-1/2 h-full z-10 cursor-pointer"
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          goNext()
+        }}
+      />
+
+      {/* Indicateurs — petits points en bas */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20 pointer-events-none">
+        {validImages.map((_, i) => (
           <div
-            onClick={goToPrevious}
-            className="absolute left-1 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 z-30 shadow-lg cursor-pointer"
-          >
-            <ChevronLeft className="h-5 w-5 text-gray-800" />
-          </div>
-          
-          <div
-            onClick={goToNext}
-            className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 z-30 shadow-lg cursor-pointer"
-          >
-            <ChevronRight className="h-5 w-5 text-gray-800" />
-          </div>
-        </>
-      )}
-      
-      {/* Indicateurs améliorés */}
-      {validImages.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-          {validImages.map((_, index) => (
-            <button
-              key={index}
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setCurrentIndex(index)
-              }}
-              className={`w-4 h-4 rounded-full transition-all duration-200 border-2 ${
-                index === currentIndex 
-                  ? 'bg-white border-gray-800 shadow-lg scale-110' 
-                  : 'bg-white/70 border-gray-400 hover:bg-white hover:border-gray-600'
-              }`}
-              aria-label={`Aller à l'image ${index + 1}`}
-              type="button"
-            />
-          ))}
-        </div>
-      )}
-      
-      {/* Compteur d'images */}
-      {validImages.length > 1 && (
-        <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-20">
-          {currentIndex + 1} / {validImages.length}
-        </div>
-      )}
+            key={i}
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              i === currentIndex ? 'w-1.5 bg-white' : 'w-1.5 bg-white/40'
+            }`}
+          />
+        ))}
+      </div>
     </div>
   )
 }

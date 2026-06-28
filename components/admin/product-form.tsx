@@ -21,6 +21,7 @@ interface Product {
   category?: string // Product category for filtering
   sizes?: string[] // Available sizes
   soldOut: boolean
+  is_preorder?: boolean
 }
 
 const AVAILABLE_SIZES = ['TU', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
@@ -94,6 +95,7 @@ export function ProductForm({ product }: { product?: Product }) {
     category: product?.category || "general",
     sizes: product?.sizes || [],
     soldOut: product?.soldOut || false,
+    isPreorder: product?.is_preorder || false,
   })
 
   const handleSizeToggle = (size: string) => {
@@ -231,6 +233,7 @@ export function ProductForm({ product }: { product?: Product }) {
         images: JSON.stringify(validImages), // store clean array as JSON string
         sizes: formData.sizes,
         sold_out: formData.soldOut, // Utiliser sold_out pour MySQL
+        is_preorder: formData.isPreorder,
       }
 
       // Only add category if it's not empty
@@ -483,6 +486,19 @@ export function ProductForm({ product }: { product?: Product }) {
         />
         <Label htmlFor="soldOut" className="cursor-pointer">
           Produit épuisé
+        </Label>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="isPreorder"
+          checked={formData.isPreorder}
+          onCheckedChange={(checked) =>
+            setFormData({ ...formData, isPreorder: checked as boolean })
+          }
+        />
+        <Label htmlFor="isPreorder" className="cursor-pointer text-blue-600 font-medium">
+          Pré-commande (Le client peut acheter même si le stock n'est pas dispo)
         </Label>
       </div>
 

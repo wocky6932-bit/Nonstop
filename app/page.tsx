@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { Search, User, Menu, Instagram, X } from 'lucide-react'
+import { Search, Menu, Instagram, X, User, Zap, ShieldCheck, Star, Headphones, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import Image from 'next/image'
@@ -11,36 +11,21 @@ import { CartDrawer } from '@/components/cart-drawer'
 import { useToast } from '@/hooks/use-toast'
 import { Toaster } from '@/components/ui/toaster'
 import { ProductGrid } from '@/components/product-grid'
-import { CurrencySelector } from '@/components/currency-selector'
 import { getValidImageUrl } from '@/lib/image-utils'
 import { normalizeProductData } from '@/lib/product-utils'
+import { useCurrency } from '@/lib/currency-context'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 export default function HomePage() {
   const { addToCart } = useCart()
   const { toast } = useToast()
+  const { currency, setCurrency } = useCurrency()
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
-  const [isOverVideo, setIsOverVideo] = useState(false)
   const [connectionError, setConnectionError] = useState(false)
-  const heroSectionRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (heroSectionRef.current) {
-        const rect = heroSectionRef.current.getBoundingClientRect()
-        const isVisible = rect.top <= 100 && rect.bottom >= 100
-        setIsOverVideo(isVisible)
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    handleScroll() // Vérifier la position initiale
-    
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   useEffect(() => {
     // Charger les produits depuis MySQL
@@ -87,83 +72,68 @@ export default function HomePage() {
     const normalizedProduct = normalizeProductData(product)
     addToCart(normalizedProduct)
     toast({
-      title: 'Ajouté au panier',
+      title: normalizedProduct.is_preorder ? 'Pré-commande ajoutée' : 'Ajouté au panier',
       description: `${product.name} a été ajouté à votre panier`,
     })
   }
 
   return (
-    <div className="min-h-screen bg-white" suppressHydrationWarning>
+    <div className="min-h-screen bg-white text-black" suppressHydrationWarning>
+
       {/* Header */}
-      <header className={`border-b border-gray-200 sticky top-0 z-50 transition-colors duration-300 ${
-        isOverVideo ? 'bg-transparent' : 'bg-white/90 backdrop-blur-sm'
-      }`}>
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-3 items-center py-4">
+      <header className="sticky top-0 z-50 bg-black border-b border-white/10">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex items-center justify-between py-4">
             {/* Menu Hamburger */}
-            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-              <SheetTrigger asChild>
-                <button aria-label="Menu" className="p-2 justify-self-start">
-                  <Menu className="h-6 w-6" />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-full sm:max-w-lg">
-                <SheetHeader>
-                  <SheetTitle className="text-xl tracking-wider">MENU</SheetTitle>
-                </SheetHeader>
-                <div className="py-4">
-                  <div className="space-y-4">
-                    <Link href="/" onClick={() => setMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start tracking-wider">
-                        ACCUEIL
-                      </Button>
-                    </Link>
-                    <Link href="/shop" onClick={() => setMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start tracking-wider">
-                        BOUTIQUE
-                      </Button>
-                    </Link>
-                    <Link href="/auth/login" onClick={() => setMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start tracking-wider">
-                        SE CONNECTER
-                      </Button>
-                    </Link>
+            <div className="flex-1 flex justify-start">
+              <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                <SheetTrigger asChild>
+                  <button aria-label="Menu" className="hover:opacity-60 transition-opacity text-white">
+                    <Menu className="h-6 w-6" strokeWidth={1.5} />
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-full sm:max-w-lg bg-black border-white/10">
+                  <SheetHeader>
+                    <SheetTitle className="text-xl tracking-wider text-white">MENU</SheetTitle>
+                  </SheetHeader>
+                  <div className="py-4">
+                    <div className="space-y-4">
+                      <Link href="/" onClick={() => setMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start tracking-wider text-white hover:text-black">
+                          ACCUEIL
+                        </Button>
+                      </Link>
+                      <Link href="/shop" onClick={() => setMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start tracking-wider text-white hover:text-black">
+                          BOUTIQUE
+                        </Button>
+                      </Link>
+                      <Link href="/auth/login" onClick={() => setMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start tracking-wider text-white hover:text-black">
+                          SE CONNECTER
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+                </SheetContent>
+              </Sheet>
+            </div>
 
             {/* Logo Center */}
-            <div className="justify-self-center">
-              <Link href="/" className="flex items-center gap-2">
+            <div className="flex-1 flex justify-center">
+              <Link href="/" className="hover:opacity-80 transition-opacity">
                 <Image
                   src="/nonstop-logo.png"
                   alt="Nonstop"
-                  width={40}
-                  height={40}
-                  className="h-8 w-8 sm:h-10 sm:w-auto"
+                  width={120}
+                  height={36}
+                  className="h-7 w-auto brightness-0 invert"
                 />
-                <span className="text-lg sm:text-xl font-bold tracking-wider hidden xs:inline-block">Nonstop</span>
               </Link>
             </div>
 
             {/* Right Icons */}
-            <div className="flex items-center gap-2 sm:gap-6 justify-self-end">
-              <CurrencySelector 
-                className="text-xs sm:text-sm"
-              />
-              <Link href="/auth/login" className="hidden sm:block">
-                  <button aria-label="Se connecter">
-                    <User className="h-5 w-5" />
-                  </button>
-                </Link>
-              <button
-                aria-label="Search"
-                onClick={() => setSearchOpen(true)}
-                className="hover:opacity-70 transition-opacity hidden xs:block"
-              >
-                <Search className="h-5 w-5" />
-              </button>
+            <div className="flex-1 flex items-center justify-end gap-5 text-white">
               <CartDrawer />
             </div>
           </div>
@@ -254,71 +224,117 @@ export default function HomePage() {
       )}
 
       {/* Hero Section */}
-      <section ref={heroSectionRef} className="relative h-screen bg-black flex items-center justify-center overflow-hidden">
-        <img
-          className="absolute inset-0 w-full h-full object-contain object-center opacity-100"
-          style={{ objectPosition: 'center center' }}
+      <section className="relative h-[50vh] md:h-[80vh] flex items-end justify-center overflow-hidden bg-black pb-8 md:pb-12">
+        {/* Hero background image */}
+        <Image
           src="/images/nonstop_mac_wallpaper_v2.png"
-          alt="Hero background"
+          alt="Nonstop Hero"
+          fill
+          className="object-contain md:object-cover object-center"
+          priority
+          quality={90}
         />
-        <div className="relative z-10 text-center text-white">
+        {/* Subtle dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/10" />
+
+        <div className="relative z-10 flex flex-col items-center text-center px-4">
           <Link href="/shop">
-            <button
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium disabled:pointer-events-none disabled:opacity-50 h-10 rounded-md has-[>svg]:px-4 border border-white text-white transition-all duration-300 tracking-wider text-sm px-8 py-6 hover:bg-white hover:text-black hover:shadow-lg hover:scale-105"
-              style={{
-                '--button-background': '255 255 255',
-                '--button-outline-color': '255 255 255',
-                '--button-text-color': '0 0 0'
-              } as React.CSSProperties}
-            >
-              VOIR LA COLLECTION
+            <button className="inline-flex items-center justify-center border border-white bg-transparent text-white transition-all duration-300 text-sm tracking-widest uppercase font-medium px-8 md:px-10 py-3 md:py-4 hover:bg-white hover:text-black">
+              DÉCOUVRIR LA COLLECTION
             </button>
           </Link>
         </div>
       </section>
 
-      <ProductGrid products={products} />
+      {/* Main Content */}
+      <main className="container mx-auto px-4 lg:px-8 py-12">
+        
+        {/* Collection Section Title */}
+        <div className="text-center mb-8">
+          <p className="text-xs uppercase tracking-[0.3em] font-medium text-gray-400 mb-3">
+            COLLECTION
+          </p>
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight text-black mb-4 uppercase">
+            À LA UNE
+          </h2>
+          <div className="text-black text-lg mb-3">★</div>
+          <p className="text-gray-500 text-xs tracking-widest uppercase">
+            DES PIÈCES CONÇUES POUR CEUX QUI VIVENT SANS LIMITES.
+          </p>
+        </div>
+
+        <ProductGrid products={products} />
+
+      </main>
+
+      {/* Features Banner */}
+      <section className="border-t border-gray-100 bg-white py-10 mt-4">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="flex flex-col items-center text-center gap-3">
+              <Zap className="w-5 h-5 text-black" strokeWidth={1.5} />
+              <div>
+                <h4 className="font-bold text-[10px] uppercase tracking-widest text-black mb-1">LIVRAISON RAPIDE</h4>
+                <p className="text-[10px] text-gray-400">Partout au Sénégal</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-center text-center gap-3">
+              <ShieldCheck className="w-5 h-5 text-black" strokeWidth={1.5} />
+              <div>
+                <h4 className="font-bold text-[10px] uppercase tracking-widest text-black mb-1">PAIEMENT SÉCURISÉ</h4>
+                <p className="text-[10px] text-gray-400">100% sécurisé</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-center text-center gap-3">
+              <Star className="w-5 h-5 text-black" strokeWidth={1.5} />
+              <div>
+                <h4 className="font-bold text-[10px] uppercase tracking-widests text-black mb-1">QUALITÉ PREMIUM</h4>
+                <p className="text-[10px] text-gray-400">Produits sélectionnés</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-center text-center gap-3">
+              <Headphones className="w-5 h-5 text-black" strokeWidth={1.5} />
+              <div>
+                <h4 className="font-bold text-[10px] uppercase tracking-widest text-black mb-1">SUPPORT 24/7</h4>
+                <p className="text-[10px] text-gray-400">À votre écoute</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-black text-white py-12 mt-20">
+      <footer className="bg-black border-t border-white/10 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="flex justify-center mb-6">
               <Image
                 src="/nonstop-logo.png"
                 alt="Nonstop"
-                width={60}
-                height={60}
-                className="h-12 w-auto"
+                width={120}
+                height={36}
+                className="h-8 w-auto brightness-0 invert"
               />
             </div>
-            <div className="mb-4 flex justify-center gap-6">
+            <div className="mb-6 flex justify-center gap-6">
               <a
                 href="https://www.instagram.com/nonstop__sn/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors duration-200"
               >
-                <Instagram className="h-5 w-5" />
+                <Instagram className="h-4 w-4" />
                 @nonstop__sn
               </a>
-              <a
-                href="https://www.snapchat.com/add/nonstopsn"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors duration-200"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.15-.055-.225-.015-.243.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.224-.645.119-.869-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z"/>
-                </svg>
-                nonstopsn
-              </a>
             </div>
-            <p className="text-sm text-gray-400">
-              © 2025 Nonstop. Tous droits réservés.
+            <p className="text-[10px] text-gray-600 tracking-widest uppercase">
+              © 2025 NONSTOP. TOUS DROITS RÉSERVÉS.
             </p>
-            <p className="text-xs text-gray-500 mt-2">
-              Réalisé par <a href="https://github.com/mactar27" target="_blank" rel="noopener noreferrer" className="hover:text-white underline">wocky</a>
+            <p className="text-[10px] text-gray-600 mt-2">
+              Réalisé par{' '}
+              <a href="https://wockytech.xyz" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors underline underline-offset-2">
+                Wockytech
+              </a>
             </p>
           </div>
         </div>

@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, price, currency, image, images, description, category, sizes } = body
+    const { name, price, currency, image, images, description, category, sizes, is_preorder } = body
 
     if (!name || !price) {
       return NextResponse.json(
@@ -52,7 +52,8 @@ export async function POST(request: NextRequest) {
       images: images || [],
       description: description || '',
       category: category || 'general',
-      sizes: sizes || []
+      sizes: sizes || [],
+      is_preorder: is_preorder || false
     })
 
     if (!result.success) {

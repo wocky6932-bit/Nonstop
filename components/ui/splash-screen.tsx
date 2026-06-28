@@ -8,6 +8,15 @@ export function SplashScreen() {
   const [isFading, setIsFading] = useState(false)
 
   useEffect(() => {
+    // Check if splash has already been shown in this session
+    if (sessionStorage.getItem("splashShown")) {
+      setIsVisible(false)
+      return
+    }
+
+    // Mark as shown for the rest of the session
+    sessionStorage.setItem("splashShown", "true")
+
     // Phase 1: Affichage du logo et de l'animation
     const timer = setTimeout(() => {
       setIsFading(true)

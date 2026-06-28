@@ -139,12 +139,13 @@ export async function createProduct(productData: {
   description?: string
   category?: string
   sizes?: string[]
+  is_preorder?: boolean
 }) {
   try {
     const id = Date.now().toString()
     const sql = `
-      INSERT INTO products (id, name, price, currency, image, images, description, category, sizes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (id, name, price, currency, image, images, description, category, sizes, is_preorder)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
 
     await query(sql, [
@@ -156,7 +157,8 @@ export async function createProduct(productData: {
       JSON.stringify(productData.images || []),
       productData.description || '',
       productData.category || 'general',
-      JSON.stringify(productData.sizes || [])
+      JSON.stringify(productData.sizes || []),
+      productData.is_preorder ? 1 : 0
     ])
 
     return { success: true, product: { id, ...productData } }
