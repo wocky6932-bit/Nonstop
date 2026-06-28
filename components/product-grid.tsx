@@ -34,11 +34,11 @@ export function ProductGrid({ products }: { products: Product[] }) {
       {/* Grille — 2 colonnes mobile, 3 desktop */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {products.map((product) => (
-          <Link
-            key={product.id}
-            href={`/shop/${product.id}`}
-            className="group relative bg-white block"
-          >
+          <div key={product.id} className="min-w-0">
+            <Link
+              href={`/shop/${product.id}`}
+              className="group relative bg-white block h-full"
+            >
             {/* Wrapper image + badges */}
             <div className="relative mb-3">
               <div className="absolute top-3 left-3 z-20 flex flex-col gap-1 pointer-events-none">
@@ -96,7 +96,8 @@ export function ProductGrid({ products }: { products: Product[] }) {
                 {formatPrice(convertPrice(product.price, product.currency))}
               </p>
             </div>
-          </Link>
+            </Link>
+          </div>
         ))}
       </div>
 
