@@ -94,10 +94,7 @@ export function ImageCarousel({ images, alt, className = "" }: ImageCarouselProp
         quality={85}
       />
 
-      {/* Pagination text (1 / 2) at top right */}
-      <div className="absolute top-3 right-3 z-20 text-black text-xs font-medium tracking-widest bg-white/50 px-2 py-0.5 rounded-sm backdrop-blur-sm">
-        {currentIndex + 1} / {validImages.length}
-      </div>
+
 
       {/* Zone de click gauche / droite — pour desktop */}
       <div
