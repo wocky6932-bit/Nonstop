@@ -301,7 +301,7 @@ export async function getUserOrders(userId: string) {
 export async function getClients() {
   try {
     // On récupère tous les utilisateurs sauf l'admin
-    const sql = "SELECT id, nom, email, telephone, created_at FROM users WHERE LOWER(email) != 'omarlae125678@icloud.com' ORDER BY created_at DESC"
+    const sql = "SELECT id, nom, email, telephone, created_at FROM users WHERE LOWER(email) NOT IN ('omarlae125678@icloud.com', 'thierno1904@gmail.com') ORDER BY created_at DESC"
     return await query(sql)
   } catch (error) {
     console.error('Error fetching clients from MySQL:', error)
