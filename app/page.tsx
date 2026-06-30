@@ -268,12 +268,7 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 lg:px-8 py-12 space-y-16">
         
-        {/* Shoppable Lookbook (s'il y en a un actif) */}
-        {lookbook && (
-          <section className="mb-12">
-            <ShoppableLookbook lookbook={lookbook} />
-          </section>
-        )}
+
 
         {/* Collection Section Title */}
         <div className="text-center">
@@ -324,6 +319,18 @@ export default function HomePage() {
         </Link>
 
         <ProductGrid products={products} />
+
+        {/* Shoppable Lookbook (s'il y en a un actif) */}
+        {lookbook && (
+          <section className="mt-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl md:text-4xl font-black tracking-tight text-black uppercase">
+                ACHETER LE LOOK
+              </h2>
+            </div>
+            <ShoppableLookbook lookbook={lookbook} />
+          </section>
+        )}
 
       </main>
 

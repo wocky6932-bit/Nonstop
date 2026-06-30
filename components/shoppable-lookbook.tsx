@@ -28,13 +28,15 @@ export function ShoppableLookbook({ lookbook }: { lookbook: Lookbook }) {
 
   return (
     <div className="relative w-full overflow-hidden bg-black group">
-      {/* Container de l'image (pleine largeur) */}
-      <div className="relative w-full aspect-[4/5] md:aspect-[21/9]">
+      {/* Container de l'image (pleine largeur, hauteur auto) */}
+      <div className="relative w-full">
         <Image
           src={lookbook.image_url}
           alt={lookbook.title}
-          fill
-          className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+          width={0}
+          height={0}
+          sizes="100vw"
+          className="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-[1.02]"
           priority
           quality={90}
         />
