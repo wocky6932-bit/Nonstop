@@ -252,7 +252,7 @@ export async function createOrder(orderData: {
 
     // Ajouter les articles
     const itemSql = `
-      INSERT INTO order_items (order_id, product_id, product_name, product_price, quantity, product_image, size)
+      INSERT INTO order_items (order_id, product_id, product_name, product_price, quantity, product_image, selected_size)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `
 
