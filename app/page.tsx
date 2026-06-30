@@ -11,6 +11,7 @@ import { CartDrawer } from '@/components/cart-drawer'
 import { useToast } from '@/hooks/use-toast'
 import { Toaster } from '@/components/ui/toaster'
 import { ProductGrid } from '@/components/product-grid'
+import { ShoppableLookbook } from '@/components/shoppable-lookbook'
 import { getValidImageUrl } from '@/lib/image-utils'
 import { normalizeProductData } from '@/lib/product-utils'
 import { useCurrency } from '@/lib/currency-context'
@@ -25,6 +26,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
+  const [lookbook, setLookbook] = useState<any>(null)
   const [connectionError, setConnectionError] = useState(false)
 
   useEffect(() => {
@@ -51,7 +53,24 @@ export default function HomePage() {
       }
     }
 
+    const fetchLookbook = async () => {
+      try {
+        const response = await fetch('/api/admin/lookbooks')
+        if (response.ok) {
+          const data = await response.json()
+          // Trouver le premier lookbook actif
+          const activeLookbook = data.find((lb: any) => lb.is_active)
+          if (activeLookbook) {
+            setLookbook(activeLookbook)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching lookbooks:', error)
+      }
+    }
+
     fetchProducts()
+    fetchLookbook()
   }, [])
 
   const handleSearch = (query: string) => {
@@ -247,10 +266,17 @@ export default function HomePage() {
       </section>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 lg:px-8 py-12">
+      <main className="container mx-auto px-4 lg:px-8 py-12 space-y-16">
         
+        {/* Shoppable Lookbook (s'il y en a un actif) */}
+        {lookbook && (
+          <section className="mb-12">
+            <ShoppableLookbook lookbook={lookbook} />
+          </section>
+        )}
+
         {/* Collection Section Title */}
-        <div className="text-center mb-8">
+        <div className="text-center">
           <p className="text-xs uppercase tracking-[0.3em] font-medium text-gray-400 mb-3">
             COLLECTION
           </p>

@@ -248,6 +248,22 @@ export default function AdminPage() {
                   </div>
                 </div>
               </Link>
+
+              <Link href="/admin/lookbooks">
+                <div className="bg-white p-6 rounded-xl border hover:shadow-lg transition-all cursor-pointer group">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-black text-white rounded-lg group-hover:scale-110 transition-transform">
+                        <Package className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Lookbooks</h3>
+                        <p className="text-sm text-gray-500">Images interactives</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
             </div>
           </div>
         </div>

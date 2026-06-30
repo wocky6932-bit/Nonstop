@@ -424,3 +424,99 @@ export async function getAdminStats() {
   }
 }
 
+// -----------------------------------------------------------------------------
+// LOOKBOOKS
+// -----------------------------------------------------------------------------
+
+export async function getLookbooks() {
+  try {
+    const sql = `SELECT * FROM lookbooks ORDER BY created_at DESC`
+    const rows = await query(sql) as any[]
+    // Parse JSON
+    return rows.map(row => ({
+      ...row,
+      is_active: Boolean(row.is_active),
+      pins: typeof row.pins === 'string' ? JSON.parse(row.pins) : row.pins
+    }))
+  } catch (error) {
+    console.error('MySQL Get Lookbooks Error:', error)
+    throw error
+  }
+}
+
+export async function createLookbook(lookbookData: {
+  id: string
+  title: string
+  image_url: string
+  pins: any[]
+  is_active?: boolean
+}) {
+  try {
+    const sql = `
+      INSERT INTO lookbooks (id, title, image_url, pins, is_active)
+      VALUES (?, ?, ?, ?, ?)
+    `
+    await query(sql, [
+      lookbookData.id,
+      lookbookData.title,
+      lookbookData.image_url,
+      JSON.stringify(lookbookData.pins || []),
+      lookbookData.is_active !== false ? 1 : 0
+    ])
+    return { success: true, id: lookbookData.id }
+  } catch (error: any) {
+    console.error('MySQL Create Lookbook Error:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function updateLookbook(id: string, lookbookData: {
+  title?: string
+  image_url?: string
+  pins?: any[]
+  is_active?: boolean
+}) {
+  try {
+    const updates: string[] = []
+    const values: any[] = []
+
+    if (lookbookData.title !== undefined) {
+      updates.push('title = ?')
+      values.push(lookbookData.title)
+    }
+    if (lookbookData.image_url !== undefined) {
+      updates.push('image_url = ?')
+      values.push(lookbookData.image_url)
+    }
+    if (lookbookData.pins !== undefined) {
+      updates.push('pins = ?')
+      values.push(JSON.stringify(lookbookData.pins))
+    }
+    if (lookbookData.is_active !== undefined) {
+      updates.push('is_active = ?')
+      values.push(lookbookData.is_active ? 1 : 0)
+    }
+
+    if (updates.length === 0) return { success: true }
+
+    const sql = `UPDATE lookbooks SET ${updates.join(', ')} WHERE id = ?`
+    values.push(id)
+
+    await query(sql, values)
+    return { success: true }
+  } catch (error: any) {
+    console.error('MySQL Update Lookbook Error:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function deleteLookbook(id: string) {
+  try {
+    await query(`DELETE FROM lookbooks WHERE id = ?`, [id])
+    return { success: true }
+  } catch (error: any) {
+    console.error('MySQL Delete Lookbook Error:', error)
+    return { success: false, error: error.message }
+  }
+}
+
