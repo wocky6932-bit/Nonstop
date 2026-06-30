@@ -9,6 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, Plus, X, CheckCircle2 } from 'lucide-react'
 import Image from 'next/image'
+import { getValidImageUrl } from '@/lib/image-utils'
+import { normalizeProductData } from '@/lib/product-utils'
 
 interface Product {
   id: string
@@ -49,7 +51,10 @@ export function LookbookForm({ initialData }: { initialData?: any }) {
     // Charger les produits pour la sélection
     fetch('/api/admin/products')
       .then(res => res.json())
-      .then(data => setProducts(data))
+      .then(data => {
+        const normalized = data.map((p: any) => normalizeProductData(p))
+        setProducts(normalized)
+      })
       .catch(err => console.error("Erreur chargement produits:", err))
   }, [])
 
@@ -281,8 +286,12 @@ export function LookbookForm({ initialData }: { initialData?: any }) {
                     onClick={() => addPin(product)}
                     className="flex items-center gap-3 p-3 border rounded-lg hover:border-black cursor-pointer transition-colors"
                   >
-                    {product.image && (
-                      <img src={product.image.startsWith('data:') ? '/placeholder.jpg' : product.image} alt="" className="w-12 h-12 object-cover rounded bg-gray-100" />
+                    {product.image_url ? (
+                      <img src={getValidImageUrl(product.image_url, '/placeholder.jpg')} alt="" className="w-12 h-12 object-cover rounded bg-gray-100" />
+                    ) : (
+                      <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center">
+                        <span className="text-gray-400 text-xs">IMG</span>
+                      </div>
                     )}
                     <div className="flex-1">
                       <p className="font-medium text-sm">{product.name}</p>
