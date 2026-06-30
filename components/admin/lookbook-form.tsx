@@ -286,8 +286,8 @@ export function LookbookForm({ initialData }: { initialData?: any }) {
                     onClick={() => addPin(product)}
                     className="flex items-center gap-3 p-3 border rounded-lg hover:border-black cursor-pointer transition-colors"
                   >
-                    {product.image_url ? (
-                      <img src={getValidImageUrl(product.image_url, '/placeholder.jpg')} alt="" className="w-12 h-12 object-cover rounded bg-gray-100" />
+                    {product.image ? (
+                      <img src={getValidImageUrl(product.image, '/placeholder.jpg')} alt="" className="w-12 h-12 object-cover rounded bg-gray-100" />
                     ) : (
                       <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center">
                         <span className="text-gray-400 text-xs">IMG</span>
