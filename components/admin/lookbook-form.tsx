@@ -27,7 +27,7 @@ interface Pin {
   productPrice: number
 }
 
-export function LookbookForm() {
+export function LookbookForm({ initialData }: { initialData?: any }) {
   const { toast } = useToast()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -36,10 +36,10 @@ export function LookbookForm() {
   const [isUploading, setIsUploading] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   
-  const [title, setTitle] = useState("")
-  const [imageUrl, setImageUrl] = useState("")
-  const [isActive, setIsActive] = useState(true)
-  const [pins, setPins] = useState<Pin[]>([])
+  const [title, setTitle] = useState(initialData?.title || "")
+  const [imageUrl, setImageUrl] = useState(initialData?.image_url || "")
+  const [isActive, setIsActive] = useState(initialData ? initialData.is_active : true)
+  const [pins, setPins] = useState<Pin[]>(initialData?.pins || [])
 
   // Modal pour sélectionner un produit
   const [selectingPin, setSelectingPin] = useState<{x: number, y: number} | null>(null)
@@ -122,8 +122,11 @@ export function LookbookForm() {
 
     setIsSubmitting(true)
     try {
-      const response = await fetch('/api/admin/lookbooks', {
-        method: 'POST',
+      const url = initialData ? `/api/admin/lookbooks/${initialData.id}` : '/api/admin/lookbooks'
+      const method = initialData ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
@@ -136,7 +139,7 @@ export function LookbookForm() {
       if (!response.ok) throw new Error('Erreur lors de la sauvegarde')
 
       toast({ title: "Lookbook sauvegardé avec succès" })
-      router.push('/admin') // Ou vers /admin/lookbooks si la liste est ailleurs
+      router.push('/admin/lookbooks')
       router.refresh()
     } catch (error) {
       console.error(error)
@@ -153,7 +156,7 @@ export function LookbookForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-sm">
       <div className="flex justify-between items-center border-b pb-4">
-        <h2 className="text-2xl font-bold">Nouveau Lookbook Interactif</h2>
+        <h2 className="text-2xl font-bold">{initialData ? "Modifier le Lookbook" : "Nouveau Lookbook Interactif"}</h2>
         <Button type="submit" disabled={isSubmitting || isUploading}>
           {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
           Sauvegarder
