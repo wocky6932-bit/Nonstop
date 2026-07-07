@@ -28,6 +28,7 @@ export default function HomePage() {
   const [products, setProducts] = useState<any[]>([])
   const [lookbook, setLookbook] = useState<any>(null)
   const [connectionError, setConnectionError] = useState(false)
+  const [hasPreorder, setHasPreorder] = useState(false)
 
   useEffect(() => {
     // Charger les produits depuis MySQL
@@ -36,6 +37,11 @@ export default function HomePage() {
         const response = await fetch('/api/admin/products')
         if (response.ok) {
           const data = await response.json()
+          
+          // Gérer le statut des précommandes dynamiquement
+          const hasPreorderProducts = data.some((p: any) => p.is_preorder === 1 || p.is_preorder === true)
+          setHasPreorder(hasPreorderProducts)
+
           // Normaliser les produits et exclure les pré-commandes (accessibles via la bannière)
           const normalizedProducts = data
             .filter((p: any) => !p.is_preorder)
@@ -285,38 +291,40 @@ export default function HomePage() {
         </div>
 
         {/* PRE-ORDER Banner */}
-        <Link href="/shop?filter=preorder" className="block mb-12 group">
-          <div className="relative w-full overflow-hidden rounded-sm bg-black">
-            <div className="relative aspect-[16/9] md:aspect-[21/9]">
-              <Image
-                src="/CDB61E8F-3C4E-408C-99C4-7825B6B7F485.JPG"
-                alt="Nouvelle collection - Pré-commande"
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                priority
-                quality={90}
-              />
-              {/* Dark overlay */}
-              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-500" />
-              
-              {/* Text overlay */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4">
-                <span className="inline-block bg-blue-600 text-white text-[10px] md:text-xs px-4 py-1.5 tracking-[0.3em] uppercase font-medium mb-4">
-                  PRÉ-COMMANDE
-                </span>
-                <h2 className="text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight mb-3">
-                  NOUVELLE COLLECTION
-                </h2>
-                <p className="text-xs md:text-sm tracking-[0.2em] uppercase text-white/80 mb-6">
-                  Réservez dès maintenant — Livraison dès la sortie
-                </p>
-                <span className="inline-flex items-center justify-center border border-white text-white text-xs tracking-widest uppercase px-8 py-3 group-hover:bg-white group-hover:text-black transition-all duration-300">
-                  DÉCOUVRIR
-                </span>
+        {hasPreorder && (
+          <Link href="/shop?filter=preorder" className="block mb-12 group">
+            <div className="relative w-full overflow-hidden rounded-sm bg-black">
+              <div className="relative aspect-[16/9] md:aspect-[21/9]">
+                <Image
+                  src="/CDB61E8F-3C4E-408C-99C4-7825B6B7F485.JPG"
+                  alt="Nouvelle collection - Pré-commande"
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  priority
+                  quality={90}
+                />
+                {/* Dark overlay */}
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-500" />
+                
+                {/* Text overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4">
+                  <span className="inline-block bg-blue-600 text-white text-[10px] md:text-xs px-4 py-1.5 tracking-[0.3em] uppercase font-medium mb-4">
+                    PRÉ-COMMANDE
+                  </span>
+                  <h2 className="text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight mb-3">
+                    NOUVELLE COLLECTION
+                  </h2>
+                  <p className="text-xs md:text-sm tracking-[0.2em] uppercase text-white/80 mb-6">
+                    Réservez dès maintenant — Livraison dès la sortie
+                  </p>
+                  <span className="inline-flex items-center justify-center border border-white text-white text-xs tracking-widest uppercase px-8 py-3 group-hover:bg-white group-hover:text-black transition-all duration-300">
+                    DÉCOUVRIR
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </Link>
+          </Link>
+        )}
 
         <ProductGrid products={products} />
 
