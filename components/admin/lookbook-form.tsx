@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, Plus, X, CheckCircle2 } from 'lucide-react'
 import Image from 'next/image'
-import { getValidImageUrl } from '@/lib/image-utils'
+import { getValidImageUrl, compressImage } from '@/lib/image-utils'
 import { normalizeProductData } from '@/lib/product-utils'
 
 interface Product {
@@ -64,8 +64,19 @@ export function LookbookForm({ initialData }: { initialData?: any }) {
 
     setIsUploading(true)
     try {
+      let fileToUpload: Blob | File = file
+      if (file.type.startsWith('image/')) {
+        try {
+          console.log(`⏳ Compression de ${file.name}...`)
+          fileToUpload = await compressImage(file, 800, 800, 0.7) // Taille réduite pour le Base64
+          console.log(`✅ Compression réussie : ${(file.size / 1024 / 1024).toFixed(2)}Mo -> ${(fileToUpload.size / 1024 / 1024).toFixed(2)}Mo`)
+        } catch (err) {
+          console.warn(`⚠️ Échec compression pour ${file.name}, envoi original`, err)
+        }
+      }
+
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', fileToUpload, file.name)
 
       const response = await fetch('/api/upload/image', {
         method: 'POST',
