@@ -1,9 +1,6 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { useToast } from '@/hooks/use-toast'
-import { useRouter } from 'next/navigation'
-import { useSession } from '@/hooks/use-session'
 
 export interface Product {
   id: string
@@ -36,11 +33,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const { session } = useSession()
-  const { toast } = useToast()
-  const router = useRouter()
   const [cart, setCart] = useState<CartItem[]>([])
-  const isAuthenticated = !!session
 
   // Charger le panier depuis localStorage au démarrage
   useEffect(() => {
@@ -60,16 +53,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [cart])
 
   const addToCart = (product: Product) => {
-    if (!isAuthenticated) {
-      toast({
-        title: 'Connexion requise',
-        description: 'Veuillez vous connecter pour ajouter des produits au panier',
-        variant: 'destructive'
-      })
-      router.push('/auth/login')
-      return
-    }
-
     // ID unique = id produit + taille choisie (ou juste l'id si pas de taille)
     const cartItemId = product.selectedSize
       ? `${product.id}-${product.selectedSize}`
@@ -89,28 +72,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const removeFromCart = (cartItemId: string) => {
-    if (!isAuthenticated) {
-      toast({
-        title: 'Connexion requise',
-        description: 'Veuillez vous connecter pour modifier votre panier',
-        variant: 'destructive'
-      })
-      router.push('/auth/login')
-      return
-    }
     setCart((prevCart) => prevCart.filter((item) => item.cartItemId !== cartItemId))
   }
 
   const updateQuantity = (cartItemId: string, quantity: number) => {
-    if (!isAuthenticated) {
-      toast({
-        title: 'Connexion requise',
-        description: 'Veuillez vous connecter pour modifier votre panier',
-        variant: 'destructive'
-      })
-      router.push('/auth/login')
-      return
-    }
     if (quantity <= 0) {
       removeFromCart(cartItemId)
       return
@@ -123,15 +88,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const clearCart = () => {
-    if (!isAuthenticated) {
-      toast({
-        title: 'Connexion requise',
-        description: 'Veuillez vous connecter pour modifier votre panier',
-        variant: 'destructive'
-      })
-      router.push('/auth/login')
-      return
-    }
     setCart([])
   }
 
