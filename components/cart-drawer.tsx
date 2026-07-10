@@ -5,42 +5,28 @@ import { Button } from '@/components/ui/button'
 import { ShoppingCart, Trash2, Plus, Minus } from 'lucide-react'
 import { useCart } from '@/lib/cart-context'
 import { useCurrency } from '@/lib/currency-context'
-import { useSession } from '@/hooks/use-session'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 export function CartDrawer() {
   const { cart, removeFromCart, updateQuantity, getTotalPrice, getCartCount, clearCart } = useCart()
   const { convertPrice, formatPrice } = useCurrency()
-  const { session } = useSession()
-  const isAuthenticated = !!session
-  const router = useRouter()
   const [open, setOpen] = useState(false)
 
   const totalPrice = getTotalPrice()
   const cartCount = getCartCount()
 
-  const handleCartClick = () => {
-    if (!isAuthenticated) {
-      // Rediriger vers la page de connexion si pas connecté
-      router.push('/auth/login')
-      return
-    }
-    setOpen(true)
-  }
-
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button 
-          aria-label="Cart" 
+        <button
+          aria-label="Cart"
           className="relative"
-          onClick={handleCartClick}
+          onClick={() => setOpen(true)}
         >
           <ShoppingCart className="h-5 w-5" strokeWidth={1.5} />
-          {cartCount > 0 && isAuthenticated && (
+          {cartCount > 0 && (
             <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center font-medium">
               {cartCount}
             </span>
@@ -52,27 +38,7 @@ export function CartDrawer() {
           <SheetTitle className="text-xl tracking-wider">PANIER ({cartCount})</SheetTitle>
         </SheetHeader>
 
-        {!isAuthenticated ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <ShoppingCart className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium mb-2">Connexion requise</h3>
-              <p className="text-gray-500 mb-4">Veuillez vous connecter pour accéder à votre panier</p>
-              <div className="space-y-2">
-                <Link href="/auth/login">
-                  <Button className="w-full bg-black text-white hover:bg-gray-800">
-                    Se connecter
-                  </Button>
-                </Link>
-                <Link href="/auth/register">
-                  <Button variant="outline" className="w-full">
-                    Créer un compte
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : cart.length === 0 ? (
+        {cart.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <ShoppingCart className="h-16 w-16 mx-auto mb-4 text-gray-300" />
@@ -117,7 +83,7 @@ export function CartDrawer() {
                         <button
                           onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
                           className="h-6 w-6 border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                          aria-label="Decrease quantity"
+                          aria-label="Diminuer la quantité"
                         >
                           <Minus className="h-3 w-3" />
                         </button>
@@ -125,7 +91,7 @@ export function CartDrawer() {
                         <button
                           onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
                           className="h-6 w-6 border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                          aria-label="Increase quantity"
+                          aria-label="Augmenter la quantité"
                         >
                           <Plus className="h-3 w-3" />
                         </button>
@@ -134,7 +100,7 @@ export function CartDrawer() {
                     <button
                       onClick={() => removeFromCart(item.cartItemId)}
                       className="text-gray-400 hover:text-red-500 transition-colors"
-                      aria-label="Remove item"
+                      aria-label="Retirer l'article"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -148,13 +114,13 @@ export function CartDrawer() {
                 <span className="tracking-wider">TOTAL</span>
                 <span>{formatPrice(convertPrice(totalPrice, 'XOF'))}</span>
               </div>
-              
+
               <Link href="/checkout" onClick={() => setOpen(false)}>
                 <Button className="w-full bg-black text-white hover:bg-gray-800 tracking-wider">
                   COMMANDER
                 </Button>
               </Link>
-              
+
               <Button
                 variant="outline"
                 className="w-full"

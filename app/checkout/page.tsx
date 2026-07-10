@@ -1,16 +1,15 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, RefreshCw } from 'lucide-react'
+import { ArrowLeft, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useCart } from '@/lib/cart-context'
 import { useToast } from '@/hooks/use-toast'
-import { useSession } from '@/hooks/use-session'
 import { Toaster } from '@/components/ui/toaster'
 import { getValidImageUrl } from '@/lib/image-utils'
 
@@ -19,89 +18,73 @@ export default function CheckoutPage() {
   const { cart, getTotalPrice, clearCart } = useCart()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { session, loading: sessionLoading } = useSession()
+  const [orderSuccess, setOrderSuccess] = useState(false)
 
   const [formData, setFormData] = useState({
+    prenom: '',
     nom: '',
     telephone: '',
-    email: '',
     adresse: '',
     ville: '',
     notes: '',
   })
 
-  // Pré-remplir le formulaire avec les infos de l'utilisateur connecté
-  useEffect(() => {
-    if (session) {
-      setFormData({
-        nom: session.nom || '',
-        telephone: session.telephone || '',
-        email: session.email || '',
-        adresse: session.adresse || '',
-        ville: session.ville || '',
-        notes: '',
-      })
-    }
-  }, [session])
-
   const totalPrice = getTotalPrice()
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Checkout form submitted!') // Debug
-    console.log('Cart items:', cart) // Debug
-    console.log('Total price:', totalPrice) // Debug
-    console.log('Session:', session) // Debug
-    
+
+    if (!formData.prenom.trim() || !formData.nom.trim()) {
+      toast({ title: 'Champs requis', description: 'Veuillez indiquer votre prénom et nom.', variant: 'destructive' })
+      return
+    }
+    if (!formData.telephone.trim()) {
+      toast({ title: 'Téléphone requis', description: 'Veuillez indiquer votre numéro de téléphone.', variant: 'destructive' })
+      return
+    }
+    if (!formData.adresse.trim() || !formData.ville.trim()) {
+      toast({ title: 'Adresse requise', description: 'Veuillez indiquer votre adresse de livraison.', variant: 'destructive' })
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
-      // Use API route for orders
-      console.log('Sending order request:', { formData, cart, totalPrice }) // Debug
-      console.log('User ID:', session?.id) // Debug
-      
       const response = await fetch('/api/orders', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           formData: {
-            ...formData,
-            userId: session?.id && session?.id !== '0' ? session.id : 'guest'
+            nom: `${formData.prenom.trim()} ${formData.nom.trim()}`,
+            telephone: formData.telephone.trim(),
+            email: '',
+            adresse: formData.adresse.trim(),
+            ville: formData.ville.trim(),
+            notes: formData.notes.trim(),
+            userId: 'guest',
           },
           cart,
-          totalPrice
+          totalPrice,
         }),
       })
 
-      console.log('Response status:', response.status) // Debug
-      console.log('Response ok:', response.ok) // Debug
-      
       const result = await response.json()
-      console.log('Checkout response:', result) // Debug
 
       if (!response.ok || !result.success) {
         throw new Error(result.error || 'Erreur lors de la création de la commande')
       }
 
-      toast({
-        title: 'Commande confirmée!',
-        description: 'Nous vous contacterons bientôt pour la livraison.',
-      })
-
       clearCart()
+      setOrderSuccess(true)
 
-      setTimeout(() => {
-        router.push('/')
-      }, 2000)
     } catch (error: any) {
-      console.error('Order error:', error)
-      const errorMessage = error.message || 'Une erreur inconnue est survenue'
-
       toast({
         title: 'Erreur de commande',
-        description: errorMessage,
+        description: error.message || 'Une erreur est survenue, réessayez.',
         variant: 'destructive',
       })
     } finally {
@@ -109,10 +92,24 @@ export default function CheckoutPage() {
     }
   }
 
-  if (sessionLoading) {
+  // Écran de succès
+  if (orderSuccess) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <RefreshCw className="animate-spin h-12 w-12 border-b-2 border-black" />
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <CheckCircle className="h-20 w-20 mx-auto mb-6 text-black" strokeWidth={1} />
+          <h1 className="text-3xl font-bold tracking-wider mb-3">COMMANDE CONFIRMÉE</h1>
+          <p className="text-gray-500 mb-2">Merci pour votre commande !</p>
+          <p className="text-gray-500 mb-8">
+            Nous vous contacterons au <strong>{formData.telephone}</strong> pour confirmer la livraison.
+          </p>
+          <Link href="/">
+            <Button className="bg-black text-white hover:bg-gray-800 tracking-wider px-10 py-5">
+              RETOUR À LA BOUTIQUE
+            </Button>
+          </Link>
+        </div>
+        <Toaster />
       </div>
     )
   }
@@ -123,9 +120,7 @@ export default function CheckoutPage() {
         <div className="text-center">
           <h2 className="text-2xl mb-4">Votre panier est vide</h2>
           <Link href="/">
-            <Button className="bg-black text-white hover:bg-gray-800">
-              Retour à la boutique
-            </Button>
+            <Button className="bg-black text-white hover:bg-gray-800">Retour à la boutique</Button>
           </Link>
         </div>
       </div>
@@ -134,7 +129,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm mb-8 hover:text-gray-600 transition-colors"
@@ -143,70 +138,128 @@ export default function CheckoutPage() {
           Retour à la boutique
         </Link>
 
-        <h1 className="text-3xl tracking-wider mb-8">FINALISER LA COMMANDE</h1>
+        <h1 className="text-3xl tracking-wider mb-8 font-bold uppercase">Finaliser la commande</h1>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
+          {/* Formulaire */}
           <div>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Informations de l'utilisateur connecté */}
-              <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <h3 className="text-lg font-medium mb-3">Informations de livraison</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Nom:</span>
-                    <span className="font-medium">{formData.nom}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Téléphone:</span>
-                    <span className="font-medium">{formData.telephone || 'Non renseigné'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Email:</span>
-                    <span className="font-medium">{formData.email}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Adresse:</span>
-                    <span className="font-medium">
-                      {formData.adresse ? `${formData.adresse}, ${formData.ville}` : 'Non renseignée'}
-                    </span>
-                  </div>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <h2 className="text-base font-semibold uppercase tracking-widest mb-4 border-b pb-2">
+                Informations de livraison
+              </h2>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="prenom" className="text-xs tracking-wide uppercase mb-1 block">
+                    Prénom <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="prenom"
+                    name="prenom"
+                    value={formData.prenom}
+                    onChange={handleChange}
+                    placeholder="Amadou"
+                    required
+                    className="rounded-none border-gray-300 focus:border-black focus:ring-0"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="nom" className="text-xs tracking-wide uppercase mb-1 block">
+                    Nom <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="nom"
+                    name="nom"
+                    value={formData.nom}
+                    onChange={handleChange}
+                    placeholder="Ndiaye"
+                    required
+                    className="rounded-none border-gray-300 focus:border-black focus:ring-0"
+                  />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="notes" className="text-sm tracking-wide mb-2">
-                  Notes supplémentaires (optionnel)
+                <Label htmlFor="telephone" className="text-xs tracking-wide uppercase mb-1 block">
+                  Numéro de téléphone <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="telephone"
+                  name="telephone"
+                  type="tel"
+                  value={formData.telephone}
+                  onChange={handleChange}
+                  placeholder="+221 77 000 00 00"
+                  required
+                  className="rounded-none border-gray-300 focus:border-black focus:ring-0"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="adresse" className="text-xs tracking-wide uppercase mb-1 block">
+                  Adresse de livraison <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="adresse"
+                  name="adresse"
+                  value={formData.adresse}
+                  onChange={handleChange}
+                  placeholder="Rue 10, Médina"
+                  required
+                  className="rounded-none border-gray-300 focus:border-black focus:ring-0"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="ville" className="text-xs tracking-wide uppercase mb-1 block">
+                  Ville <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="ville"
+                  name="ville"
+                  value={formData.ville}
+                  onChange={handleChange}
+                  placeholder="Dakar"
+                  required
+                  className="rounded-none border-gray-300 focus:border-black focus:ring-0"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="notes" className="text-xs tracking-wide uppercase mb-1 block">
+                  Notes (optionnel)
                 </Label>
                 <Textarea
                   id="notes"
+                  name="notes"
                   value={formData.notes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, notes: e.target.value })
-                  }
+                  onChange={handleChange}
                   placeholder="Instructions de livraison, préférences..."
-                  className="mt-1"
-                  rows={4}
+                  rows={3}
+                  className="rounded-none border-gray-300 focus:border-black focus:ring-0"
                 />
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-black text-white hover:bg-gray-800 tracking-wider py-6 text-base"
+                className="w-full bg-black text-white hover:bg-gray-800 tracking-widest py-6 text-sm uppercase rounded-none"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'TRAITEMENT...' : 'CONFIRMER LA COMMANDE'}
+                {isSubmitting ? 'TRAITEMENT EN COURS...' : 'VALIDER MA COMMANDE'}
               </Button>
 
-              <p className="text-xs text-gray-500 text-center">
-                En passant commande, vous acceptez nos conditions générales de vente.
-                Nous vous contacterons par téléphone pour confirmer la livraison.
+              <p className="text-[11px] text-gray-400 text-center">
+                Paiement à la livraison · Nous vous appelons pour confirmer
               </p>
             </form>
           </div>
 
+          {/* Récapitulatif */}
           <div>
-            <div className="bg-gray-50 p-6 rounded-lg sticky top-8">
-              <h2 className="text-xl tracking-wider mb-6">RÉCAPITULATIF</h2>
+            <div className="bg-gray-50 p-6 sticky top-8">
+              <h2 className="text-base font-semibold uppercase tracking-widest mb-6 border-b pb-2">
+                Récapitulatif
+              </h2>
 
               <div className="space-y-4 mb-6">
                 {cart.map((item) => (
@@ -239,21 +292,23 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              <div className="border-t pt-4 space-y-3">
+              <div className="border-t pt-4 space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span>Sous-total</span>
                   <span>{totalPrice.toLocaleString()} XOF</span>
                 </div>
-                <div className="border-t pt-3 flex items-center justify-between text-lg font-medium">
-                  <span className="tracking-wider">TOTAL</span>
+                <div className="flex items-center justify-between text-sm text-green-700">
+                  <span>Livraison</span>
+                  <span className="font-medium">Gratuite</span>
+                </div>
+                <div className="border-t pt-3 flex items-center justify-between text-lg font-bold">
+                  <span className="tracking-wider uppercase">Total</span>
                   <span>{totalPrice.toLocaleString()} XOF</span>
                 </div>
               </div>
 
-              <div className="mt-6 p-4 bg-blue-50 rounded text-sm">
-                <p className="text-blue-900">
-                  <strong>Mode de paiement:</strong> Paiement à la livraison (Cash)
-                </p>
+              <div className="mt-5 p-3 bg-black text-white text-xs text-center tracking-widest">
+                💳 PAIEMENT À LA LIVRAISON
               </div>
             </div>
           </div>
