@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from "@/hooks/use-session"
 import Link from "next/link"
-import { ArrowLeft, Eye, RefreshCw, MessageCircle } from 'lucide-react'
+import { ArrowLeft, Eye, RefreshCw, MessageCircle, Trash2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { UpdateOrderStatusButton } from "@/components/admin/update-order-status-button"
 
@@ -24,6 +24,8 @@ export default function AdminOrdersPage() {
   const { session, loading: sessionLoading } = useSession()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [clearing, setClearing] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const fetchOrders = async () => {
     try {
@@ -37,6 +39,22 @@ export default function AdminOrdersPage() {
       console.error('Error fetching orders:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const clearOrders = async () => {
+    setClearing(true)
+    try {
+      const response = await fetch('/api/admin/orders/clear', { method: 'DELETE' })
+      const result = await response.json()
+      if (result.success) {
+        setOrders([])
+        setShowConfirm(false)
+      }
+    } catch (error) {
+      console.error('Error clearing orders:', error)
+    } finally {
+      setClearing(false)
     }
   }
 
@@ -76,11 +94,61 @@ export default function AdminOrdersPage() {
             <ArrowLeft className="h-4 w-4" />
             Retour au tableau de bord
           </Link>
-          <Button onClick={fetchOrders} variant="outline" size="sm" className="gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Actualiser
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={fetchOrders} variant="outline" size="sm" className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Actualiser
+            </Button>
+            {orders.length > 0 && (
+              <Button
+                onClick={() => setShowConfirm(true)}
+                variant="outline"
+                size="sm"
+                className="gap-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-500"
+              >
+                <Trash2 className="h-4 w-4" />
+                Vider les commandes
+              </Button>
+            )}
+          </div>
         </div>
+
+        {/* Modal de confirmation */}
+        {showConfirm && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg max-w-sm w-full p-6 shadow-xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Trash2 className="h-5 w-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Supprimer toutes les commandes ?</h3>
+                  <p className="text-sm text-gray-500">Cette action est irréversible.</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mb-6">
+                Vous êtes sur le point de supprimer définitivement <strong>{orders.length} commande{orders.length > 1 ? 's' : ''}</strong> et tous leurs articles associés.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowConfirm(false)}
+                  disabled={clearing}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                  onClick={clearOrders}
+                  disabled={clearing}
+                >
+                  {clearing ? 'Suppression...' : 'Tout supprimer'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="container mx-auto px-4 py-12">
