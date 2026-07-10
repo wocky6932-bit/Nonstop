@@ -38,7 +38,16 @@ async function initRemoteDB() {
       if (cmd.toUpperCase().startsWith('CREATE DATABASE') || cmd.toUpperCase().startsWith('USE ')) {
         continue
       }
-      await connection.query(cmd)
+      try {
+        await connection.query(cmd)
+      } catch (err: any) {
+        if (err.code === 'ER_DUP_KEYNAME' || err.code === 'ER_TABLE_EXISTS_ERROR') {
+          console.log(`⚠️  Ignoré (déjà existant) : ${err.sqlMessage || err.message}`);
+        } else {
+          console.error(`❌ Erreur sur la commande SQL: ${cmd}`);
+          throw err;
+        }
+      }
     }
 
     console.log('✅ Base de données initialisée avec succès !')

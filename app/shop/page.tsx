@@ -298,7 +298,7 @@ function ShopContent() {
                                         <button
                                             onClick={(e) => handleAddToCart(e, product)}
                                             aria-label={`Ajouter ${product.name} au panier`}
-                                            className="absolute bottom-2 right-2 z-20 w-8 h-8 bg-white/95 border border-gray-300 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-black hover:text-white hover:border-black"
+                                            className="absolute bottom-2 right-2 z-20 w-8 h-8 bg-white/95 border border-gray-300 flex items-center justify-center rounded-full shadow-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 hover:bg-black hover:text-white hover:border-black"
                                         >
                                             <Plus className="w-4 h-4" strokeWidth={1.5} />
                                         </button>
