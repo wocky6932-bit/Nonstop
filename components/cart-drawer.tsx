@@ -25,9 +25,9 @@ export function CartDrawer() {
           className="relative"
           onClick={() => setOpen(true)}
         >
-          <ShoppingCart className="h-5 w-5" strokeWidth={1.5} />
+          <ShoppingCart className="h-8 w-8" strokeWidth={2.5} />
           {cartCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center font-medium">
+            <span className="absolute -top-2 -right-2 bg-black text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center font-medium">
               {cartCount}
             </span>
           )}

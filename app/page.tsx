@@ -113,8 +113,8 @@ export default function HomePage() {
             <div className="flex-1 flex justify-start">
               <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                 <SheetTrigger asChild>
-                  <button aria-label="Menu" className="hover:opacity-60 transition-opacity text-white">
-                    <Menu className="h-6 w-6" strokeWidth={1.5} />
+                  <button aria-label="Menu" className="hover:opacity-60 transition-opacity text-black">
+                    <Menu className="h-8 w-8" strokeWidth={2.5} />
                   </button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-full sm:max-w-lg bg-black border-white/10">
@@ -149,7 +149,7 @@ export default function HomePage() {
             </div>
 
             {/* Right Icons */}
-            <div className="flex-1 flex items-center justify-end gap-5 text-white">
+            <div className="flex-1 flex items-center justify-end gap-5 text-black">
               <CartDrawer />
             </div>
           </div>
