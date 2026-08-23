@@ -146,15 +146,6 @@ export default function HomePage() {
 
             {/* Logo Center */}
             <div className="flex-1 flex justify-center">
-              <Link href="/" className="hover:opacity-80 transition-opacity">
-                <Image
-                  src="/nonstop-logo.png"
-                  alt="Nonstop"
-                  width={120}
-                  height={36}
-                  className="h-7 w-auto brightness-0 invert"
-                />
-              </Link>
             </div>
 
             {/* Right Icons */}
