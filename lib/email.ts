@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_for_build')
 
 const FROM_EMAIL = process.env.FROM_EMAIL || 'Nonstop <noreply@nonstopp.shop>'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'Omarlae125678@icloud.com'
