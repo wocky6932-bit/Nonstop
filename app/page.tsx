@@ -249,13 +249,13 @@ export default function HomePage() {
       )}
 
       {/* Hero Section */}
-      <section className="relative h-[50vh] md:h-[80vh] flex items-end justify-center overflow-hidden bg-black pb-8 md:pb-12">
+      <section className="relative w-full aspect-[1672/941] flex items-end justify-center overflow-hidden bg-black pb-8 md:pb-12">
         {/* Hero background image */}
         <Image
           src="/images/ChatGPT_Image_23_aout_2026_04_21_30.png"
           alt="Nonstop Hero"
           fill
-          className="object-contain md:object-cover object-center"
+          className="object-cover object-center"
           priority
           quality={90}
         />
