@@ -45,3 +45,5 @@ export const config = {
   ],
 };
 
+export const runtime = 'edge';
+
