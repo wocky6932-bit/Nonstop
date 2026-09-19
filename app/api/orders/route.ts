@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createOrder } from '@/lib/mysql'
 import { sendAdminOrderNotification, sendClientOrderConfirmation } from '@/lib/email'
-
+import { sendAdminPushNotification } from '@/lib/notifications'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -52,12 +52,13 @@ export async function POST(request: NextRequest) {
       Promise.allSettled([
         sendAdminOrderNotification(emailData),
         sendClientOrderConfirmation(emailData),
+        sendAdminPushNotification(emailData),
       ])
         .then((results) => {
           results.forEach((r, i) => {
-            const label = i === 0 ? 'Admin' : 'Client'
+            const label = i === 0 ? 'Admin Email' : i === 1 ? 'Client Email' : 'Admin Push'
             if (r.status === 'fulfilled') {
-              console.log(`[API Orders] Email ${label} envoyé avec succès`)
+              console.log(`[API Orders] Notification ${label} envoyée avec succès`)
             } else {
               console.error(`[API Orders] Échec email ${label}:`, r.reason)
             }
