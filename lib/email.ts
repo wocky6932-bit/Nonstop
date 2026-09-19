@@ -25,87 +25,151 @@ export interface OrderEmailData {
   totalPrice: number
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Email admin — nouvelle commande
-// ──────────────────────────────────────────────────────────────────────────────
-export async function sendAdminOrderNotification(data: OrderEmailData) {
-  const { orderId, formData, cart, totalPrice } = data
-
-  const itemsRows = cart
+function renderItems(cart: OrderEmailData['cart']) {
+  return cart
     .map((item) => {
-      const size = item.selectedSize ? ` <em style="color:#888">(Taille: ${item.selectedSize})</em>` : ''
+      const imgUrl = item.image || 'https://nonstopp.shop/placeholder-logo.png'
       return `
         <tr>
-          <td style="padding:8px 0;border-bottom:1px solid #f0f0f0">
-            <strong>${item.quantity}×</strong> ${item.name}${size}
+          <td width="64" style="padding-bottom:16px;">
+            <img src="${imgUrl}" style="width:64px; height:64px; border-radius:8px; background:#fff; object-fit:contain; border: 1px solid #e5e5e5;" />
           </td>
-          <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;text-align:right;white-space:nowrap">
-            ${(item.price * item.quantity).toLocaleString('fr-FR')} CFA
+          <td style="padding-left:16px; padding-bottom:16px; vertical-align:middle;">
+            <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 4px;">${item.name}</p>
+            <p style="color:#a0a0ab; font-size:13px; margin:0;">Taille : ${item.selectedSize || 'Standard'}</p>
           </td>
+          <td align="center" style="color:#a0a0ab; font-size:14px; padding-bottom:16px; vertical-align:middle;">x${item.quantity}</td>
+          <td align="right" style="color:#fff; font-size:15px; font-weight:600; padding-bottom:16px; vertical-align:middle;">${(item.price * item.quantity).toLocaleString('fr-FR')} FCFA</td>
         </tr>`
     })
     .join('')
+}
 
-  const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
-      <!-- Header -->
-      <div style="background:#000;padding:24px 32px;border-radius:8px 8px 0 0;text-align:center;">
-        <img src="https://nonstopp.shop/images/nonstop_mac_wallpaper_v2.png" alt="NONSTOP" width="140" style="display:block;margin:0 auto;" />
-        <p style="color:#aaa;margin:12px 0 0;font-size:13px">Nouvelle commande reçue</p>
-      </div>
+function renderEmailTemplate(data: OrderEmailData, isForAdmin: boolean) {
+  const { orderId, formData, cart, totalPrice } = data
+  const itemsRows = renderItems(cart)
+  
+  const title = isForAdmin ? 'Nouvelle commande reçue !' : 'Confirmation de commande'
+  const intro = isForAdmin 
+    ? 'Bonjour,<br/>Vous venez de recevoir une nouvelle commande sur votre boutique <strong>Nonstop</strong>.'
+    : `Bonjour <strong>${formData.nom}</strong>,<br/>Merci pour votre commande ! Nous l'avons bien reçue et nous la préparons avec soin.`
 
-      <!-- Body -->
-      <div style="background:#fafafa;padding:32px;border:1px solid #e8e8e8;border-top:none">
-        <h2 style="margin:0 0 4px;font-size:18px">Commande <span style="color:#555">#${orderId}</span></h2>
-        <p style="margin:0 0 24px;color:#777;font-size:13px">
-          Reçue le ${new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}
-        </p>
+  return `
+    <div style="background-color:#0f0f11; padding:40px 20px; font-family:'Inter', 'Helvetica Neue', Arial, sans-serif; color:#fff;">
+      <div style="max-width:600px; margin:0 auto;">
+        
+        <!-- Cover Image -->
+        <img src="https://nonstopp.shop/images/nonstop_mac_wallpaper_v2.png" style="width:100%; border-radius:12px; margin-bottom:32px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);" />
 
-        <!-- Client info -->
-        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:6px;padding:16px 20px;margin-bottom:20px">
-          <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;color:#555">Client</h3>
-          <table style="width:100%;font-size:14px;border-collapse:collapse">
-            <tr><td style="color:#888;padding:3px 0;width:110px">Nom</td><td><strong>${formData.nom}</strong></td></tr>
-            <tr><td style="color:#888;padding:3px 0">Téléphone</td><td>${formData.telephone}</td></tr>
-            ${formData.email ? `<tr><td style="color:#888;padding:3px 0">Email</td><td>${formData.email}</td></tr>` : ''}
-            <tr><td style="color:#888;padding:3px 0">Adresse</td><td>${formData.adresse}</td></tr>
-            <tr><td style="color:#888;padding:3px 0">Ville</td><td>${formData.ville}</td></tr>
-            ${formData.notes ? `<tr><td style="color:#888;padding:3px 0">Notes</td><td style="color:#d97706"><em>${formData.notes}</em></td></tr>` : ''}
+        <!-- Title -->
+        <table width="100%" style="margin-bottom:24px;">
+          <tr>
+            <td width="48" style="vertical-align:top;">
+              <div style="background:#18181b; border:1px solid #27272a; border-radius:12px; width:48px; height:48px; text-align:center; line-height:48px; font-size:20px;">🛍️</div>
+            </td>
+            <td style="padding-left:16px; vertical-align:middle;">
+              <h1 style="color:#fff; font-size:24px; font-weight:600; margin:0 0 8px;">${title}</h1>
+              <p style="color:#a0a0ab; font-size:15px; margin:0; line-height:1.5;">${intro}</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Main Card -->
+        <div style="background:#141416; border:1px solid #27272a; border-radius:12px; padding:24px;">
+          
+          <!-- Order ID & Date -->
+          <table width="100%">
+            <tr>
+              <td>
+                <p style="color:#71717a; font-size:13px; margin:0; display:flex; align-items:center;">📄 Numéro de commande</p>
+                <p style="color:#fff; font-size:15px; font-weight:600; margin:4px 0 0;">#${orderId}</p>
+              </td>
+              <td align="right" style="border-left:1px solid #27272a; padding-left:24px;">
+                <p style="color:#71717a; font-size:13px; margin:0;">📅 Date de commande</p>
+                <p style="color:#fff; font-size:14px; margin:4px 0 0;">${new Date().toLocaleDateString('fr-FR', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})}</p>
+              </td>
+            </tr>
           </table>
+
+          <!-- Client Info -->
+          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #27272a;">
+            <p style="color:#71717a; font-size:13px; margin:0;">👤 Client</p>
+            <p style="color:#fff; font-size:15px; margin:4px 0 16px;">${formData.nom}</p>
+            
+            <p style="color:#71717a; font-size:13px; margin:0;">📞 Téléphone</p>
+            <p style="color:#fff; font-size:15px; margin:4px 0 16px;">${formData.telephone}</p>
+            
+            <p style="color:#71717a; font-size:13px; margin:0;">📍 Adresse de livraison</p>
+            <p style="color:#fff; font-size:15px; margin:4px 0 0; line-height:1.5;">${formData.adresse}, ${formData.ville}</p>
+          </div>
+
+          <!-- Items -->
+          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #27272a;">
+            <h3 style="color:#fff; font-size:16px; margin:0 0 16px;">📦 Articles commandés</h3>
+            <table width="100%">
+              ${itemsRows}
+            </table>
+          </div>
+
+          <!-- Totals -->
+          <div style="margin-top:16px; padding-top:24px; border-top:1px solid #27272a;">
+            <table width="100%">
+              <tr>
+                <td style="color:#a0a0ab; font-size:14px; padding-bottom:8px;">Sous-total</td>
+                <td align="right" style="color:#fff; font-size:14px; padding-bottom:8px;">${Math.round(totalPrice).toLocaleString('fr-FR')} FCFA</td>
+              </tr>
+              <tr>
+                <td style="color:#a0a0ab; font-size:14px; padding-bottom:16px;">Livraison</td>
+                <td align="right" style="color:#fff; font-size:14px; padding-bottom:16px;">Variable (ou Incluse)</td>
+              </tr>
+              <tr>
+                <td style="color:#fff; font-size:18px; font-weight:bold;">Total</td>
+                <td align="right" style="color:#fff; font-size:18px; font-weight:bold;">${Math.round(totalPrice).toLocaleString('fr-FR')} FCFA</td>
+              </tr>
+            </table>
+          </div>
         </div>
 
-        <!-- Items -->
-        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:6px;padding:16px 20px;margin-bottom:20px">
-          <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;color:#555">Articles</h3>
-          <table style="width:100%;font-size:14px;border-collapse:collapse">${itemsRows}</table>
-          <table style="width:100%;font-size:15px;margin-top:12px">
+        <!-- Notification Banner -->
+        <table width="100%" style="margin-top:24px; padding:16px; background:#18181b; border-radius:8px;">
+          <tr>
+            <td width="32" style="font-size:20px;">🔔</td>
+            <td style="padding-left:12px;">
+              <p style="color:#fff; font-size:14px; font-weight:600; margin:0 0 4px;">Merci d'utiliser Nonstop !</p>
+              <p style="color:#a0a0ab; font-size:13px; margin:0;">Nous vous tiendrons informé dès que le statut de la commande évoluera.</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer -->
+        <div style="margin-top:40px; padding-top:24px; border-top:1px solid #27272a;">
+          <table width="100%">
             <tr>
-              <td><strong>Total</strong></td>
-              <td style="text-align:right"><strong>${Math.round(totalPrice).toLocaleString('fr-FR')} CFA</strong></td>
+              <td>
+                <img src="https://nonstopp.shop/images/nonstop_mac_wallpaper_v2.png" width="100" style="border-radius:4px;" />
+              </td>
+              <td align="right" style="color:#71717a; font-size:13px; font-style:italic;">
+                Style • Qualité • Nonstop
+              </td>
             </tr>
           </table>
         </div>
 
-        <!-- CTA -->
-        <div style="text-align:center;margin-top:28px">
-          <a href="https://nonstopp.shop/admin/orders"
-             style="display:inline-block;background:#000;color:#fff;text-decoration:none;padding:12px 28px;border-radius:4px;font-size:14px;letter-spacing:0.04em">
-            Gérer la commande →
-          </a>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div style="padding:16px 32px;text-align:center;color:#aaa;font-size:11px">
-        Nonstop &nbsp;·&nbsp; nonstopp.shop
       </div>
     </div>
   `
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Email admin — nouvelle commande
+// ──────────────────────────────────────────────────────────────────────────────
+export async function sendAdminOrderNotification(data: OrderEmailData) {
+  const html = renderEmailTemplate(data, true)
 
   return resend.emails.send({
     from: FROM_EMAIL,
     to: [ADMIN_EMAIL],
-    subject: `🛍️ Nouvelle commande #${orderId} — ${formData.nom}`,
+    subject: `🛍️ Nouvelle commande #${data.orderId} — ${data.formData.nom}`,
     html,
   })
 }
@@ -114,86 +178,14 @@ export async function sendAdminOrderNotification(data: OrderEmailData) {
 // Email client — confirmation de commande
 // ──────────────────────────────────────────────────────────────────────────────
 export async function sendClientOrderConfirmation(data: OrderEmailData) {
-  const { orderId, formData, cart, totalPrice } = data
+  if (!data.formData.email) return null
 
-  if (!formData.email) return null
-
-  const itemsRows = cart
-    .map((item) => {
-      const size = item.selectedSize
-        ? `<br/><span style="color:#888;font-size:12px">Taille : ${item.selectedSize}</span>`
-        : ''
-      return `
-        <tr>
-          <td style="padding:10px 0;border-bottom:1px solid #f0f0f0">
-            <strong>${item.name}</strong>${size}
-            <br/><span style="color:#888;font-size:12px">Qté : ${item.quantity}</span>
-          </td>
-          <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;text-align:right;white-space:nowrap;vertical-align:top">
-            ${(item.price * item.quantity).toLocaleString('fr-FR')} CFA
-          </td>
-        </tr>`
-    })
-    .join('')
-
-  const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
-      <!-- Header -->
-      <div style="background:#000;padding:24px 32px;border-radius:8px 8px 0 0;text-align:center;">
-        <img src="https://nonstopp.shop/images/nonstop_mac_wallpaper_v2.png" alt="NONSTOP" width="140" style="display:block;margin:0 auto;" />
-        <p style="color:#aaa;margin:12px 0 0;font-size:13px">Confirmation de commande</p>
-      </div>
-
-      <!-- Body -->
-      <div style="background:#fafafa;padding:32px;border:1px solid #e8e8e8;border-top:none">
-        <p style="margin:0 0 20px;font-size:15px">Bonjour <strong>${formData.nom}</strong>,</p>
-        <p style="margin:0 0 28px;font-size:14px;color:#555;line-height:1.6">
-          Merci pour votre commande ! Nous l'avons bien reçue et la préparons avec soin.
-          Votre numéro de commande est <strong>#${orderId}</strong>.
-        </p>
-
-        <!-- Items -->
-        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:6px;padding:16px 20px;margin-bottom:20px">
-          <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;color:#555">Votre commande</h3>
-          <table style="width:100%;font-size:14px;border-collapse:collapse">${itemsRows}</table>
-          <table style="width:100%;font-size:15px;margin-top:12px">
-            <tr>
-              <td><strong>Total</strong></td>
-              <td style="text-align:right"><strong>${Math.round(totalPrice).toLocaleString('fr-FR')} CFA</strong></td>
-            </tr>
-          </table>
-        </div>
-
-        <!-- Livraison -->
-        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:6px;padding:16px 20px;margin-bottom:28px">
-          <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;color:#555">Livraison</h3>
-          <p style="margin:0;font-size:14px;line-height:1.8;color:#444">
-            ${formData.nom}<br/>
-            ${formData.adresse}<br/>
-            ${formData.ville}<br/>
-            <span style="color:#888">Tél : ${formData.telephone}</span>
-          </p>
-        </div>
-
-        <p style="font-size:13px;color:#888;line-height:1.6;margin:0">
-          Pour toute question concernant votre commande, répondez directement à cet email.
-          Nous vous contacterons prochainement pour confirmer la livraison.
-        </p>
-
-        <p style="margin-top:24px;font-size:14px"><strong>À très bientôt sur Nonstop ! 🖤</strong></p>
-      </div>
-
-      <!-- Footer -->
-      <div style="padding:16px 32px;text-align:center;color:#aaa;font-size:11px">
-        Nonstop &nbsp;·&nbsp; nonstopp.shop &nbsp;·&nbsp; Ce message a été envoyé automatiquement.
-      </div>
-    </div>
-  `
+  const html = renderEmailTemplate(data, false)
 
   return resend.emails.send({
     from: FROM_EMAIL,
-    to: [formData.email],
-    subject: `Confirmation de votre commande #${orderId} — Nonstop`,
+    to: [data.formData.email],
+    subject: `Confirmation de votre commande #${data.orderId} — Nonstop`,
     html,
   })
 }
