@@ -32,7 +32,7 @@ function renderItems(cart: OrderEmailData['cart']) {
       return `
         <tr>
           <td width="64" style="padding-bottom:16px;">
-            <img src="${imgUrl}" style="width:64px; height:64px; border-radius:8px; background:#fff; object-fit:contain; border: 1px solid #e5e5e5;" />
+            <img src="${imgUrl}" style="width:64px; height:64px; border-radius:8px; background:#fff; object-fit:contain; border: 1px solid #27272a;" />
           </td>
           <td style="padding-left:16px; padding-bottom:16px; vertical-align:middle;">
             <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 4px;">${item.name}</p>
@@ -54,109 +54,170 @@ function renderEmailTemplate(data: OrderEmailData, isForAdmin: boolean) {
     ? 'Bonjour,<br/>Vous venez de recevoir une nouvelle commande sur votre boutique <strong>Nonstop</strong>.'
     : `Bonjour <strong>${formData.nom}</strong>,<br/>Merci pour votre commande ! Nous l'avons bien reçue et nous la préparons avec soin.`
 
+  const dateStr = new Date().toLocaleDateString('fr-FR', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
+
   return `
-    <div style="background-color:#0f0f11; padding:40px 20px; font-family:'Inter', 'Helvetica Neue', Arial, sans-serif; color:#fff;">
-      <div style="max-width:600px; margin:0 auto;">
-        
-        <!-- Cover Image -->
-        <img src="https://nonstopp.shop/images/nonstop_mac_wallpaper_v2.png" style="width:100%; border-radius:12px; margin-bottom:32px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);" />
-
-        <!-- Title -->
-        <table width="100%" style="margin-bottom:24px;">
-          <tr>
-            <td width="48" style="vertical-align:top;">
-              <div style="background:#18181b; border:1px solid #27272a; border-radius:12px; width:48px; height:48px; text-align:center; line-height:48px; font-size:20px;">🛍️</div>
-            </td>
-            <td style="padding-left:16px; vertical-align:middle;">
-              <h1 style="color:#fff; font-size:24px; font-weight:600; margin:0 0 8px;">${title}</h1>
-              <p style="color:#a0a0ab; font-size:15px; margin:0; line-height:1.5;">${intro}</p>
-            </td>
-          </tr>
-        </table>
-
-        <!-- Main Card -->
-        <div style="background:#141416; border:1px solid #27272a; border-radius:12px; padding:24px;">
-          
-          <!-- Order ID & Date -->
-          <table width="100%">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0a0a0c" style="background-color:#0a0a0c; width:100%;">
+      <tr>
+        <td align="center" style="padding: 40px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; margin:0 auto; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+            
+            <!-- Cover Image -->
             <tr>
-              <td>
-                <p style="color:#71717a; font-size:13px; margin:0; display:flex; align-items:center;">📄 Numéro de commande</p>
-                <p style="color:#fff; font-size:15px; font-weight:600; margin:4px 0 0;">#${orderId}</p>
-              </td>
-              <td align="right" style="border-left:1px solid #27272a; padding-left:24px;">
-                <p style="color:#71717a; font-size:13px; margin:0;">📅 Date de commande</p>
-                <p style="color:#fff; font-size:14px; margin:4px 0 0;">${new Date().toLocaleDateString('fr-FR', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})}</p>
+              <td style="padding-bottom: 32px;">
+                <img src="https://nonstopp.shop/images/nonstop_mac_wallpaper_v2.png" width="100%" style="display:block; width:100%; max-width:600px; border-radius:12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);" alt="Cover" />
               </td>
             </tr>
-          </table>
 
-          <!-- Client Info -->
-          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #27272a;">
-            <p style="color:#71717a; font-size:13px; margin:0;">👤 Client</p>
-            <p style="color:#fff; font-size:15px; margin:4px 0 16px;">${formData.nom}</p>
-            
-            <p style="color:#71717a; font-size:13px; margin:0;">📞 Téléphone</p>
-            <p style="color:#fff; font-size:15px; margin:4px 0 16px;">${formData.telephone}</p>
-            
-            <p style="color:#71717a; font-size:13px; margin:0;">📍 Adresse de livraison</p>
-            <p style="color:#fff; font-size:15px; margin:4px 0 0; line-height:1.5;">${formData.adresse}, ${formData.ville}</p>
-          </div>
-
-          <!-- Items -->
-          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #27272a;">
-            <h3 style="color:#fff; font-size:16px; margin:0 0 16px;">📦 Articles commandés</h3>
-            <table width="100%">
-              ${itemsRows}
-            </table>
-          </div>
-
-          <!-- Totals -->
-          <div style="margin-top:16px; padding-top:24px; border-top:1px solid #27272a;">
-            <table width="100%">
-              <tr>
-                <td style="color:#a0a0ab; font-size:14px; padding-bottom:8px;">Sous-total</td>
-                <td align="right" style="color:#fff; font-size:14px; padding-bottom:8px;">${Math.round(totalPrice).toLocaleString('fr-FR')} FCFA</td>
-              </tr>
-              <tr>
-                <td style="color:#a0a0ab; font-size:14px; padding-bottom:16px;">Livraison</td>
-                <td align="right" style="color:#fff; font-size:14px; padding-bottom:16px;">Variable (ou Incluse)</td>
-              </tr>
-              <tr>
-                <td style="color:#fff; font-size:18px; font-weight:bold;">Total</td>
-                <td align="right" style="color:#fff; font-size:18px; font-weight:bold;">${Math.round(totalPrice).toLocaleString('fr-FR')} FCFA</td>
-              </tr>
-            </table>
-          </div>
-        </div>
-
-        <!-- Notification Banner -->
-        <table width="100%" style="margin-top:24px; padding:16px; background:#18181b; border-radius:8px;">
-          <tr>
-            <td width="32" style="font-size:20px;">🔔</td>
-            <td style="padding-left:12px;">
-              <p style="color:#fff; font-size:14px; font-weight:600; margin:0 0 4px;">Merci d'utiliser Nonstop !</p>
-              <p style="color:#a0a0ab; font-size:13px; margin:0;">Nous vous tiendrons informé dès que le statut de la commande évoluera.</p>
-            </td>
-          </tr>
-        </table>
-
-        <!-- Footer -->
-        <div style="margin-top:40px; padding-top:24px; border-top:1px solid #27272a;">
-          <table width="100%">
+            <!-- Title -->
             <tr>
-              <td>
-                <img src="https://nonstopp.shop/images/nonstop_mac_wallpaper_v2.png" width="100" style="border-radius:4px;" />
-              </td>
-              <td align="right" style="color:#71717a; font-size:13px; font-style:italic;">
-                Style • Qualité • Nonstop
+              <td style="padding-bottom: 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td width="48" valign="top">
+                      <div style="background:#18181b; border:1px solid #27272a; border-radius:12px; width:48px; height:48px; text-align:center; line-height:48px;">
+                        <img src="https://api.iconify.design/lucide:shopping-bag.svg?color=white" width="24" height="24" style="vertical-align:middle;" />
+                      </div>
+                    </td>
+                    <td style="padding-left:16px; vertical-align:middle;">
+                      <h1 style="color:#fff; font-size:22px; font-weight:600; margin:0 0 8px; line-height:1.2;">${title}</h1>
+                      <p style="color:#a0a0ab; font-size:15px; margin:0; line-height:1.5;">${intro}</p>
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
-          </table>
-        </div>
 
-      </div>
-    </div>
+            <!-- Main Card -->
+            <tr>
+              <td style="background:#141416; border:1px solid #27272a; border-radius:12px; padding:24px;">
+                
+                <!-- Order ID & Date -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td width="50%" valign="top">
+                      <table cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                          <td style="padding-right:6px;"><img src="https://api.iconify.design/lucide:file-text.svg?color=%2371717a" width="14" height="14" style="vertical-align:middle;" /></td>
+                          <td><p style="color:#71717a; font-size:13px; margin:0;">Numéro de commande</p></td>
+                        </tr>
+                      </table>
+                      <p style="color:#fff; font-size:15px; font-weight:600; margin:4px 0 0;">#${orderId}</p>
+                    </td>
+                    <td width="50%" valign="top" style="border-left:1px solid #27272a; padding-left:20px;">
+                      <table cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                          <td style="padding-right:6px;"><img src="https://api.iconify.design/lucide:calendar.svg?color=%2371717a" width="14" height="14" style="vertical-align:middle;" /></td>
+                          <td><p style="color:#71717a; font-size:13px; margin:0;">Date de commande</p></td>
+                        </tr>
+                      </table>
+                      <p style="color:#fff; font-size:14px; margin:4px 0 0;">${dateStr}</p>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Client Info -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px; border-top:1px solid #27272a;">
+                  <tr>
+                    <td style="padding-top:24px;">
+                      <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;">
+                        <tr>
+                          <td style="padding-right:6px;"><img src="https://api.iconify.design/lucide:user.svg?color=%2371717a" width="14" height="14" style="vertical-align:middle;" /></td>
+                          <td><p style="color:#71717a; font-size:13px; margin:0;">Client</p></td>
+                        </tr>
+                      </table>
+                      <p style="color:#fff; font-size:15px; margin:0 0 16px;">${formData.nom}</p>
+                      
+                      <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;">
+                        <tr>
+                          <td style="padding-right:6px;"><img src="https://api.iconify.design/lucide:phone.svg?color=%2371717a" width="14" height="14" style="vertical-align:middle;" /></td>
+                          <td><p style="color:#71717a; font-size:13px; margin:0;">Téléphone</p></td>
+                        </tr>
+                      </table>
+                      <p style="margin:0 0 16px;"><a href="tel:${formData.telephone}" style="color:#fff; text-decoration:none; font-size:15px;">${formData.telephone}</a></p>
+                      
+                      <p style="color:#71717a; font-size:13px; margin:0 0 4px;">Adresse de livraison</p>
+                      <p style="color:#fff; font-size:15px; margin:0; line-height:1.5;">${formData.adresse}, ${formData.ville}</p>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Items -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px; border-top:1px solid #27272a;">
+                  <tr>
+                    <td style="padding-top:24px; padding-bottom:16px;">
+                      <table cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                          <td style="padding-right:8px;"><img src="https://api.iconify.design/lucide:package.svg?color=white" width="16" height="16" style="vertical-align:middle;" /></td>
+                          <td><h3 style="color:#fff; font-size:15px; font-weight:600; margin:0;">Articles commandés</h3></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  ${itemsRows}
+                </table>
+
+                <!-- Totals -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px; border-top:1px solid #27272a;">
+                  <tr>
+                    <td style="padding-top:24px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                          <td style="color:#a0a0ab; font-size:14px; padding-bottom:8px;">Sous-total</td>
+                          <td align="right" style="color:#fff; font-size:14px; padding-bottom:8px;">${Math.round(totalPrice).toLocaleString('fr-FR')} FCFA</td>
+                        </tr>
+                        <tr>
+                          <td style="color:#a0a0ab; font-size:14px; padding-bottom:16px;">Livraison</td>
+                          <td align="right" style="color:#fff; font-size:14px; padding-bottom:16px;">Au tarif en vigueur</td>
+                        </tr>
+                        <tr>
+                          <td style="color:#fff; font-size:18px; font-weight:600;">Total</td>
+                          <td align="right" style="color:#fff; font-size:18px; font-weight:600;">${Math.round(totalPrice).toLocaleString('fr-FR')} FCFA</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Notification Banner -->
+            <tr>
+              <td style="padding-top:24px;">
+                <table width="100%" cellpadding="16" cellspacing="0" border="0" style="background:#18181b; border-radius:8px;">
+                  <tr>
+                    <td width="24" valign="top">
+                      <img src="https://api.iconify.design/lucide:bell.svg?color=white" width="20" height="20" />
+                    </td>
+                    <td style="padding-left:12px;">
+                      <p style="color:#fff; font-size:14px; font-weight:600; margin:0 0 4px;">Merci d'utiliser Nonstop !</p>
+                      <p style="color:#a0a0ab; font-size:13px; margin:0;">Nous vous tiendrons informé dès que le statut de la commande évoluera.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="padding-top:40px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #27272a; padding-top:24px;">
+                  <tr>
+                    <td>
+                      <img src="https://nonstopp.shop/images/nonstop_mac_wallpaper_v2.png" width="80" style="border-radius:4px; opacity:0.8;" alt="Nonstop" />
+                    </td>
+                    <td align="right" style="color:#71717a; font-size:13px; font-style:italic;">
+                      Style • Qualité • Nonstop
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
   `
 }
 
