@@ -49,9 +49,9 @@ export async function sendAdminOrderNotification(data: OrderEmailData) {
   const html = `
     <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
       <!-- Header -->
-      <div style="background:#000;padding:24px 32px;border-radius:8px 8px 0 0">
-        <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:0.05em">NONSTOP</h1>
-        <p style="color:#aaa;margin:4px 0 0;font-size:13px">Nouvelle commande reçue</p>
+      <div style="background:#000;padding:24px 32px;border-radius:8px 8px 0 0;text-align:center;">
+        <img src="https://nonstopp.shop/nonstop-logo.png" alt="NONSTOP" width="140" style="display:block;margin:0 auto;" />
+        <p style="color:#aaa;margin:12px 0 0;font-size:13px">Nouvelle commande reçue</p>
       </div>
 
       <!-- Body -->
@@ -139,9 +139,9 @@ export async function sendClientOrderConfirmation(data: OrderEmailData) {
   const html = `
     <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
       <!-- Header -->
-      <div style="background:#000;padding:24px 32px;border-radius:8px 8px 0 0">
-        <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:0.05em">NONSTOP</h1>
-        <p style="color:#aaa;margin:4px 0 0;font-size:13px">Confirmation de commande</p>
+      <div style="background:#000;padding:24px 32px;border-radius:8px 8px 0 0;text-align:center;">
+        <img src="https://nonstopp.shop/nonstop-logo.png" alt="NONSTOP" width="140" style="display:block;margin:0 auto;" />
+        <p style="color:#aaa;margin:12px 0 0;font-size:13px">Confirmation de commande</p>
       </div>
 
       <!-- Body -->
