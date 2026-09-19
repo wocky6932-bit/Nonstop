@@ -50,7 +50,7 @@ export async function sendAdminOrderNotification(data: OrderEmailData) {
     <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
       <!-- Header -->
       <div style="background:#000;padding:24px 32px;border-radius:8px 8px 0 0;text-align:center;">
-        <img src="https://nonstopp.shop/nonstop-logo.png" alt="NONSTOP" width="140" style="display:block;margin:0 auto;" />
+        <img src="https://nonstopp.shop/images/nonstop_mac_wallpaper_v2.png" alt="NONSTOP" width="140" style="display:block;margin:0 auto;" />
         <p style="color:#aaa;margin:12px 0 0;font-size:13px">Nouvelle commande reçue</p>
       </div>
 
@@ -140,7 +140,7 @@ export async function sendClientOrderConfirmation(data: OrderEmailData) {
     <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
       <!-- Header -->
       <div style="background:#000;padding:24px 32px;border-radius:8px 8px 0 0;text-align:center;">
-        <img src="https://nonstopp.shop/nonstop-logo.png" alt="NONSTOP" width="140" style="display:block;margin:0 auto;" />
+        <img src="https://nonstopp.shop/images/nonstop_mac_wallpaper_v2.png" alt="NONSTOP" width="140" style="display:block;margin:0 auto;" />
         <p style="color:#aaa;margin:12px 0 0;font-size:13px">Confirmation de commande</p>
       </div>
 
