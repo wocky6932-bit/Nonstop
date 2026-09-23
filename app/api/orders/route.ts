@@ -48,8 +48,8 @@ export async function POST(request: NextRequest) {
         totalPrice,
       }
 
-      // Fire-and-forget : les emails n'ont pas à bloquer la réponse
-      Promise.allSettled([
+      // Il faut 'await' sur Vercel Serverless, sinon le processus est tué avant l'envoi
+      await Promise.allSettled([
         sendAdminOrderNotification(emailData),
         sendClientOrderConfirmation(emailData),
         sendAdminPushNotification(emailData),
