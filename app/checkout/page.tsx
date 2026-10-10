@@ -297,10 +297,7 @@ export default function CheckoutPage() {
                   <span>Sous-total</span>
                   <span>{totalPrice.toLocaleString()} XOF</span>
                 </div>
-                <div className="flex items-center justify-between text-sm text-green-700">
-                  <span>Livraison</span>
-                  <span className="font-medium">Gratuite</span>
-                </div>
+
                 <div className="border-t pt-3 flex items-center justify-between text-lg font-bold">
                   <span className="tracking-wider uppercase">Total</span>
                   <span>{totalPrice.toLocaleString()} XOF</span>

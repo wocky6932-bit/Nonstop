@@ -267,19 +267,7 @@ export default function HomePage() {
         
 
 
-        {/* Collection Section Title */}
-        <div className="text-center">
-          <p className="text-xs uppercase tracking-[0.3em] font-medium text-gray-400 mb-3">
-            COLLECTION
-          </p>
-          <h2 className="text-5xl md:text-6xl font-black tracking-tight text-black mb-4 uppercase">
-            À LA UNE
-          </h2>
-          <div className="text-black text-lg mb-3">★</div>
-          <p className="text-gray-500 text-xs tracking-widest uppercase">
-            DES PIÈCES CONÇUES POUR CEUX QUI VIVENT SANS LIMITES.
-          </p>
-        </div>
+
 
         {/* PRE-ORDER Banner */}
         {hasPreorder && (
