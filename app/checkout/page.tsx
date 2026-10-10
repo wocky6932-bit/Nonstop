@@ -24,12 +24,16 @@ export default function CheckoutPage() {
     prenom: '',
     nom: '',
     telephone: '',
+    email: '',
     adresse: '',
     ville: '',
     notes: '',
   })
 
   const totalPrice = getTotalPrice()
+  const hasEmailDiscount = Boolean(formData.email.trim() && formData.email.includes('@') && formData.email.includes('.'))
+  const discountAmount = hasEmailDiscount ? Math.round(totalPrice * 0.1) : 0
+  const finalPrice = totalPrice - discountAmount
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -61,14 +65,14 @@ export default function CheckoutPage() {
           formData: {
             nom: `${formData.prenom.trim()} ${formData.nom.trim()}`,
             telephone: formData.telephone.trim(),
-            email: '',
+            email: formData.email.trim(),
             adresse: formData.adresse.trim(),
             ville: formData.ville.trim(),
             notes: formData.notes.trim(),
             userId: 'guest',
           },
           cart,
-          totalPrice,
+          totalPrice: finalPrice,
         }),
       })
 
@@ -195,6 +199,30 @@ export default function CheckoutPage() {
                 />
               </div>
 
+              {/* Proposition Email avec réduction de 10% */}
+              <div className="p-3 bg-gray-50 border border-gray-200">
+                <div className="flex items-center justify-between mb-1">
+                  <Label htmlFor="email" className="text-xs tracking-wide uppercase font-semibold text-black">
+                    Adresse email (Optionnel)
+                  </Label>
+                  <span className="text-[10px] bg-black text-white px-2 py-0.5 uppercase tracking-wider font-bold">
+                    -10% de réduction
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-500 mb-2">
+                  Indiquez votre adresse email pour recevoir immédiatement 10% de réduction sur votre commande.
+                </p>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="exemple@email.com"
+                  className="rounded-none border-gray-300 focus:border-black focus:ring-0 bg-white"
+                />
+              </div>
+
               <div>
                 <Label htmlFor="adresse" className="text-xs tracking-wide uppercase mb-1 block">
                   Adresse de livraison <span className="text-red-500">*</span>
@@ -298,9 +326,16 @@ export default function CheckoutPage() {
                   <span>{totalPrice.toLocaleString()} XOF</span>
                 </div>
 
+                {hasEmailDiscount && (
+                  <div className="flex items-center justify-between text-sm text-green-600 font-medium">
+                    <span>Remise fidélité (-10%)</span>
+                    <span>-{discountAmount.toLocaleString()} XOF</span>
+                  </div>
+                )}
+
                 <div className="border-t pt-3 flex items-center justify-between text-lg font-bold">
                   <span className="tracking-wider uppercase">Total</span>
-                  <span>{totalPrice.toLocaleString()} XOF</span>
+                  <span>{finalPrice.toLocaleString()} XOF</span>
                 </div>
               </div>
 
