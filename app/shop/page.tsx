@@ -347,41 +347,7 @@ function ShopContent() {
                 )}
             </main>
 
-            {/* ── FEATURES ─────────────────────────────────────────── */}
-            <section className="border-t border-gray-100 bg-white py-10 mt-4">
-              <div className="container mx-auto px-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  <div className="flex flex-col items-center text-center gap-3">
-                    <Zap className="w-5 h-5 text-black" strokeWidth={1.5} />
-                    <div>
-                      <h4 className="font-bold text-[10px] uppercase tracking-widest text-black mb-1">LIVRAISON RAPIDE</h4>
-                      <p className="text-[10px] text-gray-400">Partout au Sénégal</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-center text-center gap-3">
-                    <ShieldCheck className="w-5 h-5 text-black" strokeWidth={1.5} />
-                    <div>
-                      <h4 className="font-bold text-[10px] uppercase tracking-widest text-black mb-1">PAIEMENT SÉCURISÉ</h4>
-                      <p className="text-[10px] text-gray-400">100% sécurisé</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-center text-center gap-3">
-                    <Star className="w-5 h-5 text-black" strokeWidth={1.5} />
-                    <div>
-                      <h4 className="font-bold text-[10px] uppercase tracking-widest text-black mb-1">QUALITÉ PREMIUM</h4>
-                      <p className="text-[10px] text-gray-400">Produits sélectionnés</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-center text-center gap-3">
-                    <Headphones className="w-5 h-5 text-black" strokeWidth={1.5} />
-                    <div>
-                      <h4 className="font-bold text-[10px] uppercase tracking-widest text-black mb-1">SUPPORT 24/7</h4>
-                      <p className="text-[10px] text-gray-400">À votre écoute</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
+
 
             {/* ── FOOTER ───────────────────────────────────────────── */}
             <footer className="bg-black text-white py-10">
