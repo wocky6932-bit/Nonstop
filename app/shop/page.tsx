@@ -315,13 +315,18 @@ function ShopContent() {
                                                     ...prev,
                                                     [product.id]: prev[product.id] === size ? '' : size
                                                 }))}
-                                                className={`text-[10px] px-2 py-0.5 border transition-all ${
+                                                className={`relative text-[10px] px-2.5 py-1 border transition-all rounded-lg overflow-hidden ${
                                                     selectedSizes[product.id] === size
                                                         ? 'bg-black text-white border-black'
-                                                        : 'border-gray-300 text-gray-600 hover:border-black'
+                                                        : 'bg-white border-gray-300 text-gray-700 hover:border-black'
                                                 }`}
                                             >
-                                                {size}
+                                                {product.sold_out && (
+                                                    <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+                                                        <line x1="0" y1="100%" x2="100%" y2="0" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
+                                                    </svg>
+                                                )}
+                                                <span className="relative z-10">{size}</span>
                                             </button>
                                         ))}
                                     </div>

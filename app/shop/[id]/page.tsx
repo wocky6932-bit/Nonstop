@@ -24,6 +24,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [selectedSize, setSelectedSize] = useState<string>('')
+  const [quantity, setQuantity] = useState<number>(1)
   const [selectedImage, setSelectedImage] = useState<number>(0)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -55,7 +56,7 @@ export default function ProductDetailPage() {
       toast({ title: 'Choisissez une taille', variant: 'destructive' })
       return
     }
-    addToCart({ ...product, selectedSize: selectedSize || undefined })
+    addToCart({ ...product, selectedSize: selectedSize || undefined }, quantity)
     toast({
       title: product.is_preorder ? 'Pré-commande ajoutée ✓' : 'Ajouté au panier ✓',
       description: selectedSize ? `${product.name} — Taille ${selectedSize}` : product.name,
@@ -217,44 +218,83 @@ export default function ProductDetailPage() {
 
               {/* Tailles */}
               {product.sizes && product.sizes.length > 0 && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-3">
-                    Taille {selectedSize && <span className="text-black font-bold">— {selectedSize}</span>}
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-black">
+                    Taille {selectedSize && <span className="text-gray-500 font-normal">— {selectedSize}</span>}
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     {product.sizes.map((size: string) => (
                       <button
                         key={size}
                         onClick={() => setSelectedSize(prev => prev === size ? '' : size)}
-                        className={`px-4 py-2 text-xs tracking-wider uppercase border transition-all duration-150 ${
+                        className={`relative min-w-[56px] h-11 px-4 text-xs font-medium uppercase border transition-all duration-150 rounded-2xl flex items-center justify-center overflow-hidden ${
                           selectedSize === size
                             ? 'bg-black text-white border-black'
-                            : 'border-gray-200 text-black hover:border-black'
+                            : 'bg-white border-gray-200 text-black hover:border-black'
                         }`}
                       >
-                        {size}
+                        {/* Barre diagonale si épuisé */}
+                        {product.sold_out && (
+                          <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+                            <line
+                              x1="0"
+                              y1="100%"
+                              x2="100%"
+                              y2="0"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              className={selectedSize === size ? "text-white/60" : "text-gray-400"}
+                            />
+                          </svg>
+                        )}
+                        <span className="relative z-10">{size}</span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {product.sold_out ? (
-                <button
-                  disabled
-                  className="w-full py-4 bg-gray-100 text-gray-400 text-xs uppercase tracking-widest font-medium cursor-not-allowed"
-                >
-                  ÉPUISÉ
-                </button>
-              ) : (
-                <button
-                  onClick={handleAddToCart}
-                  className="w-full py-4 bg-black text-white text-xs uppercase tracking-widest font-medium hover:bg-gray-900 transition-colors duration-200 flex items-center justify-center gap-2"
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  {product.is_preorder ? "PRÉ-COMMANDER" : "AJOUTER AU PANIER"}
-                </button>
-              )}
+              {/* Quantité + Bouton d'action */}
+              <div className="flex items-center gap-3 pt-2">
+                {/* Sélecteur de quantité */}
+                <div className="flex items-center justify-between border border-gray-200 rounded-2xl px-4 h-12 w-32 bg-white">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                    disabled={product.sold_out}
+                    className="text-gray-500 hover:text-black text-lg font-light leading-none transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    −
+                  </button>
+                  <span className="text-sm font-medium text-black">{quantity}</span>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity(q => q + 1)}
+                    disabled={product.sold_out}
+                    className="text-gray-500 hover:text-black text-lg font-light leading-none transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Bouton Sold out / Ajouter au panier */}
+                {product.sold_out ? (
+                  <button
+                    disabled
+                    className="flex-1 h-12 bg-[#6b7280] text-white text-sm font-medium rounded-2xl cursor-not-allowed flex items-center justify-center tracking-wide shadow-sm"
+                  >
+                    Sold out
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleAddToCart}
+                    className="flex-1 h-12 bg-black text-white text-sm font-medium rounded-2xl hover:bg-gray-900 transition-colors duration-200 flex items-center justify-center gap-2 tracking-wide shadow-sm"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    {product.is_preorder ? "Pré-commander" : "Ajouter au panier"}
+                  </button>
+                )}
+              </div>
 
               {/* Détails */}
               <div className="border-t border-gray-100 pt-6 space-y-2">
