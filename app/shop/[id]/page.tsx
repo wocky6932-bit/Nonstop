@@ -22,6 +22,7 @@ export default function ProductDetailPage() {
   const { convertPrice, formatPrice } = useCurrency()
 
   const [product, setProduct] = useState<any>(null)
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [quantity, setQuantity] = useState<number>(1)
@@ -29,16 +30,66 @@ export default function ProductDetailPage() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProductAndRelated = async () => {
       try {
-        const res = await fetch(`/api/products?id=${params.id}`)
+        const [res, allRes] = await Promise.all([
+          fetch(`/api/products?id=${params.id}`),
+          fetch('/api/products')
+        ])
+
         if (!res.ok) {
           router.push('/shop')
           return
         }
+
         const data = await res.json()
         const normalized = normalizeProductData(data)
         setProduct(normalized)
+
+        if (allRes.ok) {
+          const allData = await allRes.json()
+          const normalizedAll = (allData || []).map((p: any) => normalizeProductData(p))
+          
+          // Trouver des mots-clés de similarité (ex: t-shirt, bonnet, sleeves...)
+          const getKeywords = (name: string) => {
+            const lower = (name || '').toLowerCase()
+            const words: string[] = []
+            if (lower.includes('tee') || lower.includes('t-shirt') || lower.includes('tshirt') || lower.includes('shirt')) {
+              words.push('tee')
+            }
+            if (lower.includes('bonnet') || lower.includes('beanie')) {
+              words.push('bonnet')
+            }
+            if (lower.includes('sleeve') || lower.includes('longue') || lower.includes('long')) {
+              words.push('sleeve')
+            }
+            return words
+          }
+
+          const currentKeywords = getKeywords(normalized.name)
+          const currentCat = normalized.category
+
+          const others = normalizedAll.filter((p: any) => String(p.id) !== String(normalized.id))
+          
+          // Trier : d'abord les produits qui partagent des mots-clés ou la même catégorie
+          const sorted = others.sort((a: any, b: any) => {
+            const aKeywords = getKeywords(a.name)
+            const bKeywords = getKeywords(b.name)
+            
+            const aMatchesKw = currentKeywords.some(kw => aKeywords.includes(kw))
+            const bMatchesKw = currentKeywords.some(kw => bKeywords.includes(kw))
+
+            const aMatchesCat = currentCat && currentCat !== 'general' && a.category === currentCat
+            const bMatchesCat = currentCat && currentCat !== 'general' && b.category === currentCat
+
+            const aScore = (aMatchesKw ? 2 : 0) + (aMatchesCat ? 1 : 0)
+            const bScore = (bMatchesKw ? 2 : 0) + (bMatchesCat ? 1 : 0)
+
+            return bScore - aScore
+          })
+
+          setRelatedProducts(sorted.slice(0, 4))
+        }
       } catch (err) {
         console.error(err)
         router.push('/shop')
@@ -46,7 +97,13 @@ export default function ProductDetailPage() {
         setLoading(false)
       }
     }
-    if (params.id) fetchProduct()
+
+    if (params.id) {
+      fetchProductAndRelated()
+      setSelectedSize('')
+      setQuantity(1)
+      setSelectedImage(0)
+    }
   }, [params.id, router])
 
   const handleAddToCart = () => {
@@ -302,6 +359,47 @@ export default function ProductDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Suggestions de produits similaires */}
+          {relatedProducts.length > 0 && (
+            <div className="mt-24 pt-12 border-t border-gray-100">
+              <div className="mb-8">
+                <p className="text-[10px] text-gray-400 uppercase tracking-[0.25em] mb-1 font-medium">Recommandations</p>
+                <h2 className="text-xl font-bold tracking-wider uppercase text-black">
+                  Vous aimerez aussi
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                {relatedProducts.map((relProduct) => (
+                  <Link
+                    key={relProduct.id}
+                    href={`/shop/${relProduct.id}`}
+                    className="group block"
+                  >
+                    <div className="relative aspect-[3/4] bg-gray-50 overflow-hidden mb-3 border border-gray-100">
+                      <img
+                        src={getValidImageUrl(relProduct.image)}
+                        alt={relProduct.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      {relProduct.sold_out && (
+                        <span className="absolute top-2 left-2 bg-black text-white text-[10px] tracking-wider uppercase px-2 py-0.5">
+                          Épuisé
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-xs font-medium tracking-wide uppercase truncate text-black group-hover:text-gray-600 transition-colors">
+                      {relProduct.name}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5 font-light">
+                      {formatPrice(convertPrice(relProduct.price, relProduct.currency))}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </main>
       )}
 
