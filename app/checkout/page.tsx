@@ -39,6 +39,8 @@ export default function CheckoutPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const WAVE_PAYMENT_URL = 'https://pay.wave.com/m/M_sn_Wa801htS9rTJ/c/sn/'
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -58,6 +60,7 @@ export default function CheckoutPage() {
     setIsSubmitting(true)
 
     try {
+      // Enregistrer la commande dans la base de données
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,8 +85,10 @@ export default function CheckoutPage() {
         throw new Error(result.error || 'Erreur lors de la création de la commande')
       }
 
+      // Vider le panier puis rediriger vers Wave pour le paiement
       clearCart()
-      setOrderSuccess(true)
+      const waveUrl = `${WAVE_PAYMENT_URL}?amount=${finalPrice}`
+      window.location.href = waveUrl
 
     } catch (error: any) {
       toast({
@@ -270,14 +275,14 @@ export default function CheckoutPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-black text-white hover:bg-gray-800 tracking-widest py-6 text-sm uppercase rounded-none"
+                className="w-full bg-[#1CC8EE] hover:bg-[#17b8d8] text-white tracking-widest py-6 text-sm uppercase rounded-none font-bold flex items-center justify-center gap-2"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'TRAITEMENT EN COURS...' : 'VALIDER MA COMMANDE'}
+                {isSubmitting ? 'TRAITEMENT EN COURS...' : '💙 PAYER AVEC WAVE'}
               </Button>
 
               <p className="text-[11px] text-gray-400 text-center">
-                Paiement à la livraison · Nous vous appelons pour confirmer
+                Votre commande sera enregistrée puis vous serez redirigé vers Wave pour payer.
               </p>
             </form>
           </div>
@@ -339,8 +344,8 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="mt-5 p-3 bg-black text-white text-xs text-center tracking-widest">
-                💳 PAIEMENT À LA LIVRAISON
+              <div className="mt-5 p-3 bg-[#1CC8EE] text-white text-xs text-center tracking-widest font-bold">
+                💙 PAIEMENT SÉCURISÉ VIA WAVE
               </div>
             </div>
           </div>
