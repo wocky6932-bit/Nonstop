@@ -278,7 +278,14 @@ export default function CheckoutPage() {
                 className="w-full bg-[#1CC8EE] hover:bg-[#17b8d8] text-white tracking-widest py-6 text-sm uppercase rounded-none font-bold flex items-center justify-center gap-2"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'TRAITEMENT EN COURS...' : '💙 PAYER AVEC WAVE'}
+                {isSubmitting ? (
+                  'TRAITEMENT EN COURS...'
+                ) : (
+                  <>
+                    <img src="/wave-logo.png" alt="Wave" className="h-6 w-6 rounded-full object-cover" />
+                    PAYER AVEC WAVE
+                  </>
+                )}
               </Button>
 
               <p className="text-[11px] text-gray-400 text-center">
@@ -344,8 +351,9 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="mt-5 p-3 bg-[#1CC8EE] text-white text-xs text-center tracking-widest font-bold">
-                💙 PAIEMENT SÉCURISÉ VIA WAVE
+              <div className="mt-5 p-3 bg-[#1CC8EE] text-white text-xs text-center tracking-widest font-bold flex items-center justify-center gap-2">
+                <img src="/wave-logo.png" alt="Wave" className="h-5 w-5 rounded-full object-cover" />
+                PAIEMENT SÉCURISÉ VIA WAVE
               </div>
             </div>
           </div>
