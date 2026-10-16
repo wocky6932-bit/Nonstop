@@ -18,6 +18,25 @@ export async function getConnection() {
   return await pool.getConnection()
 }
 
+async function ensureProductColumns() {
+  await query(`
+    ALTER TABLE products
+      ADD COLUMN IF NOT EXISTS category VARCHAR(255) DEFAULT 'general',
+      ADD COLUMN IF NOT EXISTS sizes JSON,
+      ADD COLUMN IF NOT EXISTS variant_options JSON,
+      ADD COLUMN IF NOT EXISTS sold_out BOOLEAN DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS is_preorder TINYINT(1) NOT NULL DEFAULT 0
+  `)
+}
+
+async function ensureOrderItemColumns() {
+  await query(`
+    ALTER TABLE order_items
+      ADD COLUMN IF NOT EXISTS selected_size VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS selected_variant VARCHAR(100)
+  `)
+}
+
 // Fonctions pour les utilisateurs
 export async function createUser(userData: {
   email: string
@@ -143,6 +162,7 @@ export async function createProduct(productData: {
   is_preorder?: boolean
 }) {
   try {
+    await ensureProductColumns()
     const id = Date.now().toString()
     const sql = `
       INSERT INTO products (id, name, price, currency, image, images, description, category, sizes, variant_options, is_preorder)
@@ -172,13 +192,14 @@ export async function createProduct(productData: {
 
 export async function updateProduct(id: string, productData: any) {
   try {
+    await ensureProductColumns()
     const fields = []
     const params = []
 
     for (const [key, value] of Object.entries(productData)) {
       if (key === 'id') continue
       fields.push(`${key} = ?`)
-      if (key === 'images' || key === 'sizes') {
+      if (key === 'images' || key === 'sizes' || key === 'variant_options') {
         // Avoid double-encoding: only stringify if it's an actual array
         params.push(Array.isArray(value) ? JSON.stringify(value) : value)
       } else {
@@ -232,6 +253,8 @@ export async function createOrder(orderData: {
   const connection = await getConnection()
 
   try {
+    await ensureProductColumns()
+    await ensureOrderItemColumns()
     await connection.beginTransaction()
 
     // Créer la commande avec les infos de livraison (dont l'email)

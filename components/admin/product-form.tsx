@@ -28,6 +28,36 @@ interface Product {
 const AVAILABLE_SIZES = ['TU', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
 const AVAILABLE_VARIANTS = ['Cropped', 'Non cropped']
 
+const parseStringArray = (value: any): string[] => {
+  if (!value) return []
+
+  if (Array.isArray(value)) {
+    return value.filter((item: any) => typeof item === 'string' && item.trim() !== '')
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (!trimmed) return []
+
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (Array.isArray(parsed)) {
+        return parsed.filter((item: any) => typeof item === 'string' && item.trim() !== '')
+      }
+    } catch {
+      // ignore and continue with comma-split fallback
+    }
+
+    return trimmed
+      .replace(/\[|\]|"|'/g, '')
+      .split(',')
+      .map(item => item.trim())
+      .filter(Boolean)
+  }
+
+  return []
+}
+
 // Helper pour parser les images depuis MySQL (handles single & double JSON encoding)
 const parseImages = (images: any): string[] => {
   console.log('🔧 parseImages input:', images, 'type:', typeof images)
@@ -95,8 +125,8 @@ export function ProductForm({ product }: { product?: Product }) {
     image: product?.image || "",
     images: initialImages,
     category: product?.category || "general",
-    sizes: product?.sizes || [],
-    variantOptions: product?.variant_options || [],
+    sizes: parseStringArray(product?.sizes),
+    variantOptions: parseStringArray(product?.variant_options),
     soldOut: product?.soldOut || false,
     isPreorder: product?.is_preorder || false,
   })
