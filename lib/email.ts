@@ -20,6 +20,7 @@ export interface OrderEmailData {
     quantity: number
     price: number
     selectedSize?: string
+    selectedVariant?: string
     image?: string
   }>
   totalPrice: number
@@ -36,7 +37,7 @@ function renderItems(cart: OrderEmailData['cart']) {
           </td>
           <td style="padding-left:16px; padding-bottom:16px; vertical-align:middle;">
             <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 4px;">${item.name}</p>
-            <p style="color:#a0a0ab; font-size:13px; margin:0;">Taille : ${item.selectedSize || 'Standard'}</p>
+            <p style="color:#a0a0ab; font-size:13px; margin:0;">${item.selectedVariant ? `Variante : ${item.selectedVariant}` : item.selectedSize ? `Taille : ${item.selectedSize}` : 'Option : Standard'}</p>
           </td>
           <td align="center" style="color:#a0a0ab; font-size:14px; padding-bottom:16px; vertical-align:middle;">x${item.quantity}</td>
           <td align="right" style="color:#fff; font-size:15px; font-weight:600; padding-bottom:16px; vertical-align:middle;">${(item.price * item.quantity).toLocaleString('fr-FR')} FCFA</td>

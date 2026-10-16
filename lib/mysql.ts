@@ -139,13 +139,14 @@ export async function createProduct(productData: {
   description?: string
   category?: string
   sizes?: string[]
+  variant_options?: string[]
   is_preorder?: boolean
 }) {
   try {
     const id = Date.now().toString()
     const sql = `
-      INSERT INTO products (id, name, price, currency, image, images, description, category, sizes, is_preorder)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (id, name, price, currency, image, images, description, category, sizes, variant_options, is_preorder)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
 
     await query(sql, [
@@ -158,6 +159,7 @@ export async function createProduct(productData: {
       productData.description || '',
       productData.category || 'general',
       JSON.stringify(productData.sizes || []),
+      JSON.stringify(productData.variant_options || []),
       productData.is_preorder ? 1 : 0
     ])
 
@@ -217,6 +219,7 @@ export async function createOrder(orderData: {
     quantity: number
     image: string
     size?: string
+    variant?: string
   }>
   total: number
   notes?: string
@@ -252,8 +255,8 @@ export async function createOrder(orderData: {
 
     // Ajouter les articles
     const itemSql = `
-      INSERT INTO order_items (order_id, product_id, product_name, product_price, quantity, product_image, selected_size)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO order_items (order_id, product_id, product_name, product_price, quantity, product_image, selected_size, selected_variant)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `
 
     for (const item of orderData.items) {
@@ -264,7 +267,8 @@ export async function createOrder(orderData: {
         item.price,
         item.quantity,
         item.image,
-        item.size || null
+        item.size || null,
+        item.variant || null
       ])
     }
 

@@ -27,6 +27,7 @@ function ShopContent() {
     const [searchQuery, setSearchQuery] = useState('')
     const [searchOpen, setSearchOpen] = useState(false)
     const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({})
+    const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
     const searchParams = useSearchParams()
     const filterParam = searchParams.get('filter')
     const [preorderFilter, setPreorderFilter] = useState(false)
@@ -60,7 +61,9 @@ function ShopContent() {
         e.stopPropagation()
         const normalized = normalizeProductData(product)
         const hasSizes = normalized.sizes && normalized.sizes.length > 0
+        const hasVariants = normalized.variant_options && normalized.variant_options.length > 0
         const selectedSize = selectedSizes[product.id]
+        const selectedVariant = selectedVariants[product.id]
 
         if (hasSizes && !selectedSize) {
             toast({
@@ -71,11 +74,20 @@ function ShopContent() {
             return
         }
 
-        addToCart({ ...normalized, selectedSize: selectedSize || undefined })
+        if (hasVariants && !selectedVariant) {
+            toast({
+                title: 'Choisissez une variante',
+                description: `Sélectionnez Cropped ou Non cropped pour ${product.name}`,
+                variant: 'destructive',
+            })
+            return
+        }
+
+        addToCart({ ...normalized, selectedSize: selectedSize || undefined, selectedVariant: selectedVariant || undefined })
         toast({
             title: normalized.is_preorder ? 'Pré-commande ajoutée' : 'Ajouté au panier',
-            description: selectedSize
-                ? `${product.name} — Taille ${selectedSize}`
+            description: selectedVariant || selectedSize
+                ? `${product.name} — ${selectedVariant || selectedSize}`
                 : `${product.name} ajouté au panier`,
         })
     }
@@ -305,30 +317,64 @@ function ShopContent() {
                                     )}
                                 </div>
 
-                                {/* Sélecteur de taille — visible au hover */}
-                                {product.sizes && product.sizes.length > 0 && (
-                                    <div className="px-2 pt-2 hidden group-hover:flex flex-wrap gap-1">
-                                        {product.sizes.map((size: string) => (
-                                            <button
-                                                key={size}
-                                                onClick={() => setSelectedSizes(prev => ({
-                                                    ...prev,
-                                                    [product.id]: prev[product.id] === size ? '' : size
-                                                }))}
-                                                className={`relative text-[10px] px-2.5 py-1 border transition-all rounded-lg overflow-hidden ${
-                                                    selectedSizes[product.id] === size
-                                                        ? 'bg-black text-white border-black'
-                                                        : 'bg-white border-gray-300 text-gray-700 hover:border-black'
-                                                }`}
-                                            >
-                                                {product.sold_out && (
-                                                    <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
-                                                        <line x1="0" y1="100%" x2="100%" y2="0" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
-                                                    </svg>
-                                                )}
-                                                <span className="relative z-10">{size}</span>
-                                            </button>
-                                        ))}
+                                {/* Sélecteur de variante et taille — visible au hover */}
+                                {(product.variant_options && product.variant_options.length > 0 || product.sizes && product.sizes.length > 0) && (
+                                    <div className="px-2 pt-2 hidden group-hover:flex flex-col gap-2">
+                                        {product.variant_options && product.variant_options.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                                {product.variant_options.map((variant: string) => (
+                                                    <button
+                                                        key={variant}
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            setSelectedVariants(prev => ({
+                                                                ...prev,
+                                                                [product.id]: prev[product.id] === variant ? '' : variant
+                                                            }))
+                                                        }}
+                                                        className={`text-[10px] px-2.5 py-1 border transition-all rounded-lg ${
+                                                            selectedVariants[product.id] === variant
+                                                                ? 'bg-black text-white border-black'
+                                                                : 'bg-white border-gray-300 text-gray-700 hover:border-black'
+                                                        }`}
+                                                    >
+                                                        {variant}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {product.sizes && product.sizes.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                                {product.sizes.map((size: string) => (
+                                                    <button
+                                                        key={size}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            setSelectedSizes(prev => ({
+                                                                ...prev,
+                                                                [product.id]: prev[product.id] === size ? '' : size
+                                                            }))
+                                                        }}
+                                                        className={`relative text-[10px] px-2.5 py-1 border transition-all rounded-lg overflow-hidden ${
+                                                            selectedSizes[product.id] === size
+                                                                ? 'bg-black text-white border-black'
+                                                                : 'bg-white border-gray-300 text-gray-700 hover:border-black'
+                                                        }`}
+                                                    >
+                                                        {product.sold_out && (
+                                                            <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+                                                                <line x1="0" y1="100%" x2="100%" y2="0" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
+                                                            </svg>
+                                                        )}
+                                                        <span className="relative z-10">{size}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 

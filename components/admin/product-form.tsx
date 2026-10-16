@@ -20,11 +20,13 @@ interface Product {
   images?: string[] // Array of image URLs for carousel
   category?: string // Product category for filtering
   sizes?: string[] // Available sizes
+  variant_options?: string[] // Available product variants
   soldOut: boolean
   is_preorder?: boolean
 }
 
 const AVAILABLE_SIZES = ['TU', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
+const AVAILABLE_VARIANTS = ['Cropped', 'Non cropped']
 
 // Helper pour parser les images depuis MySQL (handles single & double JSON encoding)
 const parseImages = (images: any): string[] => {
@@ -94,6 +96,7 @@ export function ProductForm({ product }: { product?: Product }) {
     images: initialImages,
     category: product?.category || "general",
     sizes: product?.sizes || [],
+    variantOptions: product?.variant_options || [],
     soldOut: product?.soldOut || false,
     isPreorder: product?.is_preorder || false,
   })
@@ -104,6 +107,16 @@ export function ProductForm({ product }: { product?: Product }) {
         return { ...prev, sizes: prev.sizes.filter(s => s !== size) }
       } else {
         return { ...prev, sizes: [...prev.sizes, size] }
+      }
+    })
+  }
+
+  const handleVariantToggle = (variant: string) => {
+    setFormData(prev => {
+      if (prev.variantOptions.includes(variant)) {
+        return { ...prev, variantOptions: prev.variantOptions.filter(v => v !== variant) }
+      } else {
+        return { ...prev, variantOptions: [...prev.variantOptions, variant] }
       }
     })
   }
@@ -232,6 +245,7 @@ export function ProductForm({ product }: { product?: Product }) {
         image: mainImage,   // always use first uploaded image as the main one
         images: JSON.stringify(validImages), // store clean array as JSON string
         sizes: formData.sizes,
+        variant_options: formData.variantOptions,
         sold_out: formData.soldOut, // Utiliser sold_out pour MySQL
         is_preorder: formData.isPreorder,
       }
@@ -361,6 +375,29 @@ export function ProductForm({ product }: { product?: Product }) {
         </div>
         <div className="text-sm text-gray-600 mt-2">
           💡 Sélectionnez les tailles disponibles pour cet article. Si aucune n'est sélectionnée, l'option de taille n'apparaîtra pas.
+        </div>
+      </div>
+
+      <div>
+        <Label>Variantes disponibles</Label>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {AVAILABLE_VARIANTS.map(variant => (
+            <button
+              key={variant}
+              type="button"
+              onClick={() => handleVariantToggle(variant)}
+              className={`px-3 py-1.5 border rounded-md text-sm font-medium transition-colors ${
+                formData.variantOptions.includes(variant)
+                  ? 'bg-black text-white border-black'
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {variant}
+            </button>
+          ))}
+        </div>
+        <div className="text-sm text-gray-600 mt-2">
+          💡 Ajoutez les variantes proposées au client, par exemple : Cropped / Non cropped.
         </div>
       </div>
 

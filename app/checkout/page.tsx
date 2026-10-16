@@ -316,6 +316,11 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-1">
                       <h3 className="text-sm font-medium mb-0.5">{item.name}</h3>
+                      {item.selectedVariant && (
+                        <span className="inline-block text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded mb-1">
+                          Variante : {item.selectedVariant}
+                        </span>
+                      )}
                       {item.selectedSize && (
                         <span className="inline-block text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded mb-1">
                           Taille : {item.selectedSize}

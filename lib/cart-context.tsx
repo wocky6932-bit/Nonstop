@@ -9,9 +9,12 @@ export interface Product {
   currency: string
   image: string
   images?: string[]
+  category?: string
   sold_out: boolean
   sizes?: string[]       // Tailles disponibles (ex: ["S","M","L","XL"])
   selectedSize?: string  // Taille choisie par le client
+  variant_options?: string[] // Options de variante (ex: ["Cropped", "Non cropped"])
+  selectedVariant?: string // Variante choisie par le client
   is_preorder?: boolean
 }
 
@@ -53,10 +56,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [cart])
 
   const addToCart = (product: Product, quantityToAdd: number = 1) => {
-    // ID unique = id produit + taille choisie (ou juste l'id si pas de taille)
-    const cartItemId = product.selectedSize
-      ? `${product.id}-${product.selectedSize}`
-      : product.id
+    const variantKey = product.selectedVariant ? `-${product.selectedVariant}` : ''
+    const sizeKey = product.selectedSize ? `-${product.selectedSize}` : ''
+    const cartItemId = `${product.id}${variantKey}${sizeKey}`
 
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.cartItemId === cartItemId)

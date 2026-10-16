@@ -25,6 +25,7 @@ export default function ProductDetailPage() {
   const [relatedProducts, setRelatedProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSize, setSelectedSize] = useState<string>('')
+  const [selectedVariant, setSelectedVariant] = useState<string>('')
   const [quantity, setQuantity] = useState<number>(1)
   const [selectedImage, setSelectedImage] = useState<number>(0)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -101,6 +102,7 @@ export default function ProductDetailPage() {
     if (params.id) {
       fetchProductAndRelated()
       setSelectedSize('')
+      setSelectedVariant('')
       setQuantity(1)
       setSelectedImage(0)
     }
@@ -109,14 +111,22 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     if (!product) return
     const hasSizes = product.sizes && product.sizes.length > 0
+    const hasVariants = product.variant_options && product.variant_options.length > 0
+
     if (hasSizes && !selectedSize) {
       toast({ title: 'Choisissez une taille', variant: 'destructive' })
       return
     }
-    addToCart({ ...product, selectedSize: selectedSize || undefined }, quantity)
+
+    if (hasVariants && !selectedVariant) {
+      toast({ title: 'Choisissez une variante', description: 'Sélectionnez Cropped ou Non cropped.', variant: 'destructive' })
+      return
+    }
+
+    addToCart({ ...product, selectedSize: selectedSize || undefined, selectedVariant: selectedVariant || undefined }, quantity)
     toast({
       title: product.is_preorder ? 'Pré-commande ajoutée ✓' : 'Ajouté au panier ✓',
-      description: selectedSize ? `${product.name} — Taille ${selectedSize}` : product.name,
+      description: selectedVariant || selectedSize ? `${product.name} — ${selectedVariant || selectedSize}` : product.name,
     })
   }
 
@@ -271,6 +281,36 @@ export default function ProductDetailPage() {
                 <p className="text-sm text-gray-500 leading-relaxed">
                   {product.description}
                 </p>
+              )}
+
+              {/* Variantes */}
+              {product.variant_options && product.variant_options.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-black">Choisissez une option</p>
+                    {selectedVariant && (
+                      <span className="text-xs text-gray-500 font-medium uppercase tracking-[0.2em]">
+                        {selectedVariant}
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {product.variant_options.map((variant: string) => (
+                      <button
+                        key={variant}
+                        type="button"
+                        onClick={() => setSelectedVariant(prev => prev === variant ? '' : variant)}
+                        className={`h-12 px-4 text-sm font-medium border transition-all duration-150 rounded-xl flex items-center justify-center ${
+                          selectedVariant === variant
+                            ? 'bg-black text-white border-black shadow-sm'
+                            : 'bg-white border-gray-200 text-black hover:border-black'
+                        }`}
+                      >
+                        {variant}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {/* Tailles */}

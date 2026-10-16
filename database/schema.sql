@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS products (
     images JSON,
     description TEXT,
     category VARCHAR(255) DEFAULT 'general',
+    variant_options JSON,
     sold_out BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -52,6 +53,8 @@ CREATE TABLE IF NOT EXISTS order_items (
     product_price DECIMAL(10, 2) NOT NULL,
     quantity INT NOT NULL,
     product_image TEXT,
+    selected_size VARCHAR(50),
+    selected_variant VARCHAR(100),
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 );
 

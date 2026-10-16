@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
         quantity: item.quantity,
         image: item.image,
         size: item.selectedSize || null,
+        variant: item.selectedVariant || null,
       })),
       total: Math.round(totalPrice),
       notes: formData.notes,

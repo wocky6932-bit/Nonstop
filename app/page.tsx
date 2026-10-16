@@ -20,7 +20,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 export default function HomePage() {
   const { addToCart } = useCart()
   const { toast } = useToast()
-  const { currency, setCurrency } = useCurrency()
+  const { selectedCurrency, setSelectedCurrency } = useCurrency()
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')

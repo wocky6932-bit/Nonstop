@@ -26,6 +26,10 @@ export function normalizeProductForCart(product: any): Product {
     sold_out: product.sold_out || false,
     sizes: product.sizes && Array.isArray(product.sizes) ? product.sizes : [],
     selectedSize: product.selectedSize,
+    variant_options: product.variant_options && Array.isArray(product.variant_options)
+      ? product.variant_options
+      : [],
+    selectedVariant: product.selectedVariant,
     is_preorder: product.is_preorder === 1 || product.is_preorder === true
   }
 
@@ -90,6 +94,21 @@ export function normalizeProductData(product: any): Product {
     productSizes = rawSizes
   }
 
+  // Gérer la propriété variant_options
+  let productVariants: string[] = []
+  let rawVariants = product.variant_options
+  if (typeof rawVariants === 'string' && rawVariants.trim() !== '') {
+    let currentVariant: any = rawVariants
+    for (let i = 0; i < 3; i++) {
+      if (Array.isArray(currentVariant)) break
+      if (typeof currentVariant !== 'string') break
+      try { currentVariant = JSON.parse(currentVariant) } catch { break }
+    }
+    productVariants = Array.isArray(currentVariant) ? currentVariant : []
+  } else if (Array.isArray(rawVariants)) {
+    productVariants = rawVariants
+  }
+
   return {
     id: product.id,
     name: product.name,
@@ -98,6 +117,7 @@ export function normalizeProductData(product: any): Product {
     image: productImage,
     images: productImages,
     sizes: productSizes,
+    variant_options: productVariants,
     sold_out: product.sold_out === 1 || product.sold_out === true,
     is_preorder: product.is_preorder === 1 || product.is_preorder === true
   }

@@ -70,6 +70,11 @@ export function CartDrawer() {
                             PRÉ-COMMANDE
                           </span>
                         )}
+                        {item.selectedVariant && (
+                          <span className="inline-block text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                            Variante : {item.selectedVariant}
+                          </span>
+                        )}
                         {item.selectedSize && (
                           <span className="inline-block text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
                             Taille : {item.selectedSize}
