@@ -242,15 +242,16 @@ export default function ComingSoonAdminPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label htmlFor="whatsappNumber">Numéro WhatsApp vendeur</Label>
-              <Input id="whatsappNumber" value={form.whatsappNumber} onChange={(event) => setForm((previous) => ({ ...previous, whatsappNumber: event.target.value }))} placeholder="+221 ..." />
-            </div>
-            <div>
-              <Label htmlFor="launchDate">Date de lancement</Label>
-              <Input id="launchDate" type="date" value={form.launchDate} onChange={(event) => setForm((previous) => ({ ...previous, launchDate: event.target.value }))} />
-            </div>
+          <div className="rounded-none border border-black/10 bg-gray-50 p-3">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-gray-600">Parcours commande</p>
+            <p className="mt-2 text-sm text-gray-700">
+              Les précommandes utilisent le même parcours que les commandes classiques : ajout au panier puis checkout standard.
+            </p>
+          </div>
+
+          <div>
+            <Label htmlFor="launchDate">Date de lancement</Label>
+            <Input id="launchDate" type="date" value={form.launchDate} onChange={(event) => setForm((previous) => ({ ...previous, launchDate: event.target.value }))} />
           </div>
 
           <div className="flex items-center justify-between gap-3 rounded-none border border-black/10 p-3">
