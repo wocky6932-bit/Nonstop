@@ -264,6 +264,22 @@ export default function AdminPage() {
                   </div>
                 </div>
               </Link>
+
+              <Link href="/admin/coming-soon">
+                <div className="bg-white p-6 rounded-xl border hover:shadow-lg transition-all cursor-pointer group">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-black text-white rounded-lg group-hover:scale-110 transition-transform">
+                        <Calendar className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Coming Soon</h3>
+                        <p className="text-sm text-gray-500">Configurer la collection</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
             </div>
           </div>
         </div>

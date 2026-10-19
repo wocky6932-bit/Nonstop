@@ -18,6 +18,59 @@ export async function getConnection() {
   return await pool.getConnection()
 }
 
+async function ensureSiteConfigTable() {
+  await query(`
+    CREATE TABLE IF NOT EXISTS site_config (
+      id VARCHAR(255) PRIMARY KEY,
+      value TEXT,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `)
+}
+
+export async function getSiteConfig(key: string, fallback?: any) {
+  try {
+    await ensureSiteConfigTable()
+    const rows = await query('SELECT value FROM site_config WHERE id = ?', [key]) as any[]
+
+    if (!rows.length) {
+      return fallback ?? null
+    }
+
+    const rawValue = rows[0]?.value
+    if (rawValue === null || rawValue === undefined || rawValue === '') {
+      return fallback ?? null
+    }
+
+    try {
+      return JSON.parse(rawValue)
+    } catch {
+      return rawValue
+    }
+  } catch (error) {
+    console.error('Error fetching site config:', error)
+    return fallback ?? null
+  }
+}
+
+export async function setSiteConfig(key: string, value: any) {
+  try {
+    await ensureSiteConfigTable()
+    const serialized = typeof value === 'string' ? value : JSON.stringify(value ?? {})
+
+    await query(`
+      INSERT INTO site_config (id, value)
+      VALUES (?, ?)
+      ON DUPLICATE KEY UPDATE value = VALUES(value), updated_at = CURRENT_TIMESTAMP
+    `, [key, serialized])
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error saving site config:', error)
+    return { success: false, error: 'Erreur lors de la sauvegarde de la configuration' }
+  }
+}
+
 async function ensureProductColumns() {
   await query(`
     ALTER TABLE products
