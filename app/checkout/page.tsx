@@ -302,39 +302,42 @@ export default function CheckoutPage() {
               </h2>
 
               <div className="space-y-4 mb-6">
-                {cart.map((item) => (
-                  <div key={item.cartItemId} className="flex gap-4">
-                    <div className="relative w-20 h-20 bg-gray-200 flex-shrink-0">
-                      <img
-                        src={getValidImageUrl(item.image)}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {item.quantity}
+                {cart.map((item) => {
+                  const itemPrice = Number(item.price) || 0
+                  return (
+                    <div key={item.cartItemId} className="flex gap-4">
+                      <div className="relative w-20 h-20 bg-gray-200 flex-shrink-0">
+                        <img
+                          src={getValidImageUrl(item.image)}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                          {item.quantity}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium mb-0.5">{item.name}</h3>
+                        {item.selectedVariant && (
+                          <span className="inline-block text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded mb-1">
+                            Variante : {item.selectedVariant}
+                          </span>
+                        )}
+                        {item.selectedSize && (
+                          <span className="inline-block text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded mb-1">
+                            Taille : {item.selectedSize}
+                          </span>
+                        )}
+                        <p className="text-sm text-gray-600">
+                          {itemPrice.toLocaleString()} XOF × {item.quantity}
+                        </p>
+                      </div>
+                      <div className="text-sm font-medium">
+                        {(itemPrice * item.quantity).toLocaleString()} XOF
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-medium mb-0.5">{item.name}</h3>
-                      {item.selectedVariant && (
-                        <span className="inline-block text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded mb-1">
-                          Variante : {item.selectedVariant}
-                        </span>
-                      )}
-                      {item.selectedSize && (
-                        <span className="inline-block text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded mb-1">
-                          Taille : {item.selectedSize}
-                        </span>
-                      )}
-                      <p className="text-sm text-gray-600">
-                        {item.price.toLocaleString()} XOF × {item.quantity}
-                      </p>
-                    </div>
-                    <div className="text-sm font-medium">
-                      {(item.price * item.quantity).toLocaleString()} XOF
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               <div className="border-t pt-4 space-y-2">

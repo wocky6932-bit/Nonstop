@@ -56,9 +56,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [cart])
 
   const addToCart = (product: Product, quantityToAdd: number = 1) => {
-    const variantKey = product.selectedVariant ? `-${product.selectedVariant}` : ''
-    const sizeKey = product.selectedSize ? `-${product.selectedSize}` : ''
-    const cartItemId = `${product.id}${variantKey}${sizeKey}`
+    const sanitizedProduct: Product = {
+      ...product,
+      price: Number(product.price) || 0,
+      currency: product.currency || 'XOF',
+      sold_out: Boolean(product.sold_out),
+      is_preorder: Boolean(product.is_preorder),
+    }
+
+    const variantKey = sanitizedProduct.selectedVariant ? `-${sanitizedProduct.selectedVariant}` : ''
+    const sizeKey = sanitizedProduct.selectedSize ? `-${sanitizedProduct.selectedSize}` : ''
+    const cartItemId = `${sanitizedProduct.id}${variantKey}${sizeKey}`
 
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.cartItemId === cartItemId)
@@ -69,7 +77,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             : item
         )
       }
-      return [...prevCart, { ...product, cartItemId, quantity: quantityToAdd }]
+      return [...prevCart, { ...sanitizedProduct, cartItemId, quantity: quantityToAdd }]
     })
   }
 
@@ -94,7 +102,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const getTotalPrice = () => {
-    return cart.reduce((total: number, item: CartItem) => total + item.price * item.quantity, 0)
+    return cart.reduce((total: number, item: CartItem) => {
+      const itemPrice = Number(item.price) || 0
+      return total + itemPrice * item.quantity
+    }, 0)
   }
 
   const getCartCount = () => {

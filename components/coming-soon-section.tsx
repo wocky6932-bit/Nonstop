@@ -27,6 +27,8 @@ export type ComingSoonConfig = {
     image: string
     sizes: string[]
     is_preorder: boolean
+    price?: number
+    currency?: string
   }>
 }
 
@@ -49,7 +51,9 @@ const defaultConfig: ComingSoonConfig = {
       description: 'T-shirt blanc avec logo bleu et noir',
       image: '/tee-01-white.jpeg',
       is_preorder: true,
-      sizes: ['S', 'M', 'L', 'XL']
+      sizes: ['S', 'M', 'L', 'XL'],
+      price: 0,
+      currency: 'XOF'
     },
     {
       id: 'tee-02-black',
@@ -57,7 +61,9 @@ const defaultConfig: ComingSoonConfig = {
       description: 'T-shirt noir avec logo bleu et blanc',
       image: '/tee-02-black.jpeg',
       is_preorder: true,
-      sizes: ['S', 'M', 'L', 'XL']
+      sizes: ['S', 'M', 'L', 'XL'],
+      price: 0,
+      currency: 'XOF'
     }
   ]
 }
@@ -79,13 +85,17 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
   const handlePreorderCheckout = (product: any) => {
     if (!product) return
 
-    addToCart({
+    const safeProduct = {
       ...product,
+      price: Number(product?.price) || 0,
+      currency: product?.currency || 'XOF',
+      image: product?.image || product?.images?.[0] || defaultConfig.image,
       selectedSize: product?.sizes?.[0] || 'M',
       is_preorder: true,
       sold_out: false,
-    }, 1)
+    }
 
+    addToCart(safeProduct, 1)
     router.push('/checkout')
   }
 
