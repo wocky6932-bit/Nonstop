@@ -1,7 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useMemo, useRef } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
@@ -69,8 +68,8 @@ const defaultConfig: ComingSoonConfig = {
 }
 
 export function ComingSoonSection({ config, products }: { config?: Partial<ComingSoonConfig>; products?: any[] }) {
-  const router = useRouter()
   const { addToCart } = useCart()
+  const preorderSectionRef = useRef<HTMLElement | null>(null)
   const mergedConfig = { ...defaultConfig, ...(config || {}) }
   const preorderProducts = useMemo(() => {
     const list = Array.isArray(products) ? products : []
@@ -81,6 +80,10 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
     const filtered = list.filter((product: any) => product.is_preorder === true || product.is_preorder === 1 || product.is_preorder === '1')
     return filtered.length >= 2 ? filtered.slice(0, 2) : configuredProducts
   }, [products, mergedConfig])
+
+  const handlePreorderCta = () => {
+    preorderSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   const handlePreorderCheckout = (product: any) => {
     if (!product) return
@@ -96,7 +99,6 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
     }
 
     addToCart(safeProduct, 1)
-    router.push('/checkout')
   }
 
   if (!mergedConfig.enabled || !mergedConfig.visibleOnHome) return null
@@ -143,7 +145,7 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
           <div className="mt-7 flex justify-center">
             <Button
               type="button"
-              onClick={() => handlePreorderCheckout(preorderProducts[0])}
+              onClick={handlePreorderCta}
               className="border border-white/80 bg-transparent px-8 py-5 text-[10px] font-medium uppercase tracking-[0.3em] text-white hover:bg-white hover:text-black"
             >
               {mergedConfig.ctaText}
@@ -153,7 +155,7 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
       </section>
 
       {preorderProducts.length > 0 && (
-        <section className="mx-auto max-w-6xl bg-white px-4 py-8 md:px-6 md:py-12">
+        <section ref={preorderSectionRef} className="mx-auto max-w-6xl bg-white px-4 py-8 md:px-6 md:py-12">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             {preorderProducts.map((product: any) => {
               const productImage = getValidImageUrl(product.image || product.images?.[0] || '', '/precommande.jpeg')
