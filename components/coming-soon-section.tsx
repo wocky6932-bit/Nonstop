@@ -23,10 +23,10 @@ export type ComingSoonConfig = {
 const defaultConfig: ComingSoonConfig = {
   enabled: true,
   title: 'COMING SOON',
-  subtitle: 'TEE 01 / 02 — NOUVELLE COLLECTION',
+  subtitle: 'TEE 01 / 02',
   description: 'Deux coloris. Une seule identité. La prochaine collection NONSTOP arrive bientôt.',
   ctaText: 'PRÉCOMMANDER',
-  image: '/images/nonstop_mac_wallpaper_v2.png',
+  image: '/precommande.jpeg',
   heroLabel: 'NONSTOP',
   heroSecondary: 'TEE 01 / 02',
   visibleOnHome: true,
@@ -140,42 +140,46 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
 
   return (
     <>
-      <section className="relative isolate overflow-hidden bg-[#0b0b0b] text-white">
-        <div className="relative aspect-[16/11] w-full md:aspect-[21/9]">
-          <Image
-            src={heroImage}
-            alt={mergedConfig.title || 'Coming Soon'}
-            fill
-            priority
-            className="object-cover object-center"
-            quality={90}
-          />
-          <div className="absolute inset-0 bg-black/30" />
+      <section className="relative isolate overflow-hidden bg-[#090909] text-white">
+        <div className="relative mx-auto max-w-[1440px]">
+          <div className="relative aspect-[16/13] w-full overflow-hidden bg-[#131313] sm:aspect-[16/11] md:aspect-[16/10]">
+            <Image
+              src={heroImage}
+              alt={mergedConfig.title || 'Coming Soon'}
+              fill
+              priority
+              className="object-cover object-center opacity-95 grayscale-[0.15]"
+              quality={90}
+            />
+            <div className="absolute inset-0 bg-[#050505]/20" />
 
-          <div className="absolute inset-0 flex items-end p-4 md:p-10">
-            <div className="w-full max-w-6xl mx-auto flex items-end justify-between gap-4">
-              <div className="text-left">
-                <span className="block text-[10px] font-medium uppercase tracking-[0.4em] text-white/80">{mergedConfig.heroLabel}</span>
-                <span className="mt-2 block text-[10px] font-medium uppercase tracking-[0.4em] text-white/60">{mergedConfig.heroSecondary}</span>
-              </div>
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4 text-[10px] font-medium uppercase tracking-[0.35em] text-white/80 md:px-8 md:pb-6">
+              <span>{mergedConfig.heroLabel}</span>
+              <span>{mergedConfig.heroSecondary}</span>
             </div>
           </div>
         </div>
 
-        <div className="mx-auto max-w-6xl px-4 py-10 md:px-6 md:py-16">
-          <p className="text-center text-[10px] font-medium uppercase tracking-[0.5em] text-white/70">{mergedConfig.title}</p>
-          <h2 className="mt-4 text-center text-3xl font-black uppercase tracking-[-0.04em] text-white md:text-5xl">
-            {mergedConfig.subtitle}
+        <div className="mx-auto max-w-5xl px-4 py-8 text-center md:py-12">
+          <h2 className="text-5xl font-black uppercase tracking-[-0.08em] text-white sm:text-6xl md:text-[7rem]">
+            {mergedConfig.title}
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-center text-sm leading-6 text-white/75 md:text-base">
+          <div className="mt-4 flex items-center justify-center gap-4">
+            <span className="h-px w-12 bg-white/70 md:w-20" />
+            <p className="text-[10px] font-medium uppercase tracking-[0.4em] text-white/80 md:text-xs">
+              {mergedConfig.subtitle}
+            </p>
+            <span className="h-px w-12 bg-white/70 md:w-20" />
+          </div>
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-white/75 md:text-base">
             {mergedConfig.description}
           </p>
 
-          <div className="mt-8 flex justify-center">
+          <div className="mt-7 flex justify-center">
             <Button
               type="button"
               onClick={() => setSelectedProduct(preorderProducts[0] || null)}
-              className="border border-white/15 bg-white px-8 py-6 text-[10px] font-medium uppercase tracking-[0.3em] text-black hover:bg-gray-200"
+              className="border border-white/80 bg-transparent px-8 py-5 text-[10px] font-medium uppercase tracking-[0.3em] text-white hover:bg-white hover:text-black"
             >
               {mergedConfig.ctaText}
             </Button>
@@ -184,37 +188,34 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
       </section>
 
       {preorderProducts.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-12">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <section className="mx-auto max-w-6xl bg-white px-4 py-8 md:px-6 md:py-12">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             {preorderProducts.map((product: any) => {
-              const productImage = getValidImageUrl(product.image || product.images?.[0] || '', '/images/nonstop_mac_wallpaper_v2.png')
+              const productImage = getValidImageUrl(product.image || product.images?.[0] || '', '/precommande.jpeg')
               return (
-                <article key={product.id} className="border border-black/10 bg-white p-3 sm:p-4">
-                  <div className="overflow-hidden bg-neutral-100">
-                    <div className="relative aspect-[4/5] w-full">
-                      <Image
-                        src={productImage}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
+                <article key={product.id} className="bg-white p-0 text-black">
+                  <div className="relative mx-auto aspect-[4/5] w-full max-w-[540px] overflow-hidden bg-white">
+                    <Image
+                      src={productImage}
+                      alt={product.name}
+                      fill
+                      className="object-contain"
+                    />
                   </div>
 
-                  <div className="mt-5 flex items-start justify-between gap-4">
+                  <div className="mt-6 flex items-start justify-between gap-4 text-black">
                     <div>
-                      <h3 className="text-xl font-black uppercase tracking-tight text-black">{product.name}</h3>
-                      <p className="mt-2 text-sm text-gray-600">{product.description || 'T-shirt NONSTOP en édition limitée.'}</p>
+                      <h3 className="text-lg font-black uppercase tracking-tight md:text-xl">{product.name}</h3>
+                      <p className="mt-2 text-sm text-black/70">{product.description || 'T-shirt NONSTOP en édition limitée.'}</p>
                     </div>
-                    <span className="whitespace-nowrap text-xs font-medium uppercase tracking-[0.2em] text-gray-500">À confirmer</span>
+                    <span className="whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.25em] text-black/60">Prix à confirmer</span>
                   </div>
 
-                  <div className="mt-5 flex items-center justify-between">
-                    <span className="text-sm font-medium uppercase tracking-[0.2em] text-gray-500">Précommande</span>
+                  <div className="mt-5">
                     <Button
                       type="button"
                       onClick={() => setSelectedProduct(product)}
-                      className="bg-black px-5 py-3 text-[10px] font-medium uppercase tracking-[0.25em] text-white hover:bg-neutral-800"
+                      className="w-full border border-black bg-white px-5 py-4 text-[10px] font-medium uppercase tracking-[0.3em] text-black hover:bg-black hover:text-white"
                     >
                       PRÉCOMMANDER
                     </Button>
