@@ -7,12 +7,30 @@ const DEFAULT_COMING_SOON = {
   subtitle: 'TEE 01 / 02 — NOUVELLE COLLECTION',
   description: 'Deux coloris. Une seule identité. La prochaine collection NONSTOP arrive bientôt.',
   ctaText: 'PRÉCOMMANDER',
-  image: '/images/nonstop_mac_wallpaper_v2.png',
+  image: '/precommande.jpeg',
   heroLabel: 'NONSTOP',
   heroSecondary: 'TEE 01 / 02',
   visibleOnHome: true,
   whatsappNumber: '',
-  launchDate: ''
+  launchDate: '',
+  preorderProducts: [
+    {
+      id: 'tee-01-white',
+      name: 'TEE 01 — WHITE',
+      description: 'T-shirt blanc avec logo bleu et noir',
+      image: '/WhatsApp Image 2026-10-19 at 00.17.04.jpeg',
+      is_preorder: true,
+      sizes: ['S', 'M', 'L', 'XL']
+    },
+    {
+      id: 'tee-02-black',
+      name: 'TEE 02 — BLACK',
+      description: 'T-shirt noir avec logo bleu et blanc',
+      image: '/WhatsApp Image 2026-10-19 at 00.17.04 (1).jpeg',
+      is_preorder: true,
+      sizes: ['S', 'M', 'L', 'XL']
+    }
+  ]
 }
 
 export async function GET(request: NextRequest) {

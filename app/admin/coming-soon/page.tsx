@@ -15,12 +15,30 @@ const defaultConfig = {
   subtitle: 'TEE 01 / 02 — NOUVELLE COLLECTION',
   description: 'Deux coloris. Une seule identité. La prochaine collection NONSTOP arrive bientôt.',
   ctaText: 'PRÉCOMMANDER',
-  image: '/images/nonstop_mac_wallpaper_v2.png',
+  image: '/precommande.jpeg',
   heroLabel: 'NONSTOP',
   heroSecondary: 'TEE 01 / 02',
   visibleOnHome: true,
   whatsappNumber: '',
-  launchDate: ''
+  launchDate: '',
+  preorderProducts: [
+    {
+      id: 'tee-01-white',
+      name: 'TEE 01 — WHITE',
+      description: 'T-shirt blanc avec logo bleu et noir',
+      image: '/WhatsApp Image 2026-10-19 at 00.17.04.jpeg',
+      is_preorder: true,
+      sizes: ['S', 'M', 'L', 'XL']
+    },
+    {
+      id: 'tee-02-black',
+      name: 'TEE 02 — BLACK',
+      description: 'T-shirt noir avec logo bleu et blanc',
+      image: '/WhatsApp Image 2026-10-19 at 00.17.04 (1).jpeg',
+      is_preorder: true,
+      sizes: ['S', 'M', 'L', 'XL']
+    }
+  ]
 }
 
 export default function ComingSoonAdminPage() {
@@ -48,7 +66,14 @@ export default function ComingSoonAdminPage() {
       const response = await fetch('/api/admin/site-config?key=coming_soon')
       if (!response.ok) throw new Error('Configuration introuvable')
       const data = await response.json()
-      setForm({ ...defaultConfig, ...data })
+      const mergedConfig = {
+        ...defaultConfig,
+        ...(data || {}),
+        preorderProducts: Array.isArray(data?.preorderProducts) && data.preorderProducts.length > 0
+          ? data.preorderProducts
+          : defaultConfig.preorderProducts
+      }
+      setForm(mergedConfig)
     } catch (error) {
       console.error(error)
       setForm(defaultConfig)
@@ -103,6 +128,40 @@ export default function ComingSoonAdminPage() {
       alert('Échec du chargement de l’image.')
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handlePreorderImageUpload = async (productIndex: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error('Upload image produit impossible')
+      }
+
+      const data = await response.json()
+      setForm((previous) => ({
+        ...previous,
+        preorderProducts: previous.preorderProducts.map((product, index) =>
+          index === productIndex
+            ? { ...product, image: data.url }
+            : product
+        )
+      }))
+    } catch (error) {
+      console.error(error)
+      alert('Échec du chargement de l’image du produit.')
+    } finally {
+      if (event.target) event.target.value = ''
     }
   }
 
@@ -221,6 +280,68 @@ export default function ComingSoonAdminPage() {
                 <img src={form.image} alt="Preview Coming Soon" className="h-48 w-full object-cover" />
               </div>
             )}
+          </div>
+
+          <div className="space-y-4 border-t pt-6">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-[0.2em]">Produits précommande</p>
+            </div>
+
+            {(form.preorderProducts || []).map((product, index) => (
+              <div key={product.id || index} className="rounded-none border border-black/10 p-4">
+                <div className="mb-4 flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium uppercase tracking-[0.2em]">{product.name || `Produit ${index + 1}`}</p>
+                  <label className="cursor-pointer text-xs uppercase tracking-[0.2em] text-gray-600">
+                    Changer image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => handlePreorderImageUpload(index, event)}
+                    />
+                  </label>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label>Nom</Label>
+                    <Input
+                      value={product.name}
+                      onChange={(event) => setForm((previous) => ({
+                        ...previous,
+                        preorderProducts: previous.preorderProducts.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, name: event.target.value } : item
+                        )
+                      }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Prix</Label>
+                    <Input value="Prix à confirmer" readOnly className="bg-gray-50" />
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <Label>Description</Label>
+                  <textarea
+                    value={product.description}
+                    onChange={(event) => setForm((previous) => ({
+                      ...previous,
+                      preorderProducts: previous.preorderProducts.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, description: event.target.value } : item
+                      )
+                    }))}
+                    className="min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
+                  />
+                </div>
+
+                {product.image && (
+                  <div className="mt-4 overflow-hidden border border-black/10 bg-neutral-100">
+                    <img src={product.image} alt={product.name} className="h-52 w-full object-cover" />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
