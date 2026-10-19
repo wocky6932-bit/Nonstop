@@ -1,10 +1,12 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { getValidImageUrl } from '@/lib/image-utils'
+import { useCart } from '@/lib/cart-context'
 
 export type ComingSoonConfig = {
   enabled: boolean
@@ -69,34 +71,25 @@ function PreorderModal({
   whatsappNumber: string
   onClose: () => void
 }) {
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
+  const router = useRouter()
+  const { addToCart } = useCart()
   const [size, setSize] = useState(product?.sizes?.[0] || 'M')
   const [quantity, setQuantity] = useState(1)
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
 
-    const normalizedPhone = (whatsappNumber || '').replace(/\D/g, '')
-    if (!name.trim() || !phone.trim() || !normalizedPhone) {
-      alert('Merci de renseigner votre nom, votre WhatsApp et le numéro WhatsApp boutique configuré.')
-      return
-    }
+    if (!product) return
 
-    const message = [
-      'Bonjour NONSTOP 👋',
-      `Je souhaite précommander ${product?.name || 'un tee NONSTOP'}.`,
-      `Modèle : ${product?.name || 'TEE'}`,
-      `Taille : ${size}`,
-      `Quantité : ${quantity}`,
-      `Nom : ${name}`,
-      `WhatsApp : ${phone}`,
-      'Merci de me confirmer la disponibilité.'
-    ].join('\n')
+    addToCart({
+      ...product,
+      selectedSize: size,
+      is_preorder: true,
+      sold_out: false,
+    }, quantity)
 
-    const target = `https://api.whatsapp.com/send?phone=${encodeURIComponent(normalizedPhone)}&text=${encodeURIComponent(message)}`
-    window.open(target, '_blank', 'noopener,noreferrer')
     onClose()
+    router.push('/checkout')
   }
 
   return (
@@ -134,17 +127,7 @@ function PreorderModal({
             </div>
           </div>
 
-          <div>
-            <label className="mb-2 block text-[10px] uppercase tracking-[0.25em] text-gray-400">Nom</label>
-            <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Votre nom" className="w-full border border-white/10 bg-transparent px-3 py-3 text-sm outline-none placeholder:text-gray-500" />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-[10px] uppercase tracking-[0.25em] text-gray-400">WhatsApp</label>
-            <input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+221 ..." className="w-full border border-white/10 bg-transparent px-3 py-3 text-sm outline-none placeholder:text-gray-500" />
-          </div>
-
-          <Button type="submit" className="w-full bg-white text-black hover:bg-gray-200">Valider la précommande</Button>
+          <Button type="submit" className="w-full bg-white text-black hover:bg-gray-200">Ajouter au panier et finaliser</Button>
         </form>
       </div>
     </div>
@@ -224,13 +207,13 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
             {preorderProducts.map((product: any) => {
               const productImage = getValidImageUrl(product.image || product.images?.[0] || '', '/precommande.jpeg')
               return (
-                <article key={product.id} className="bg-white p-0 text-black">
-                  <div className="relative mx-auto aspect-[4/5] w-full max-w-[540px] overflow-hidden bg-white">
+                <article key={product.id} className="bg-transparent p-0 text-black">
+                  <div className="relative mx-auto aspect-[4/5] w-full max-w-[540px] overflow-hidden bg-transparent">
                     <Image
                       src={productImage}
                       alt={product.name}
                       fill
-                      className="object-contain"
+                      className="object-contain bg-transparent"
                     />
                   </div>
 
