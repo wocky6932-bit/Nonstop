@@ -15,7 +15,7 @@ const defaultConfig = {
   subtitle: 'TEE 01 / 02 — NOUVELLE COLLECTION',
   description: 'Deux coloris. Une seule identité. La prochaine collection NONSTOP arrive bientôt.',
   ctaText: 'PRÉCOMMANDER',
-  image: '/precommande.jpeg',
+  image: '/coming-soon-cover.jpeg',
   heroLabel: 'NONSTOP',
   heroSecondary: 'TEE 01 / 02',
   visibleOnHome: true,
@@ -26,7 +26,7 @@ const defaultConfig = {
       id: 'tee-01-white',
       name: 'TEE 01 — WHITE',
       description: 'T-shirt blanc avec logo bleu et noir',
-      image: '/WhatsApp Image 2026-10-19 at 00.17.04.jpeg',
+      image: '/tee-01-white.jpeg',
       is_preorder: true,
       sizes: ['S', 'M', 'L', 'XL']
     },
@@ -34,7 +34,7 @@ const defaultConfig = {
       id: 'tee-02-black',
       name: 'TEE 02 — BLACK',
       description: 'T-shirt noir avec logo bleu et blanc',
-      image: '/WhatsApp Image 2026-10-19 at 00.17.04 (1).jpeg',
+      image: '/tee-02-black.jpeg',
       is_preorder: true,
       sizes: ['S', 'M', 'L', 'XL']
     }
