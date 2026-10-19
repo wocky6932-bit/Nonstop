@@ -18,6 +18,14 @@ export type ComingSoonConfig = {
   visibleOnHome: boolean
   whatsappNumber: string
   launchDate: string
+  preorderProducts: Array<{
+    id: string
+    name: string
+    description: string
+    image: string
+    sizes: string[]
+    is_preorder: boolean
+  }>
 }
 
 const defaultConfig: ComingSoonConfig = {
@@ -31,7 +39,25 @@ const defaultConfig: ComingSoonConfig = {
   heroSecondary: 'TEE 01 / 02',
   visibleOnHome: true,
   whatsappNumber: '',
-  launchDate: ''
+  launchDate: '',
+  preorderProducts: [
+    {
+      id: 'tee-01-white',
+      name: 'TEE 01 — WHITE',
+      description: 'T-shirt blanc avec logo bleu et noir',
+      image: '/WhatsApp Image 2026-10-19 at 00.17.04.jpeg',
+      is_preorder: true,
+      sizes: ['S', 'M', 'L', 'XL']
+    },
+    {
+      id: 'tee-02-black',
+      name: 'TEE 02 — BLACK',
+      description: 'T-shirt noir avec logo bleu et blanc',
+      image: '/WhatsApp Image 2026-10-19 at 00.17.04 (1).jpeg',
+      is_preorder: true,
+      sizes: ['S', 'M', 'L', 'XL']
+    }
+  ]
 }
 
 function PreorderModal({
@@ -129,28 +155,13 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
   const mergedConfig = { ...defaultConfig, ...(config || {}) }
   const preorderProducts = useMemo(() => {
     const list = Array.isArray(products) ? products : []
-    const fallbackProducts = [
-      {
-        id: 'tee-01-white',
-        name: 'TEE 01 — WHITE',
-        description: 'T-shirt blanc avec logo bleu et noir',
-        image: '/WhatsApp Image 2026-10-19 at 00.17.04.jpeg',
-        is_preorder: true,
-        sizes: ['S', 'M', 'L', 'XL']
-      },
-      {
-        id: 'tee-02-black',
-        name: 'TEE 02 — BLACK',
-        description: 'T-shirt noir avec logo bleu et blanc',
-        image: '/WhatsApp Image 2026-10-19 at 00.17.04 (1).jpeg',
-        is_preorder: true,
-        sizes: ['S', 'M', 'L', 'XL']
-      }
-    ]
+    const configuredProducts = Array.isArray(mergedConfig.preorderProducts) && mergedConfig.preorderProducts.length > 0
+      ? mergedConfig.preorderProducts
+      : defaultConfig.preorderProducts
 
     const filtered = list.filter((product: any) => product.is_preorder === true || product.is_preorder === 1 || product.is_preorder === '1')
-    return filtered.length >= 2 ? filtered.slice(0, 2) : fallbackProducts
-  }, [products])
+    return filtered.length >= 2 ? filtered.slice(0, 2) : configuredProducts
+  }, [products, mergedConfig])
 
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
 
