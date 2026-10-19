@@ -62,79 +62,9 @@ const defaultConfig: ComingSoonConfig = {
   ]
 }
 
-function PreorderModal({
-  product,
-  whatsappNumber,
-  onClose
-}: {
-  product: any
-  whatsappNumber: string
-  onClose: () => void
-}) {
+export function ComingSoonSection({ config, products }: { config?: Partial<ComingSoonConfig>; products?: any[] }) {
   const router = useRouter()
   const { addToCart } = useCart()
-  const [size, setSize] = useState(product?.sizes?.[0] || 'M')
-  const [quantity, setQuantity] = useState(1)
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault()
-
-    if (!product) return
-
-    addToCart({
-      ...product,
-      selectedSize: size,
-      is_preorder: true,
-      sold_out: false,
-    }, quantity)
-
-    onClose()
-    router.push('/checkout')
-  }
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4">
-      <div className="w-full max-w-lg rounded-none border border-white/10 bg-[#111111] p-6 text-white shadow-2xl">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.4em] text-gray-400">Précommande</p>
-            <h3 className="mt-2 text-2xl font-black uppercase tracking-tight">{product?.name || 'TEE NONSTOP'}</h3>
-          </div>
-          <button type="button" onClick={onClose} className="rounded-full border border-white/10 p-2 text-gray-300 transition hover:text-white" aria-label="Fermer la précommande">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-2 block text-[10px] uppercase tracking-[0.25em] text-gray-400">Modèle</label>
-            <input value={product?.name || ''} readOnly className="w-full border border-white/10 bg-transparent px-3 py-3 text-sm outline-none" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-2 block text-[10px] uppercase tracking-[0.25em] text-gray-400">Taille</label>
-              <select value={size} onChange={(event) => setSize(event.target.value)} className="w-full border border-white/10 bg-transparent px-3 py-3 text-sm outline-none">
-                {(product?.sizes?.length ? product.sizes : ['S', 'M', 'L', 'XL']).map((item: string) => (
-                  <option key={item} value={item} className="bg-black text-white">{item}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-[10px] uppercase tracking-[0.25em] text-gray-400">Quantité</label>
-              <input type="number" min={1} max={10} value={quantity} onChange={(event) => setQuantity(Number(event.target.value) || 1)} className="w-full border border-white/10 bg-transparent px-3 py-3 text-sm outline-none" />
-            </div>
-          </div>
-
-          <Button type="submit" className="w-full bg-white text-black hover:bg-gray-200">Ajouter au panier et finaliser</Button>
-        </form>
-      </div>
-    </div>
-  )
-}
-
-export function ComingSoonSection({ config, products }: { config?: Partial<ComingSoonConfig>; products?: any[] }) {
   const mergedConfig = { ...defaultConfig, ...(config || {}) }
   const preorderProducts = useMemo(() => {
     const list = Array.isArray(products) ? products : []
@@ -146,7 +76,18 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
     return filtered.length >= 2 ? filtered.slice(0, 2) : configuredProducts
   }, [products, mergedConfig])
 
-  const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
+  const handlePreorderCheckout = (product: any) => {
+    if (!product) return
+
+    addToCart({
+      ...product,
+      selectedSize: product?.sizes?.[0] || 'M',
+      is_preorder: true,
+      sold_out: false,
+    }, 1)
+
+    router.push('/checkout')
+  }
 
   if (!mergedConfig.enabled || !mergedConfig.visibleOnHome) return null
 
@@ -192,7 +133,7 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
           <div className="mt-7 flex justify-center">
             <Button
               type="button"
-              onClick={() => setSelectedProduct(preorderProducts[0] || null)}
+              onClick={() => handlePreorderCheckout(preorderProducts[0])}
               className="border border-white/80 bg-transparent px-8 py-5 text-[10px] font-medium uppercase tracking-[0.3em] text-white hover:bg-white hover:text-black"
             >
               {mergedConfig.ctaText}
@@ -228,7 +169,7 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
                   <div className="mt-5">
                     <Button
                       type="button"
-                      onClick={() => setSelectedProduct(product)}
+                      onClick={() => handlePreorderCheckout(product)}
                       className="w-full border border-black bg-white px-5 py-4 text-[10px] font-medium uppercase tracking-[0.3em] text-black hover:bg-black hover:text-white"
                     >
                       PRÉCOMMANDER
@@ -241,13 +182,6 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
         </section>
       )}
 
-      {selectedProduct && (
-        <PreorderModal
-          product={selectedProduct}
-          whatsappNumber={mergedConfig.whatsappNumber || ''}
-          onClose={() => setSelectedProduct(null)}
-        />
-      )}
     </>
   )
 }
