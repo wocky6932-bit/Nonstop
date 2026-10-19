@@ -129,7 +129,27 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
   const mergedConfig = { ...defaultConfig, ...(config || {}) }
   const preorderProducts = useMemo(() => {
     const list = Array.isArray(products) ? products : []
-    return list.filter((product: any) => product.is_preorder === true || product.is_preorder === 1 || product.is_preorder === '1').slice(0, 2)
+    const fallbackProducts = [
+      {
+        id: 'tee-01-white',
+        name: 'TEE 01 — WHITE',
+        description: 'T-shirt blanc avec logo bleu et noir',
+        image: '/WhatsApp Image 2026-10-19 at 00.17.04.jpeg',
+        is_preorder: true,
+        sizes: ['S', 'M', 'L', 'XL']
+      },
+      {
+        id: 'tee-02-black',
+        name: 'TEE 02 — BLACK',
+        description: 'T-shirt noir avec logo bleu et blanc',
+        image: '/WhatsApp Image 2026-10-19 at 00.17.04 (1).jpeg',
+        is_preorder: true,
+        sizes: ['S', 'M', 'L', 'XL']
+      }
+    ]
+
+    const filtered = list.filter((product: any) => product.is_preorder === true || product.is_preorder === 1 || product.is_preorder === '1')
+    return filtered.length >= 2 ? filtered.slice(0, 2) : fallbackProducts
   }, [products])
 
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
