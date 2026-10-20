@@ -27,12 +27,19 @@ self.addEventListener('fetch', (event) => {
 
   const isApiRequest = url.pathname.startsWith('/api/')
   const isNavigationRequest = event.request.mode === 'navigate'
+  const isImageRequest = /\.(png|jpe?g|gif|webp|avif|svg|bmp|ico)(\?.*)?$/i.test(url.pathname) || event.request.destination === 'image'
 
-  if (isNavigationRequest || isApiRequest) {
+  if (isNavigationRequest || isApiRequest || isImageRequest) {
     event.respondWith(
       fetch(event.request)
-        .then((response) => response)
-        .catch(() => caches.match('/'))
+        .then((response) => {
+          if (response && response.status === 200) {
+            const copy = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy))
+          }
+          return response
+        })
+        .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/')))
     )
     return
   }

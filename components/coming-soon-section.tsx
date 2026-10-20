@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useRef } from 'react'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { getValidImageUrl } from '@/lib/image-utils'
@@ -119,13 +118,12 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
       <section className="relative isolate overflow-hidden bg-[#090909] text-white">
         <div className="relative mx-auto max-w-[1440px]">
           <div className="relative aspect-[16/13] w-full overflow-hidden bg-[#131313] sm:aspect-[16/11] md:aspect-[16/10]">
-            <Image
+            <img
               src={heroImage}
               alt={mergedConfig.title || 'Coming Soon'}
-              fill
-              priority
-              className="object-cover object-center opacity-95 grayscale-[0.15]"
-              quality={90}
+              className="h-full w-full object-cover object-center opacity-95 grayscale-[0.15]"
+              loading="eager"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-[#050505]/20" />
 
@@ -176,11 +174,12 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
               return (
                 <article key={product.id} className="bg-transparent p-0 text-black">
                   <div className="relative mx-auto aspect-[4/5] w-full max-w-[540px] overflow-hidden bg-transparent">
-                    <Image
+                    <img
                       src={productImage}
                       alt={product.name}
-                      fill
-                      className="object-contain bg-transparent"
+                      className="h-full w-full object-contain bg-transparent"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
 
@@ -188,12 +187,12 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
                     <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
                       {productImages.map((image: string, imageIndex: number) => (
                         <div key={`${product.id}-image-${imageIndex}`} className="h-16 w-16 shrink-0 overflow-hidden rounded border border-black/10 bg-neutral-100">
-                          <Image
+                          <img
                             src={getValidImageUrl(image, '/precommande.jpeg')}
                             alt={`${product.name} ${imageIndex + 1}`}
-                            width={64}
-                            height={64}
                             className="h-full w-full object-cover"
+                            loading="lazy"
+                            decoding="async"
                           />
                         </div>
                       ))}
