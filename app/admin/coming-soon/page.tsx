@@ -10,7 +10,32 @@ import { Label } from '@/components/ui/label'
 import { ArrowLeft, ImageIcon, Save } from 'lucide-react'
 import { normalizeComingSoonConfig } from '@/lib/coming-soon-config'
 
-const defaultConfig = {
+type PreorderProduct = {
+  id: string
+  name: string
+  description: string
+  image: string
+  images?: string[]
+  is_preorder: boolean
+  sizes: string[]
+  price: number
+  currency: string
+}
+
+const defaultConfig: {
+  enabled: boolean
+  title: string
+  subtitle: string
+  description: string
+  ctaText: string
+  image: string
+  heroLabel: string
+  heroSecondary: string
+  visibleOnHome: boolean
+  whatsappNumber: string
+  launchDate: string
+  preorderProducts: PreorderProduct[]
+} = {
   enabled: true,
   title: 'COMING SOON',
   subtitle: 'TEE 01 / 02 — NOUVELLE COLLECTION',
@@ -28,6 +53,7 @@ const defaultConfig = {
       name: 'TEE 01 — WHITE',
       description: 'T-shirt blanc avec logo bleu et noir',
       image: '/tee-01-white.jpeg',
+      images: ['/tee-01-white.jpeg'],
       is_preorder: true,
       sizes: ['S', 'M', 'L', 'XL'],
       price: 0,
@@ -38,6 +64,7 @@ const defaultConfig = {
       name: 'TEE 02 — BLACK',
       description: 'T-shirt noir avec logo bleu et blanc',
       image: '/tee-02-black.jpeg',
+      images: ['/tee-02-black.jpeg'],
       is_preorder: true,
       sizes: ['S', 'M', 'L', 'XL'],
       price: 0,
@@ -156,7 +183,7 @@ export default function ComingSoonAdminPage() {
 
       setForm((previous) => ({
         ...previous,
-        preorderProducts: previous.preorderProducts.map((product, index) => {
+        preorderProducts: previous.preorderProducts.map((product: PreorderProduct, index: number) => {
           if (index !== productIndex) return product
 
           const currentImages = Array.isArray(product.images) && product.images.length > 0
@@ -212,11 +239,11 @@ export default function ComingSoonAdminPage() {
   const removePreorderImage = (productIndex: number, imageIndex: number) => {
     setForm((previous) => ({
       ...previous,
-      preorderProducts: previous.preorderProducts.map((product, index) => {
+      preorderProducts: previous.preorderProducts.map((product: PreorderProduct, index: number) => {
         if (index !== productIndex) return product
 
         const currentImages = Array.isArray(product.images) ? product.images : product.image ? [product.image] : []
-        const nextImages = currentImages.filter((_, idx) => idx !== imageIndex)
+        const nextImages = currentImages.filter((_: string, idx: number) => idx !== imageIndex)
 
         return {
           ...product,
@@ -466,7 +493,7 @@ export default function ComingSoonAdminPage() {
                   />
                 </div>
 
-                {(Array.isArray(product.images) && product.images.length > 0 ? product.images : product.image ? [product.image] : []).map((image, imageIndex) => (
+                {(Array.isArray(product.images) && product.images.length > 0 ? product.images : product.image ? [product.image] : []).map((image: string, imageIndex: number) => (
                   <div key={`${product.id || index}-image-${imageIndex}`} className="mt-4 overflow-hidden border border-black/10 bg-neutral-100">
                     <div className="relative">
                       <img src={image} alt={`${product.name} ${imageIndex + 1}`} className="h-52 w-full object-cover" />
