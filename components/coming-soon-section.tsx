@@ -117,19 +117,19 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
 
   return (
     <>
-      <section className="relative isolate overflow-hidden bg-[#090909] text-white">
+      <section className="relative isolate overflow-hidden bg-white text-black">
         <div className="relative mx-auto max-w-[1440px]">
-          <div className="relative aspect-[16/13] w-full overflow-hidden bg-[#131313] sm:aspect-[16/11] md:aspect-[16/10]">
+          <div className="relative aspect-[16/13] w-full overflow-hidden bg-neutral-100 sm:aspect-[16/11] md:aspect-[16/10]">
             <img
               src={heroImage}
               alt={mergedConfig.title || 'Coming Soon'}
-              className="h-full w-full object-cover object-center opacity-95 grayscale-[0.15]"
+              className="h-full w-full object-cover object-center opacity-95"
               loading="eager"
               decoding="async"
             />
-            <div className="absolute inset-0 bg-[#050505]/20" />
+            <div className="absolute inset-0 bg-black/10" />
 
-            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4 text-[10px] font-medium uppercase tracking-[0.35em] text-white/80 md:px-8 md:pb-6">
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4 text-[10px] font-medium uppercase tracking-[0.35em] text-white md:px-8 md:pb-6">
               <span>{mergedConfig.heroLabel}</span>
               <span>{mergedConfig.heroSecondary}</span>
             </div>
@@ -137,17 +137,17 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
         </div>
 
         <div className="mx-auto max-w-5xl px-4 py-8 text-center md:py-12">
-          <h2 className="text-5xl font-black uppercase tracking-[-0.08em] text-white sm:text-6xl md:text-[7rem]">
+          <h2 className="text-5xl font-black uppercase tracking-[-0.08em] text-black sm:text-6xl md:text-[7rem]">
             {mergedConfig.title}
           </h2>
           <div className="mt-4 flex items-center justify-center gap-4">
-            <span className="h-px w-12 bg-white/70 md:w-20" />
-            <p className="text-[10px] font-medium uppercase tracking-[0.4em] text-white/80 md:text-xs">
+            <span className="h-px w-12 bg-black/40 md:w-20" />
+            <p className="text-[10px] font-medium uppercase tracking-[0.4em] text-black/70 md:text-xs">
               {mergedConfig.subtitle}
             </p>
-            <span className="h-px w-12 bg-white/70 md:w-20" />
+            <span className="h-px w-12 bg-black/40 md:w-20" />
           </div>
-          <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-white/75 md:text-base">
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-black/75 md:text-base">
             {mergedConfig.description}
           </p>
 
@@ -155,7 +155,7 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
             <Button
               type="button"
               onClick={handlePreorderCta}
-              className="border border-white/80 bg-transparent px-8 py-5 text-[10px] font-medium uppercase tracking-[0.3em] text-white hover:bg-white hover:text-black"
+              className="border border-black bg-black px-8 py-5 text-[10px] font-medium uppercase tracking-[0.3em] text-white hover:bg-neutral-800"
             >
               {mergedConfig.ctaText}
             </Button>
