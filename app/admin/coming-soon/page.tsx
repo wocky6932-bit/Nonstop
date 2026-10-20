@@ -408,7 +408,7 @@ export default function ComingSoonAdminPage() {
             </div>
 
             {form.image && (
-              <div className="overflow-hidden border border-black/10 bg-neutral-100">
+              <div className="relative overflow-hidden border border-black/10 bg-neutral-100">
                 <img
                   src={form.image}
                   alt="Preview Coming Soon"
@@ -417,6 +417,16 @@ export default function ComingSoonAdminPage() {
                     event.currentTarget.src = '/coming-soon-cover.jpeg'
                   }}
                 />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setForm((prev) => ({ ...prev, image: '' }))}
+                  className="absolute top-2 right-2 h-7 px-2 text-xs"
+                >
+                  <X className="mr-1 h-3 w-3" />
+                  Retirer
+                </Button>
               </div>
             )}
           </div>

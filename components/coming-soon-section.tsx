@@ -73,13 +73,15 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
   const preorderSectionRef = useRef<HTMLElement | null>(null)
   const mergedConfig = { ...defaultConfig, ...(config || {}) }
   const preorderProducts = useMemo(() => {
-    const list = Array.isArray(products) ? products : []
-    const configuredProducts = Array.isArray(mergedConfig.preorderProducts) && mergedConfig.preorderProducts.length > 0
-      ? mergedConfig.preorderProducts
-      : defaultConfig.preorderProducts
+    // Si l'administrateur a configuré des produits dans Coming Soon, on affiche TOUS ces produits
+    if (Array.isArray(mergedConfig.preorderProducts) && mergedConfig.preorderProducts.length > 0) {
+      return mergedConfig.preorderProducts
+    }
 
+    // Sinon, repli sur les produits marqués en précommande dans la boutique
+    const list = Array.isArray(products) ? products : []
     const filtered = list.filter((product: any) => product.is_preorder === true || product.is_preorder === 1 || product.is_preorder === '1')
-    return filtered.length >= 2 ? filtered.slice(0, 2) : configuredProducts
+    return filtered.length > 0 ? filtered : defaultConfig.preorderProducts
   }, [products, mergedConfig])
 
   const handlePreorderCta = () => {
@@ -163,7 +165,7 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
 
       {preorderProducts.length > 0 && (
         <section ref={preorderSectionRef} className="mx-auto max-w-6xl bg-white px-4 py-8 md:px-6 md:py-12">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {preorderProducts.map((product: any) => {
               const productImages = Array.isArray(product.images) && product.images.length > 0
                 ? product.images
