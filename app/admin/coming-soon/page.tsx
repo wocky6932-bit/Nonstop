@@ -338,9 +338,27 @@ export default function ComingSoonAdminPage() {
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
               <span className="text-xs text-gray-500">Utilisez une vraie image provenant du produit ou de la collection.</span>
             </div>
+
+            <div>
+              <Label htmlFor="coverImageUrl">URL de l’image de couverture</Label>
+              <Input
+                id="coverImageUrl"
+                value={form.image || ''}
+                onChange={(event) => setForm((previous) => ({ ...previous, image: event.target.value }))}
+                placeholder="https://... ou /coming-soon-cover.jpeg"
+              />
+            </div>
+
             {form.image && (
               <div className="overflow-hidden border border-black/10 bg-neutral-100">
-                <img src={form.image} alt="Preview Coming Soon" className="h-48 w-full object-cover" />
+                <img
+                  src={form.image}
+                  alt="Preview Coming Soon"
+                  className="h-48 w-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.src = '/coming-soon-cover.jpeg'
+                  }}
+                />
               </div>
             )}
           </div>
