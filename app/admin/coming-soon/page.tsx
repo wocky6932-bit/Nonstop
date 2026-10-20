@@ -11,6 +11,8 @@ import { ArrowLeft, ImageIcon, Loader2, Plus, Save, Trash2, X } from 'lucide-rea
 import { normalizeComingSoonConfig } from '@/lib/coming-soon-config'
 import { compressImage, getValidImageUrl } from '@/lib/image-utils'
 
+const STANDARD_SIZES = ['TU', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
+
 type PreorderProduct = {
   id: string
   name: string
@@ -522,24 +524,41 @@ export default function ComingSoonAdminPage() {
                 </div>
 
                 <div className="mt-4">
-                  <Label>Tailles disponibles (séparées par une virgule)</Label>
-                  <Input
-                    value={(product.sizes || []).join(', ')}
-                    placeholder="S, M, L, XL"
-                    onChange={(event) => {
-                      const sizesArr = event.target.value
-                        .split(',')
-                        .map((s) => s.trim().toUpperCase())
-                        .filter(Boolean)
-                      setForm((previous) => ({
-                        ...previous,
-                        preorderProducts: previous.preorderProducts.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, sizes: sizesArr } : item
-                        )
-                      }))
-                    }}
-                  />
-                  <p className="mt-1 text-xs text-gray-500">Ex: S, M, L, XL, XXL</p>
+                  <Label>Tailles disponibles</Label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {STANDARD_SIZES.map((size) => {
+                      const isSelected = Array.isArray(product.sizes) && product.sizes.includes(size)
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => {
+                            setForm((previous) => ({
+                              ...previous,
+                              preorderProducts: previous.preorderProducts.map((item, itemIndex) => {
+                                if (itemIndex !== index) return item
+                                const currentSizes = Array.isArray(item.sizes) ? item.sizes : []
+                                const nextSizes = currentSizes.includes(size)
+                                  ? currentSizes.filter((s) => s !== size)
+                                  : [...currentSizes, size]
+                                return { ...item, sizes: nextSizes }
+                              })
+                            }))
+                          }}
+                          className={`px-3 py-1.5 border rounded-md text-xs font-semibold tracking-wider transition-colors ${
+                            isSelected
+                              ? 'bg-black text-white border-black shadow-sm'
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    💡 Cliquez sur les tailles pour les activer ou les désactiver pour ce produit.
+                  </p>
                 </div>
 
                 <div className="mt-4">
