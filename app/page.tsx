@@ -278,21 +278,30 @@ export default function HomePage() {
       </section>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 lg:px-8 py-12 space-y-16">
-        
-
-
-
-
+      <main className="container mx-auto px-4 lg:px-8 py-8 space-y-12">
         <ComingSoonSection config={comingSoonConfig} products={products} />
 
+        {/* Section Nos Produits */}
+        <section className="w-full pt-4">
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <span className="h-px w-8 sm:w-16 bg-neutral-300" />
+            <h2 className="text-xl sm:text-2xl font-black uppercase tracking-[0.25em] text-black">
+              NOS PRODUITS
+            </h2>
+            <span className="h-px w-8 sm:w-16 bg-neutral-300" />
+          </div>
+          <p className="text-center text-xs text-neutral-500 tracking-wider mb-8">
+            Découvrez tous nos articles
+          </p>
+
           <ProductGrid products={visibleProducts} />
+        </section>
 
         {/* Shoppable Lookbook (s'il y en a un actif) */}
         {lookbook && (
-          <section className="mt-12">
+          <section className="mt-8">
             <div className="text-center mb-8">
-              <h2 className="text-3xl md:text-4xl font-black tracking-tight text-black uppercase">
+              <h2 className="text-2xl md:text-3xl font-black tracking-tight text-black uppercase">
                 ACHETER LE LOOK
               </h2>
             </div>

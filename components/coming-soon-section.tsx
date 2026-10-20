@@ -125,160 +125,110 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
 
   if (!mergedConfig.enabled || !mergedConfig.visibleOnHome) return null
 
-  const heroImage = getValidImageUrl(mergedConfig.image, defaultConfig.image)
-
   return (
-    <>
-      <section className="relative isolate overflow-hidden bg-white text-black">
-        <div className="relative mx-auto max-w-[1440px]">
-          <div className="relative aspect-[16/13] w-full overflow-hidden bg-neutral-100 sm:aspect-[16/11] md:aspect-[16/10]">
-            <img
-              src={heroImage}
-              alt={mergedConfig.title || 'Coming Soon'}
-              className="h-full w-full object-cover object-center opacity-95"
-              loading="eager"
-              decoding="async"
-            />
-            <div className="absolute inset-0 bg-black/10" />
-
-            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4 text-[10px] font-medium uppercase tracking-[0.35em] text-white md:px-8 md:pb-6">
-              <span>{mergedConfig.heroLabel}</span>
-              <span>{mergedConfig.heroSecondary}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-auto max-w-5xl px-4 py-8 text-center md:py-12">
-          <h2 className="text-5xl font-black uppercase tracking-[-0.08em] text-black sm:text-6xl md:text-[7rem]">
-            {mergedConfig.title}
-          </h2>
-          <div className="mt-4 flex items-center justify-center gap-4">
-            <span className="h-px w-12 bg-black/40 md:w-20" />
-            <p className="text-[10px] font-medium uppercase tracking-[0.4em] text-black/70 md:text-xs">
-              {mergedConfig.subtitle}
-            </p>
-            <span className="h-px w-12 bg-black/40 md:w-20" />
-          </div>
-          <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-black/75 md:text-base">
-            {mergedConfig.description}
-          </p>
-
-          <div className="mt-7 flex justify-center">
-            <Button
-              type="button"
-              onClick={handlePreorderCta}
-              className="border border-black bg-black px-8 py-5 text-[10px] font-medium uppercase tracking-[0.3em] text-white hover:bg-neutral-800"
-            >
-              {mergedConfig.ctaText}
-            </Button>
-          </div>
-        </div>
-      </section>
+    <section className="w-full pt-4 pb-2">
+      <div className="mx-auto max-w-3xl text-center mb-8">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500 mb-2">
+          NOUVELLE COLLECTION
+        </p>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-black">
+          {mergedConfig.title || 'COMING SOON'}
+        </h2>
+        <p className="mt-2 text-xs sm:text-sm text-neutral-600 tracking-wide max-w-lg mx-auto">
+          {mergedConfig.description || 'Deux t-shirts. Une seule identité. Précommandes ouvertes.'}
+        </p>
+      </div>
 
       {preorderProducts.length > 0 && (
-        <section ref={preorderSectionRef} className="mx-auto max-w-6xl bg-white px-4 py-8 md:px-6 md:py-12">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {preorderProducts.map((product: any) => {
-              const productImages = Array.isArray(product.images) && product.images.length > 0
-                ? product.images
-                : product.image
-                  ? [product.image]
-                  : []
-              const productImage = getValidImageUrl(productImages[0] || product.image || '', '/precommande.jpeg')
-              return (
-                <article key={product.id} className="bg-transparent p-0 text-black">
-                  <div className="relative mx-auto aspect-[4/5] w-full max-w-[540px] overflow-hidden bg-transparent">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {preorderProducts.map((product: any) => {
+            const productImages = Array.isArray(product.images) && product.images.length > 0
+              ? product.images
+              : product.image
+                ? [product.image]
+                : []
+            const productImage = getValidImageUrl(productImages[0] || product.image || '', '/precommande.jpeg')
+            const availableSizes = Array.isArray(product.sizes) && product.sizes.length > 0
+              ? product.sizes
+              : ['S', 'M', 'L', 'XL']
+            const currentSelected = selectedSizes[product.id] || availableSizes[0] || 'M'
+
+            return (
+              <article
+                key={product.id}
+                className="group flex flex-col justify-between border border-neutral-100 bg-white p-4 sm:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow duration-300"
+              >
+                {/* Image container avec badge Précommande en haut à gauche */}
+                <div>
+                  <div className="relative aspect-square w-full overflow-hidden bg-neutral-50 mb-4">
+                    <div className="absolute top-2.5 left-2.5 z-10">
+                      <span className="bg-black text-white text-[9px] font-semibold uppercase tracking-[0.2em] px-2 py-1">
+                        PRÉCOMMANDE
+                      </span>
+                    </div>
+
                     <img
                       src={productImage}
                       alt={product.name}
-                      className="h-full w-full object-contain bg-transparent"
+                      className="h-full w-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
                       decoding="async"
                     />
                   </div>
 
-                  {productImages.length > 1 && (
-                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                      {productImages.map((image: string, imageIndex: number) => (
-                        <div key={`${product.id}-image-${imageIndex}`} className="h-16 w-16 shrink-0 overflow-hidden rounded border border-black/10 bg-neutral-100">
-                          <img
-                            src={getValidImageUrl(image, '/precommande.jpeg')}
-                            alt={`${product.name} ${imageIndex + 1}`}
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="mt-6 flex items-start justify-between gap-4 text-black">
-                    <div>
-                      <h3 className="text-lg font-black uppercase tracking-tight md:text-xl">{product.name}</h3>
-                      <p className="mt-2 text-sm text-black/70">{product.description || 'T-shirt NONSTOP en édition limitée.'}</p>
-                    </div>
-                    <span className="whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.25em] text-black/60">
-                      {formatPreorderPrice(product?.price, product?.currency)}
-                    </span>
+                  {/* Infos produit */}
+                  <div className="space-y-1 mb-4">
+                    <h3 className="text-sm sm:text-base font-black uppercase tracking-tight text-black">
+                      {product.name}
+                    </h3>
+                    <p className="text-xs font-semibold text-neutral-600 tracking-wider">
+                      {formatPreorderPrice(product?.price || 7000, product?.currency || 'XOF')}
+                    </p>
                   </div>
 
-                  {(() => {
-                    const availableSizes = Array.isArray(product.sizes) && product.sizes.length > 0
-                      ? product.sizes
-                      : ['S', 'M', 'L', 'XL']
-                    const currentSelected = selectedSizes[product.id] || availableSizes[0]
-
-                    return (
-                      <div className="mt-4">
-                        <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-black/60 mb-2">
-                          Sélectionnez votre taille
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {availableSizes.map((size: string) => {
-                            const isSelected = currentSelected === size
-                            return (
-                              <button
-                                key={`${product.id}-size-${size}`}
-                                type="button"
-                                onClick={() => setSelectedSizes((prev) => ({ ...prev, [product.id]: size }))}
-                                className={`min-w-[42px] px-3 py-1.5 border text-xs font-semibold tracking-wider transition-all duration-200 ${
-                                  isSelected
-                                    ? 'bg-black text-white border-black shadow-sm'
-                                    : 'bg-white text-black border-neutral-300 hover:border-black'
-                                }`}
-                              >
-                                {size}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )
-                  })()}
-
-                  <div className="mt-5">
-                    <Button
-                      type="button"
-                      onClick={() => handlePreorderCheckout(product)}
-                      className={`w-full border border-black px-5 py-4 text-[10px] font-medium uppercase tracking-[0.3em] transition-all duration-300 ${
-                        addedProductId === product.id
-                          ? 'bg-black text-white'
-                          : 'bg-white text-black hover:bg-black hover:text-white'
-                      }`}
-                    >
-                      {addedProductId === product.id
-                        ? `AJOUTÉ (${selectedSizes[product.id] || (Array.isArray(product.sizes) && product.sizes[0]) || 'M'}) ✓`
-                        : 'PRÉCOMMANDER'}
-                    </Button>
+                  {/* Sélecteur de tailles */}
+                  <div className="mb-4">
+                    <div className="flex gap-1.5 sm:gap-2">
+                      {availableSizes.map((size: string) => {
+                        const isSelected = currentSelected === size
+                        return (
+                          <button
+                            key={`${product.id}-size-${size}`}
+                            type="button"
+                            onClick={() => setSelectedSizes((prev) => ({ ...prev, [product.id]: size }))}
+                            className={`flex-1 py-1.5 border text-xs font-semibold tracking-wider transition-all duration-200 ${
+                              isSelected
+                                ? 'bg-black text-white border-black'
+                                : 'bg-white text-black border-neutral-200 hover:border-black'
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
-                </article>
-              )
-            })}
-          </div>
-        </section>
+                </div>
+
+                {/* Bouton Précommander */}
+                <Button
+                  type="button"
+                  onClick={() => handlePreorderCheckout(product)}
+                  className={`w-full py-4 text-[10px] font-semibold uppercase tracking-[0.25em] transition-all duration-300 ${
+                    addedProductId === product.id
+                      ? 'bg-neutral-800 text-white'
+                      : 'bg-black text-white hover:bg-neutral-800'
+                  }`}
+                >
+                  {addedProductId === product.id
+                    ? `AJOUTÉ (${currentSelected}) ✓`
+                    : 'PRÉCOMMANDER →'}
+                </Button>
+              </article>
+            )
+          })}
+        </div>
       )}
-
-    </>
+    </section>
   )
 }

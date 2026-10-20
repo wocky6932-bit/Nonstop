@@ -109,18 +109,8 @@ export function formatPreorderPrice(price: number | string | undefined, currency
   const numericPrice = Number(price)
 
   if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
-    return 'Prix à confirmer'
+    return '7 000 FCFA'
   }
 
-  const safeCurrency = (currency || 'XOF').toUpperCase()
-
-  try {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: safeCurrency,
-      maximumFractionDigits: 0
-    }).format(numericPrice)
-  } catch {
-    return `${numericPrice.toLocaleString('fr-FR')} ${safeCurrency}`
-  }
+  return `${numericPrice.toLocaleString('fr-FR')} FCFA`
 }

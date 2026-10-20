@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useCart, Product } from '@/lib/cart-context'
-import { Plus } from 'lucide-react'
+import { ShoppingCart } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useCurrency } from '@/lib/currency-context'
 import { ImageCarousel } from '@/components/image-carousel'
@@ -92,9 +92,9 @@ export function ProductGrid({ products }: { products: Product[] }) {
                 <button
                   onClick={(e) => handleAddToCart(e, product)}
                   aria-label={`Ajouter ${product.name} au panier`}
-                  className="absolute bottom-2 right-2 z-20 w-8 h-8 bg-white/95 border border-gray-300 flex items-center justify-center rounded-full shadow-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 hover:bg-black hover:text-white hover:border-black"
+                  className="absolute bottom-2 right-2 z-20 w-8 h-8 bg-white border border-gray-200 flex items-center justify-center rounded-full shadow-sm text-black hover:bg-black hover:text-white transition-colors duration-200"
                 >
-                  <Plus className="w-4 h-4" strokeWidth={1.5} />
+                  <ShoppingCart className="w-3.5 h-3.5" strokeWidth={1.75} />
                 </button>
               )}
             </div>
