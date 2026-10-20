@@ -19,16 +19,22 @@ const DEFAULT_COMING_SOON = {
       name: 'TEE 01 — WHITE',
       description: 'T-shirt blanc avec logo bleu et noir',
       image: '/tee-01-white.jpeg',
+      images: ['/tee-01-white.jpeg'],
       is_preorder: true,
-      sizes: ['S', 'M', 'L', 'XL']
+      sizes: ['S', 'M', 'L', 'XL'],
+      price: 0,
+      currency: 'XOF'
     },
     {
       id: 'tee-02-black',
       name: 'TEE 02 — BLACK',
       description: 'T-shirt noir avec logo bleu et blanc',
       image: '/tee-02-black.jpeg',
+      images: ['/tee-02-black.jpeg'],
       is_preorder: true,
-      sizes: ['S', 'M', 'L', 'XL']
+      sizes: ['S', 'M', 'L', 'XL'],
+      price: 0,
+      currency: 'XOF'
     }
   ]
 }

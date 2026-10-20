@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ArrowLeft, ImageIcon, Save } from 'lucide-react'
+import { normalizeComingSoonConfig } from '@/lib/coming-soon-config'
 
 const defaultConfig = {
   enabled: true,
@@ -28,7 +29,9 @@ const defaultConfig = {
       description: 'T-shirt blanc avec logo bleu et noir',
       image: '/tee-01-white.jpeg',
       is_preorder: true,
-      sizes: ['S', 'M', 'L', 'XL']
+      sizes: ['S', 'M', 'L', 'XL'],
+      price: 0,
+      currency: 'XOF'
     },
     {
       id: 'tee-02-black',
@@ -36,7 +39,9 @@ const defaultConfig = {
       description: 'T-shirt noir avec logo bleu et blanc',
       image: '/tee-02-black.jpeg',
       is_preorder: true,
-      sizes: ['S', 'M', 'L', 'XL']
+      sizes: ['S', 'M', 'L', 'XL'],
+      price: 0,
+      currency: 'XOF'
     }
   ]
 }
@@ -66,13 +71,7 @@ export default function ComingSoonAdminPage() {
       const response = await fetch('/api/admin/site-config?key=coming_soon')
       if (!response.ok) throw new Error('Configuration introuvable')
       const data = await response.json()
-      const mergedConfig = {
-        ...defaultConfig,
-        ...(data || {}),
-        preorderProducts: Array.isArray(data?.preorderProducts) && data.preorderProducts.length > 0
-          ? data.preorderProducts
-          : defaultConfig.preorderProducts
-      }
+      const mergedConfig = normalizeComingSoonConfig(data || defaultConfig)
       setForm(mergedConfig)
     } catch (error) {
       console.error(error)
@@ -132,30 +131,48 @@ export default function ComingSoonAdminPage() {
   }
 
   const handlePreorderImageUpload = async (productIndex: number, event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const files = Array.from(event.target.files || [])
+    if (!files.length) return
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
+      const uploadedUrls: string[] = []
 
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData
-      })
+      for (const file of files) {
+        const formData = new FormData()
+        formData.append('file', file)
 
-      if (!response.ok) {
-        throw new Error('Upload image produit impossible')
+        const response = await fetch('/api/upload/image', {
+          method: 'POST',
+          body: formData
+        })
+
+        if (!response.ok) {
+          throw new Error('Upload image produit impossible')
+        }
+
+        const data = await response.json()
+        uploadedUrls.push(data.url)
       }
 
-      const data = await response.json()
       setForm((previous) => ({
         ...previous,
-        preorderProducts: previous.preorderProducts.map((product, index) =>
-          index === productIndex
-            ? { ...product, image: data.url }
-            : product
-        )
+        preorderProducts: previous.preorderProducts.map((product, index) => {
+          if (index !== productIndex) return product
+
+          const currentImages = Array.isArray(product.images) && product.images.length > 0
+            ? product.images
+            : product.image
+              ? [product.image]
+              : []
+
+          const combinedImages = [...currentImages, ...uploadedUrls]
+
+          return {
+            ...product,
+            images: combinedImages,
+            image: combinedImages[0] || product.image || ''
+          }
+        })
       }))
     } catch (error) {
       console.error(error)
@@ -163,6 +180,51 @@ export default function ComingSoonAdminPage() {
     } finally {
       if (event.target) event.target.value = ''
     }
+  }
+
+  const addPreorderProduct = () => {
+    setForm((previous) => ({
+      ...previous,
+      preorderProducts: [
+        ...(previous.preorderProducts || []),
+        {
+          id: `custom-${Date.now()}`,
+          name: `Produit ${((previous.preorderProducts || []).length + 1)}`,
+          description: 'Nouvelle précommande',
+          image: '',
+          images: [],
+          is_preorder: true,
+          sizes: ['S', 'M', 'L', 'XL'],
+          price: 0,
+          currency: 'XOF'
+        }
+      ]
+    }))
+  }
+
+  const removePreorderProduct = (productIndex: number) => {
+    setForm((previous) => ({
+      ...previous,
+      preorderProducts: (previous.preorderProducts || []).filter((_, index) => index !== productIndex)
+    }))
+  }
+
+  const removePreorderImage = (productIndex: number, imageIndex: number) => {
+    setForm((previous) => ({
+      ...previous,
+      preorderProducts: previous.preorderProducts.map((product, index) => {
+        if (index !== productIndex) return product
+
+        const currentImages = Array.isArray(product.images) ? product.images : product.image ? [product.image] : []
+        const nextImages = currentImages.filter((_, idx) => idx !== imageIndex)
+
+        return {
+          ...product,
+          images: nextImages,
+          image: nextImages[0] || ''
+        }
+      })
+    }))
   }
 
   if (sessionLoading || loading) {
@@ -200,7 +262,7 @@ export default function ComingSoonAdminPage() {
           <div className="flex items-center justify-between gap-3 rounded-none border border-black/10 p-3">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.2em]">Afficher la section</p>
-              <p className="text-xs text-gray-500">Activer ou désactiver la collection</p>
+              <p className="text-xs text-gray-500">Désactiver complètement pour supprimer le Coming Soon</p>
             </div>
             <input
               type="checkbox"
@@ -284,23 +346,36 @@ export default function ComingSoonAdminPage() {
           </div>
 
           <div className="space-y-4 border-t pt-6">
-            <div>
+            <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-medium uppercase tracking-[0.2em]">Produits précommande</p>
+              <Button type="button" variant="outline" onClick={addPreorderProduct} className="h-9">
+                + Ajouter un produit
+              </Button>
             </div>
 
             {(form.preorderProducts || []).map((product, index) => (
               <div key={product.id || index} className="rounded-none border border-black/10 p-4">
                 <div className="mb-4 flex items-center justify-between gap-2">
                   <p className="text-sm font-medium uppercase tracking-[0.2em]">{product.name || `Produit ${index + 1}`}</p>
-                  <label className="cursor-pointer text-xs uppercase tracking-[0.2em] text-gray-600">
-                    Changer image
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(event) => handlePreorderImageUpload(index, event)}
-                    />
-                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => removePreorderProduct(index)}
+                      className="text-xs uppercase tracking-[0.2em] text-red-600"
+                    >
+                      Supprimer
+                    </button>
+                    <label className="cursor-pointer text-xs uppercase tracking-[0.2em] text-gray-600">
+                      Ajouter images
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(event) => handlePreorderImageUpload(index, event)}
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
@@ -318,7 +393,44 @@ export default function ComingSoonAdminPage() {
                   </div>
                   <div>
                     <Label>Prix</Label>
-                    <Input value="Prix à confirmer" readOnly className="bg-gray-50" />
+                    <Input
+                      type="number"
+                      min="0"
+                      value={Number(product.price ?? 0)}
+                      onChange={(event) => setForm((previous) => ({
+                        ...previous,
+                        preorderProducts: previous.preorderProducts.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, price: Number(event.target.value || 0) } : item
+                        )
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label>Devise</Label>
+                    <Input
+                      value={product.currency || 'XOF'}
+                      onChange={(event) => setForm((previous) => ({
+                        ...previous,
+                        preorderProducts: previous.preorderProducts.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, currency: event.target.value.toUpperCase() } : item
+                        )
+                      }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>URL image</Label>
+                    <Input
+                      value={product.image || ''}
+                      onChange={(event) => setForm((previous) => ({
+                        ...previous,
+                        preorderProducts: previous.preorderProducts.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, image: event.target.value } : item
+                        )
+                      }))}
+                    />
                   </div>
                 </div>
 
@@ -336,11 +448,20 @@ export default function ComingSoonAdminPage() {
                   />
                 </div>
 
-                {product.image && (
-                  <div className="mt-4 overflow-hidden border border-black/10 bg-neutral-100">
-                    <img src={product.image} alt={product.name} className="h-52 w-full object-cover" />
+                {(Array.isArray(product.images) && product.images.length > 0 ? product.images : product.image ? [product.image] : []).map((image, imageIndex) => (
+                  <div key={`${product.id || index}-image-${imageIndex}`} className="mt-4 overflow-hidden border border-black/10 bg-neutral-100">
+                    <div className="relative">
+                      <img src={image} alt={`${product.name} ${imageIndex + 1}`} className="h-52 w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removePreorderImage(index, imageIndex)}
+                        className="absolute right-2 top-2 rounded bg-black/80 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-white"
+                      >
+                        Retirer
+                      </button>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
             ))}
           </div>

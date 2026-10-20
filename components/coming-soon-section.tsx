@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { getValidImageUrl } from '@/lib/image-utils'
 import { useCart } from '@/lib/cart-context'
+import { formatPreorderPrice } from '@/lib/coming-soon-config'
 
 export type ComingSoonConfig = {
   enabled: boolean
@@ -24,6 +25,7 @@ export type ComingSoonConfig = {
     name: string
     description: string
     image: string
+    images?: string[]
     sizes: string[]
     is_preorder: boolean
     price?: number
@@ -88,11 +90,18 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
   const handlePreorderCheckout = (product: any) => {
     if (!product) return
 
+    const productImages = Array.isArray(product?.images) && product.images.length > 0
+      ? product.images
+      : product?.image
+        ? [product.image]
+        : []
+
     const safeProduct = {
       ...product,
       price: Number(product?.price) || 0,
       currency: product?.currency || 'XOF',
-      image: product?.image || product?.images?.[0] || defaultConfig.image,
+      image: productImages[0] || product?.image || defaultConfig.image,
+      images: productImages,
       selectedSize: product?.sizes?.[0] || 'M',
       is_preorder: true,
       sold_out: false,
@@ -158,7 +167,12 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
         <section ref={preorderSectionRef} className="mx-auto max-w-6xl bg-white px-4 py-8 md:px-6 md:py-12">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             {preorderProducts.map((product: any) => {
-              const productImage = getValidImageUrl(product.image || product.images?.[0] || '', '/precommande.jpeg')
+              const productImages = Array.isArray(product.images) && product.images.length > 0
+                ? product.images
+                : product.image
+                  ? [product.image]
+                  : []
+              const productImage = getValidImageUrl(productImages[0] || product.image || '', '/precommande.jpeg')
               return (
                 <article key={product.id} className="bg-transparent p-0 text-black">
                   <div className="relative mx-auto aspect-[4/5] w-full max-w-[540px] overflow-hidden bg-transparent">
@@ -170,12 +184,30 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
                     />
                   </div>
 
+                  {productImages.length > 1 && (
+                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                      {productImages.map((image: string, imageIndex: number) => (
+                        <div key={`${product.id}-image-${imageIndex}`} className="h-16 w-16 shrink-0 overflow-hidden rounded border border-black/10 bg-neutral-100">
+                          <Image
+                            src={getValidImageUrl(image, '/precommande.jpeg')}
+                            alt={`${product.name} ${imageIndex + 1}`}
+                            width={64}
+                            height={64}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="mt-6 flex items-start justify-between gap-4 text-black">
                     <div>
                       <h3 className="text-lg font-black uppercase tracking-tight md:text-xl">{product.name}</h3>
                       <p className="mt-2 text-sm text-black/70">{product.description || 'T-shirt NONSTOP en édition limitée.'}</p>
                     </div>
-                    <span className="whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.25em] text-black/60">Prix à confirmer</span>
+                    <span className="whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.25em] text-black/60">
+                      {formatPreorderPrice(product?.price, product?.currency)}
+                    </span>
                   </div>
 
                   <div className="mt-5">
