@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { X } from 'lucide-react'
+import { Sparkles, X } from 'lucide-react'
 import { getValidImageUrl } from '@/lib/image-utils'
 import { useCart } from '@/lib/cart-context'
 import { formatPreorderPrice } from '@/lib/coming-soon-config'
@@ -126,21 +126,30 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
   if (!mergedConfig.enabled || !mergedConfig.visibleOnHome) return null
 
   return (
-    <section className="w-full pt-4 pb-2">
+    <section className="w-full relative py-6 px-3 sm:px-6 rounded-2xl bg-gradient-to-b from-neutral-50/90 via-neutral-50/40 to-white border border-neutral-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      {/* En-tête de la section avec badge lumineux */}
       <div className="mx-auto max-w-3xl text-center mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-500 mb-2">
-          NOUVELLE COLLECTION
-        </p>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-black">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black text-white text-[9px] font-bold uppercase tracking-[0.3em] mb-3 shadow-sm">
+          <Sparkles className="w-3 h-3 text-amber-400" />
+          <span>Édition Limitée • Précommandes</span>
+        </div>
+        <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-black drop-shadow-sm">
           {mergedConfig.title || 'COMING SOON'}
         </h2>
+        <div className="mt-3 flex items-center justify-center gap-3">
+          <span className="h-0.5 w-10 bg-black" />
+          <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.25em] text-neutral-800">
+            {mergedConfig.subtitle || 'TEE 01 / 02 — NOUVELLE COLLECTION'}
+          </p>
+          <span className="h-0.5 w-10 bg-black" />
+        </div>
         <p className="mt-2 text-xs sm:text-sm text-neutral-600 tracking-wide max-w-lg mx-auto">
-          {mergedConfig.description || 'Deux t-shirts. Une seule identité. Précommandes ouvertes.'}
+          {mergedConfig.description || 'Deux t-shirts. Une seule identité. Réservez votre pièce avant rupture.'}
         </p>
       </div>
 
       {preorderProducts.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
           {preorderProducts.map((product: any) => {
             const productImages = Array.isArray(product.images) && product.images.length > 0
               ? product.images
@@ -156,39 +165,53 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
             return (
               <article
                 key={product.id}
-                className="group flex flex-col justify-between border border-neutral-100 bg-white p-4 sm:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow duration-300"
+                className="group relative flex flex-col justify-between rounded-xl border-2 border-black/80 bg-white p-5 sm:p-6 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_35px_-5px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-1"
               >
-                {/* Image container avec badge Précommande en haut à gauche */}
-                <div>
-                  <div className="relative aspect-square w-full overflow-hidden bg-neutral-50 mb-4">
-                    <div className="absolute top-2.5 left-2.5 z-10">
-                      <span className="bg-black text-white text-[9px] font-semibold uppercase tracking-[0.2em] px-2 py-1">
-                        PRÉCOMMANDE
-                      </span>
-                    </div>
+                {/* Ruban haut exclusif */}
+                <div className="absolute -top-3.5 left-4 z-20">
+                  <span className="bg-black text-white text-[9px] font-black uppercase tracking-[0.25em] px-3 py-1 rounded shadow-md border border-neutral-700">
+                    PRÉCOMMANDE OFFICIELLE
+                  </span>
+                </div>
 
+                <div>
+                  {/* Visuel produit agrandi avec fond contrasté */}
+                  <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-neutral-100/70 mb-5 flex items-center justify-center p-3">
                     <img
                       src={productImage}
                       alt={product.name}
-                      className="h-full w-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
+                      className="h-full w-full object-contain filter drop-shadow-md group-hover:scale-108 transition-transform duration-500"
                       loading="lazy"
                       decoding="async"
                     />
                   </div>
 
-                  {/* Infos produit */}
-                  <div className="space-y-1 mb-4">
-                    <h3 className="text-sm sm:text-base font-black uppercase tracking-tight text-black">
-                      {product.name}
-                    </h3>
-                    <p className="text-xs font-semibold text-neutral-600 tracking-wider">
-                      {formatPreorderPrice(product?.price || 7000, product?.currency || 'XOF')}
-                    </p>
+                  {/* Infos produit avec typo impactante */}
+                  <div className="flex items-baseline justify-between mb-4 pb-3 border-b border-neutral-100">
+                    <div>
+                      <h3 className="text-base sm:text-lg font-black uppercase tracking-tight text-black">
+                        {product.name}
+                      </h3>
+                      <p className="text-[11px] text-neutral-500 tracking-wide mt-0.5">
+                        {product.description || 'Édition collector • Tissu premium'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-base sm:text-lg font-black text-black tracking-tight">
+                        {formatPreorderPrice(product?.price || 7000, product?.currency || 'XOF')}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Sélecteur de tailles */}
-                  <div className="mb-4">
-                    <div className="flex gap-1.5 sm:gap-2">
+                  {/* Sélecteur de tailles très visible */}
+                  <div className="mb-5">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-700">
+                        Choisir la taille
+                      </span>
+                      <span className="text-[10px] text-neutral-400 font-medium">Coupe Regular Fit</span>
+                    </div>
+                    <div className="flex gap-2">
                       {availableSizes.map((size: string) => {
                         const isSelected = currentSelected === size
                         return (
@@ -196,10 +219,10 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
                             key={`${product.id}-size-${size}`}
                             type="button"
                             onClick={() => setSelectedSizes((prev) => ({ ...prev, [product.id]: size }))}
-                            className={`flex-1 py-1.5 border text-xs font-semibold tracking-wider transition-all duration-200 ${
+                            className={`flex-1 py-2.5 rounded text-xs font-black tracking-widest transition-all duration-200 ${
                               isSelected
-                                ? 'bg-black text-white border-black'
-                                : 'bg-white text-black border-neutral-200 hover:border-black'
+                                ? 'bg-black text-white shadow-md scale-102 ring-2 ring-black ring-offset-1'
+                                : 'bg-neutral-100 text-black border border-neutral-200 hover:bg-neutral-200'
                             }`}
                           >
                             {size}
@@ -210,19 +233,19 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
                   </div>
                 </div>
 
-                {/* Bouton Précommander */}
+                {/* Bouton d'action proéminent avec animation hover */}
                 <Button
                   type="button"
                   onClick={() => handlePreorderCheckout(product)}
-                  className={`w-full py-4 text-[10px] font-semibold uppercase tracking-[0.25em] transition-all duration-300 ${
+                  className={`w-full py-6 rounded-lg text-xs font-black uppercase tracking-[0.3em] transition-all duration-300 shadow-md ${
                     addedProductId === product.id
-                      ? 'bg-neutral-800 text-white'
-                      : 'bg-black text-white hover:bg-neutral-800'
+                      ? 'bg-neutral-900 text-white'
+                      : 'bg-black text-white hover:bg-neutral-800 hover:shadow-lg active:scale-[0.99]'
                   }`}
                 >
                   {addedProductId === product.id
-                    ? `AJOUTÉ (${currentSelected}) ✓`
-                    : 'PRÉCOMMANDER →'}
+                    ? `✓ RÉSERVÉ EN TAILLE ${currentSelected}`
+                    : `PRÉCOMMANDER EN TAILLE ${currentSelected} →`}
                 </Button>
               </article>
             )
