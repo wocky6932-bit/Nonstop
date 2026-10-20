@@ -7,8 +7,9 @@ import { useSession } from '@/hooks/use-session'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, ImageIcon, Save } from 'lucide-react'
+import { ArrowLeft, ImageIcon, Loader2, Plus, Save, Trash2, X } from 'lucide-react'
 import { normalizeComingSoonConfig } from '@/lib/coming-soon-config'
+import { compressImage, getValidImageUrl } from '@/lib/image-utils'
 
 type PreorderProduct = {
   id: string
@@ -80,6 +81,8 @@ export default function ComingSoonAdminPage() {
   const [form, setForm] = useState(defaultConfig)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const [uploadingProductIndex, setUploadingProductIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (!sessionLoading && (!session || !session.isAdmin)) {
@@ -134,9 +137,19 @@ export default function ComingSoonAdminPage() {
     const file = event.target.files?.[0]
     if (!file) return
 
+    setUploadingCover(true)
     try {
+      let fileToUpload: Blob | File = file
+      if (file.type.startsWith('image/')) {
+        try {
+          fileToUpload = await compressImage(file, 800, 800, 0.7)
+        } catch (compressionErr) {
+          console.warn('Compression échouée, envoi original', compressionErr)
+        }
+      }
+
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', fileToUpload, file.name)
 
       const response = await fetch('/api/upload/image', {
         method: 'POST',
@@ -153,6 +166,7 @@ export default function ComingSoonAdminPage() {
       console.error(error)
       alert('Échec du chargement de l’image.')
     } finally {
+      setUploadingCover(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
@@ -161,12 +175,22 @@ export default function ComingSoonAdminPage() {
     const files = Array.from(event.target.files || [])
     if (!files.length) return
 
+    setUploadingProductIndex(productIndex)
     try {
       const uploadedUrls: string[] = []
 
       for (const file of files) {
+        let fileToUpload: Blob | File = file
+        if (file.type.startsWith('image/')) {
+          try {
+            fileToUpload = await compressImage(file, 800, 800, 0.7)
+          } catch (compressionErr) {
+            console.warn('Compression échouée, envoi original', compressionErr)
+          }
+        }
+
         const formData = new FormData()
-        formData.append('file', file)
+        formData.append('file', fileToUpload, file.name)
 
         const response = await fetch('/api/upload/image', {
           method: 'POST',
@@ -205,6 +229,7 @@ export default function ComingSoonAdminPage() {
       console.error(error)
       alert('Échec du chargement de l’image du produit.')
     } finally {
+      setUploadingProductIndex(null)
       if (event.target) event.target.value = ''
     }
   }
@@ -358,12 +383,18 @@ export default function ComingSoonAdminPage() {
           <div className="space-y-3">
             <Label>Image principale</Label>
             <div className="flex flex-col gap-3 md:flex-row md:items-center">
-              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="gap-2">
-                <ImageIcon className="h-4 w-4" />
-                Importer une image
+              <Button
+                type="button"
+                variant="outline"
+                disabled={uploadingCover}
+                onClick={() => fileInputRef.current?.click()}
+                className="gap-2"
+              >
+                {uploadingCover ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                {uploadingCover ? 'Traitement & Optimisation...' : 'Importer une image'}
               </Button>
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-              <span className="text-xs text-gray-500">Utilisez une vraie image provenant du produit ou de la collection.</span>
+              <span className="text-xs text-gray-500">Utilisez une vraie image provenant du produit ou de la collection (optimisée automatiquement pour mobile).</span>
             </div>
 
             <div>
@@ -410,12 +441,13 @@ export default function ComingSoonAdminPage() {
                     >
                       Supprimer
                     </button>
-                    <label className="cursor-pointer text-xs uppercase tracking-[0.2em] text-gray-600">
-                      Ajouter images
+                    <label className={`cursor-pointer text-xs uppercase tracking-[0.2em] ${uploadingProductIndex === index ? 'text-gray-400 pointer-events-none' : 'text-gray-600'}`}>
+                      {uploadingProductIndex === index ? 'Traitement en cours...' : 'Ajouter images'}
                       <input
                         type="file"
                         accept="image/*"
                         multiple
+                        disabled={uploadingProductIndex === index}
                         className="hidden"
                         onChange={(event) => handlePreorderImageUpload(index, event)}
                       />
@@ -489,24 +521,75 @@ export default function ComingSoonAdminPage() {
                         itemIndex === index ? { ...item, description: event.target.value } : item
                       )
                     }))}
-                    className="min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
+                    className="min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm"
                   />
                 </div>
 
-                {(Array.isArray(product.images) && product.images.length > 0 ? product.images : product.image ? [product.image] : []).map((image: string, imageIndex: number) => (
-                  <div key={`${product.id || index}-image-${imageIndex}`} className="mt-4 overflow-hidden border border-black/10 bg-neutral-100">
-                    <div className="relative">
-                      <img src={image} alt={`${product.name} ${imageIndex + 1}`} className="h-52 w-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => removePreorderImage(index, imageIndex)}
-                        className="absolute right-2 top-2 rounded bg-black/80 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-white"
-                      >
-                        Retirer
-                      </button>
-                    </div>
+                <div className="mt-4">
+                  <div className="mt-2 space-y-3">
+                    <label className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background py-2 text-sm font-medium shadow-sm transition hover:bg-neutral-50 ${uploadingProductIndex === index ? 'opacity-50 pointer-events-none' : ''}`}>
+                      {uploadingProductIndex === index ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                      ) : (
+                        <Plus className="h-4 w-4" />
+                      )}
+                      <span>
+                        {uploadingProductIndex === index
+                          ? 'Optimisation des images...'
+                          : `Ajouter des images (${(Array.isArray(product.images) && product.images.length > 0 ? product.images : product.image ? [product.image] : []).length})`}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        disabled={uploadingProductIndex === index}
+                        className="hidden"
+                        onChange={(event) => handlePreorderImageUpload(index, event)}
+                      />
+                    </label>
+
+                    {(() => {
+                      const productImgs = Array.isArray(product.images) && product.images.length > 0 
+                        ? product.images 
+                        : product.image 
+                          ? [product.image] 
+                          : []
+                      return productImgs.length > 0 ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {productImgs.map((image: string, imageIndex: number) => (
+                            <div key={`${product.id || index}-image-${imageIndex}`} className="relative group border rounded overflow-hidden bg-neutral-100">
+                              <img
+                                src={getValidImageUrl(image)}
+                                alt={`${product.name} ${imageIndex + 1}`}
+                                className="h-28 w-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = "/placeholder.svg"
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => removePreorderImage(index, imageIndex)}
+                                className="absolute top-1 right-1 h-6 w-6 p-0 rounded-full opacity-80 hover:opacity-100"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                              <div className="absolute bottom-1 left-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                {imageIndex + 1}
+                              </div>
+                              {imageIndex === 0 && (
+                                <div className="absolute top-1 left-1 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                  Principal
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : null
+                    })()}
                   </div>
-                ))}
+                </div>
               </div>
             ))}
           </div>

@@ -97,10 +97,12 @@ export async function compressImage(
         if (!ctx) return reject(new Error("Canvas context is null"))
 
         ctx.drawImage(img, 0, 0, width, height)
+        // Forcer la conversion en image/jpeg pour garantir la compatibilité et la compression optimale (notamment depuis iOS/HEIC)
+        const outputMimeType = file.type === "image/png" ? "image/png" : "image/jpeg"
         canvas.toBlob((blob) => {
           if (blob) resolve(blob)
           else reject(new Error("Compression failed"))
-        }, file.type || "image/jpeg", quality)
+        }, outputMimeType, quality)
       }
       img.onerror = reject
     }

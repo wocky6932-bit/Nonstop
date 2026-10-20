@@ -22,10 +22,16 @@ async function ensureSiteConfigTable() {
   await query(`
     CREATE TABLE IF NOT EXISTS site_config (
       id VARCHAR(255) PRIMARY KEY,
-      value TEXT,
+      value LONGTEXT,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
   `)
+  // S'assurer que les tables existantes créées avec TEXT soient migrées vers LONGTEXT
+  try {
+    await query(`ALTER TABLE site_config MODIFY COLUMN value LONGTEXT`)
+  } catch (e) {
+    // Si la colonne est déjà modifiée ou si non supporté, ignorer
+  }
 }
 
 export async function getSiteConfig(key: string, fallback?: any) {
