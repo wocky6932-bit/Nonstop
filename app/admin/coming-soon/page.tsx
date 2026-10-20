@@ -522,6 +522,27 @@ export default function ComingSoonAdminPage() {
                 </div>
 
                 <div className="mt-4">
+                  <Label>Tailles disponibles (séparées par une virgule)</Label>
+                  <Input
+                    value={(product.sizes || []).join(', ')}
+                    placeholder="S, M, L, XL"
+                    onChange={(event) => {
+                      const sizesArr = event.target.value
+                        .split(',')
+                        .map((s) => s.trim().toUpperCase())
+                        .filter(Boolean)
+                      setForm((previous) => ({
+                        ...previous,
+                        preorderProducts: previous.preorderProducts.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, sizes: sizesArr } : item
+                        )
+                      }))
+                    }}
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Ex: S, M, L, XL, XXL</p>
+                </div>
+
+                <div className="mt-4">
                   <Label>Description</Label>
                   <textarea
                     value={product.description}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { getValidImageUrl } from '@/lib/image-utils'
@@ -71,6 +71,8 @@ const defaultConfig: ComingSoonConfig = {
 export function ComingSoonSection({ config, products }: { config?: Partial<ComingSoonConfig>; products?: any[] }) {
   const { addToCart } = useCart()
   const preorderSectionRef = useRef<HTMLElement | null>(null)
+  const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({})
+  const [addedProductId, setAddedProductId] = useState<string | null>(null)
   const mergedConfig = { ...defaultConfig, ...(config || {}) }
   const preorderProducts = useMemo(() => {
     // Si l'administrateur a configuré des produits dans Coming Soon, on affiche TOUS ces produits
@@ -97,18 +99,28 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
         ? [product.image]
         : []
 
+    const availableSizes = Array.isArray(product?.sizes) && product.sizes.length > 0
+      ? product.sizes
+      : ['S', 'M', 'L', 'XL']
+
+    const chosenSize = selectedSizes[product.id] || availableSizes[0] || 'M'
+
     const safeProduct = {
       ...product,
       price: Number(product?.price) || 0,
       currency: product?.currency || 'XOF',
       image: productImages[0] || product?.image || defaultConfig.image,
       images: productImages,
-      selectedSize: product?.sizes?.[0] || 'M',
+      selectedSize: chosenSize,
       is_preorder: true,
       sold_out: false,
     }
 
     addToCart(safeProduct, 1)
+    setAddedProductId(product.id)
+    setTimeout(() => {
+      setAddedProductId((current) => (current === product.id ? null : current))
+    }, 2000)
   }
 
   if (!mergedConfig.enabled || !mergedConfig.visibleOnHome) return null
@@ -211,13 +223,53 @@ export function ComingSoonSection({ config, products }: { config?: Partial<Comin
                     </span>
                   </div>
 
+                  {(() => {
+                    const availableSizes = Array.isArray(product.sizes) && product.sizes.length > 0
+                      ? product.sizes
+                      : ['S', 'M', 'L', 'XL']
+                    const currentSelected = selectedSizes[product.id] || availableSizes[0]
+
+                    return (
+                      <div className="mt-4">
+                        <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-black/60 mb-2">
+                          Sélectionnez votre taille
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {availableSizes.map((size: string) => {
+                            const isSelected = currentSelected === size
+                            return (
+                              <button
+                                key={`${product.id}-size-${size}`}
+                                type="button"
+                                onClick={() => setSelectedSizes((prev) => ({ ...prev, [product.id]: size }))}
+                                className={`min-w-[42px] px-3 py-1.5 border text-xs font-semibold tracking-wider transition-all duration-200 ${
+                                  isSelected
+                                    ? 'bg-black text-white border-black shadow-sm'
+                                    : 'bg-white text-black border-neutral-300 hover:border-black'
+                                }`}
+                              >
+                                {size}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })()}
+
                   <div className="mt-5">
                     <Button
                       type="button"
                       onClick={() => handlePreorderCheckout(product)}
-                      className="w-full border border-black bg-white px-5 py-4 text-[10px] font-medium uppercase tracking-[0.3em] text-black hover:bg-black hover:text-white"
+                      className={`w-full border border-black px-5 py-4 text-[10px] font-medium uppercase tracking-[0.3em] transition-all duration-300 ${
+                        addedProductId === product.id
+                          ? 'bg-black text-white'
+                          : 'bg-white text-black hover:bg-black hover:text-white'
+                      }`}
                     >
-                      PRÉCOMMANDER
+                      {addedProductId === product.id
+                        ? `AJOUTÉ (${selectedSizes[product.id] || (Array.isArray(product.sizes) && product.sizes[0]) || 'M'}) ✓`
+                        : 'PRÉCOMMANDER'}
                     </Button>
                   </div>
                 </article>
