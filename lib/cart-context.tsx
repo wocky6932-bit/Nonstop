@@ -9,6 +9,7 @@ export interface Product {
   currency: string
   image: string
   images?: string[]
+  description?: string
   category?: string
   sold_out: boolean
   sizes?: string[]       // Tailles disponibles (ex: ["S","M","L","XL"])

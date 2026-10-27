@@ -11,6 +11,7 @@ import { CartDrawer } from '@/components/cart-drawer'
 import { useToast } from '@/hooks/use-toast'
 import { Toaster } from '@/components/ui/toaster'
 import { ProductGrid } from '@/components/product-grid'
+import { ClothingRackViewer } from '@/components/clothing-rack/clothing-rack-viewer'
 import { ShoppableLookbook } from '@/components/shoppable-lookbook'
 import { ComingSoonSection } from '@/components/coming-soon-section'
 import { getValidImageUrl } from '@/lib/image-utils'
@@ -119,6 +120,11 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white text-black" suppressHydrationWarning>
+
+      {/* Bannière promo supérieure */}
+      <div className="bg-black text-white py-2 px-4 text-center text-xs tracking-widest font-semibold uppercase flex items-center justify-center gap-2 relative z-50">
+        <span>⚡ OFFRE SPÉCIALE : -20% SUR VOTRE COMMANDE EN ENTRANT VOTRE EMAIL</span>
+      </div>
 
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-50 bg-transparent border-b border-white/10">
@@ -279,7 +285,8 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 lg:px-8 py-8 space-y-12">
-        <ComingSoonSection config={comingSoonConfig} products={products} />
+        {/* Le Portant Streetwear NONSTOP (Expérience Snug Wrld) */}
+        <ClothingRackViewer />
 
         {/* Section Nos Produits */}
         <section className="w-full pt-4">
