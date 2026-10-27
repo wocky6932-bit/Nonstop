@@ -31,9 +31,7 @@ export default function CheckoutPage() {
   })
 
   const totalPrice = getTotalPrice()
-  const hasEmailDiscount = Boolean(formData.email.trim() && formData.email.includes('@') && formData.email.includes('.'))
-  const discountAmount = hasEmailDiscount ? Math.round(totalPrice * 0.2) : 0
-  const finalPrice = totalPrice - discountAmount
+  const finalPrice = totalPrice
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -204,19 +202,10 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* Proposition Email avec réduction de 20% */}
-              <div className="p-3 bg-gray-50 border border-gray-200">
-                <div className="flex items-center justify-between mb-1">
-                  <Label htmlFor="email" className="text-xs tracking-wide uppercase font-semibold text-black">
-                    Adresse email (Optionnel)
-                  </Label>
-                  <span className="text-[10px] bg-black text-white px-2 py-0.5 uppercase tracking-wider font-bold">
-                    -20% de réduction
-                  </span>
-                </div>
-                <p className="text-[11px] text-gray-500 mb-2">
-                  Indiquez votre adresse email pour recevoir immédiatement 20% de réduction sur votre commande.
-                </p>
+              <div>
+                <Label htmlFor="email" className="text-xs tracking-wide uppercase mb-1 block">
+                  Adresse email <span className="text-gray-400 font-normal">(Optionnel)</span>
+                </Label>
                 <Input
                   id="email"
                   name="email"
@@ -224,7 +213,7 @@ export default function CheckoutPage() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="exemple@email.com"
-                  className="rounded-none border-gray-300 focus:border-black focus:ring-0 bg-white"
+                  className="rounded-none border-gray-300 focus:border-black focus:ring-0"
                 />
               </div>
 
@@ -345,13 +334,6 @@ export default function CheckoutPage() {
                   <span>Sous-total</span>
                   <span>{totalPrice.toLocaleString()} XOF</span>
                 </div>
-
-                {hasEmailDiscount && (
-                  <div className="flex items-center justify-between text-sm text-green-600 font-medium">
-                    <span>Remise fidélité (-20%)</span>
-                    <span>-{discountAmount.toLocaleString()} XOF</span>
-                  </div>
-                )}
 
                 <div className="border-t pt-3 flex items-center justify-between text-lg font-bold">
                   <span className="tracking-wider uppercase">Total</span>

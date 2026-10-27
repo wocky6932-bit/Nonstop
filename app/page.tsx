@@ -120,11 +120,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white text-black" suppressHydrationWarning>
 
-      {/* Bannière promo supérieure */}
-      <div className="bg-black text-white py-2 px-4 text-center text-xs tracking-widest font-semibold uppercase flex items-center justify-center gap-2 relative z-50">
-        <span>⚡ OFFRE SPÉCIALE : -20% SUR VOTRE COMMANDE EN ENTRANT VOTRE EMAIL</span>
-      </div>
-
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-50 bg-transparent border-b border-white/10">
         <div className="container mx-auto px-4 lg:px-8">
