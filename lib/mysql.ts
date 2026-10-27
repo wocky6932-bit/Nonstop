@@ -90,11 +90,27 @@ async function ensureProductColumns() {
 }
 
 async function ensureOrderItemColumns() {
-  await query(`
-    ALTER TABLE order_items
-      ADD COLUMN IF NOT EXISTS selected_size VARCHAR(50),
-      ADD COLUMN IF NOT EXISTS selected_variant VARCHAR(100)
-  `)
+  try {
+    await query(`
+      ALTER TABLE order_items
+        ADD COLUMN IF NOT EXISTS selected_size VARCHAR(50),
+        ADD COLUMN IF NOT EXISTS selected_variant VARCHAR(100)
+    `)
+  } catch (e) {
+    // Si la colonne existe déjà ou autre, continuer
+  }
+
+  try {
+    // Agrandir product_image pour supporter les longues URLs ou base64
+    await query(`ALTER TABLE order_items MODIFY COLUMN product_image LONGTEXT`)
+  } catch (e) {
+    // Fallback TEXT si LONGTEXT non supporté
+    try {
+      await query(`ALTER TABLE order_items MODIFY COLUMN product_image TEXT`)
+    } catch (e2) {
+      // Ignorer
+    }
+  }
 }
 
 // Fonctions pour les utilisateurs
@@ -345,13 +361,20 @@ export async function createOrder(orderData: {
     `
 
     for (const item of orderData.items) {
+      // Nettoyer / tronquer si base64 ou URL trop longue pour éviter tout crash SQL
+      let imageVal = item.image || ''
+      if (typeof imageVal === 'string' && imageVal.startsWith('data:image')) {
+        // Ne pas stocker de gros base64 brut dans la table order_items pour la commande
+        imageVal = '/placeholder.jpg'
+      }
+
       await connection.execute(itemSql, [
         orderId,
         item.id,
         item.name,
         item.price,
         item.quantity,
-        item.image,
+        imageVal,
         item.size || null,
         item.variant || null
       ])
