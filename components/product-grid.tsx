@@ -43,6 +43,13 @@ export function ProductGrid({ products }: { products: Product[] }) {
             {/* Wrapper image + badges */}
             <div className="relative mb-3">
               <div className="absolute top-3 left-3 z-20 flex flex-col gap-1 pointer-events-none">
+                {/* Badge PROMO */}
+                {product.original_price && Number(product.original_price) > product.price && !product.sold_out && (
+                  <div className="bg-red-600 text-white text-[10px] px-2 py-1 tracking-widest font-bold uppercase rounded-sm backdrop-blur-sm">
+                    PROMO
+                  </div>
+                )}
+
                 {/* Badge SOLD OUT */}
                 {product.sold_out && (
                   <div className="bg-black/80 text-white text-[10px] px-2 py-1 tracking-widest font-medium uppercase rounded-sm backdrop-blur-sm">
@@ -104,9 +111,16 @@ export function ProductGrid({ products }: { products: Product[] }) {
               <h3 className="text-sm font-bold tracking-wide text-black mb-1">
                 {product.name}
               </h3>
-              <p className="text-xs text-gray-500 font-medium">
-                {formatPrice(convertPrice(product.price, product.currency))}
-              </p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-xs font-semibold text-black">
+                  {formatPrice(convertPrice(product.price, product.currency))}
+                </span>
+                {product.original_price && Number(product.original_price) > product.price && (
+                  <span className="text-xs text-gray-400 line-through">
+                    {formatPrice(convertPrice(Number(product.original_price), product.currency))}
+                  </span>
+                )}
+              </div>
             </div>
             </Link>
           </div>

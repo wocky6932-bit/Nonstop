@@ -84,7 +84,8 @@ async function ensureProductColumns() {
       ADD COLUMN IF NOT EXISTS sizes JSON,
       ADD COLUMN IF NOT EXISTS variant_options JSON,
       ADD COLUMN IF NOT EXISTS sold_out BOOLEAN DEFAULT FALSE,
-      ADD COLUMN IF NOT EXISTS is_preorder TINYINT(1) NOT NULL DEFAULT 0
+      ADD COLUMN IF NOT EXISTS is_preorder TINYINT(1) NOT NULL DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS original_price DECIMAL(10,2) NULL
   `)
 }
 
@@ -211,6 +212,7 @@ export async function getProductById(id: string) {
 export async function createProduct(productData: {
   name: string
   price: number
+  original_price?: number | null
   currency?: string
   image: string
   images?: string[]
@@ -224,14 +226,15 @@ export async function createProduct(productData: {
     await ensureProductColumns()
     const id = Date.now().toString()
     const sql = `
-      INSERT INTO products (id, name, price, currency, image, images, description, category, sizes, variant_options, is_preorder)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (id, name, price, original_price, currency, image, images, description, category, sizes, variant_options, is_preorder)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
 
     await query(sql, [
       id,
       productData.name,
       productData.price,
+      productData.original_price ?? null,
       productData.currency || 'XOF',
       productData.image,
       JSON.stringify(productData.images || []),

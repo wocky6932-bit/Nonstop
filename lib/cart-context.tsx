@@ -6,6 +6,7 @@ export interface Product {
   id: string
   name: string
   price: number
+  original_price?: number // Prix barré / prix avant réduction
   currency: string
   image: string
   images?: string[]

@@ -13,6 +13,7 @@ interface Product {
   id: string
   name: string
   price: number
+  original_price?: number | null
   currency: string
   image?: string
   images?: string[]
@@ -175,7 +176,16 @@ export default function AdminProductsPage() {
                       </td>
                       <td className="px-6 py-4 text-sm">{product.name}</td>
                       <td className="px-6 py-4 text-sm">
-                        {product.price.toLocaleString()} {product.currency}
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-black">
+                            {product.price.toLocaleString()} {product.currency}
+                          </span>
+                          {product.original_price && Number(product.original_price) > product.price && (
+                            <span className="text-xs text-gray-400 line-through">
+                              {Number(product.original_price).toLocaleString()} {product.currency}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         {product.sold_out ? (

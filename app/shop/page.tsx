@@ -261,6 +261,13 @@ function ShopContent() {
                                 {/* Wrapper image + badges + bouton */}
                                 <div className="relative">
                                     <div className="absolute top-2 left-2 z-20 flex flex-col gap-1 pointer-events-none">
+                                        {/* Badge PROMO */}
+                                        {product.original_price && Number(product.original_price) > product.price && !product.sold_out && (
+                                            <div className="bg-red-600 text-white text-[10px] px-2 py-0.5 tracking-widest font-bold uppercase">
+                                                PROMO
+                                            </div>
+                                        )}
+
                                         {/* Badge SOLD OUT */}
                                         {product.sold_out && (
                                             <div className="bg-white/90 text-black text-[10px] px-2 py-0.5 tracking-widest font-medium uppercase border border-gray-200">
@@ -383,9 +390,16 @@ function ShopContent() {
                                     <p className="text-[11px] sm:text-xs font-medium tracking-widest uppercase text-black leading-tight truncate">
                                         {product.name}
                                     </p>
-                                    <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
-                                        {formatPrice(convertPrice(product.price, product.currency))}
-                                    </p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-[11px] sm:text-xs text-black font-semibold">
+                                            {formatPrice(convertPrice(product.price, product.currency))}
+                                        </span>
+                                        {product.original_price && Number(product.original_price) > product.price && (
+                                            <span className="text-[10px] sm:text-[11px] text-gray-400 line-through">
+                                                {formatPrice(convertPrice(Number(product.original_price), product.currency))}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </Link>
                         ))}

@@ -15,6 +15,7 @@ interface Product {
   id: string
   name: string
   price: number
+  original_price?: number | null
   currency: string
   image: string
   images?: string[] // Array of image URLs for carousel
@@ -121,6 +122,7 @@ export function ProductForm({ product }: { product?: Product }) {
   const [formData, setFormData] = useState({
     name: product?.name || "",
     price: product?.price || 0,
+    originalPrice: product?.original_price ? String(product.original_price) : "",
     currency: product?.currency || "XOF",
     image: product?.image || "",
     images: initialImages,
@@ -271,6 +273,7 @@ export function ProductForm({ product }: { product?: Product }) {
       const submitData = {
         name: formData.name,
         price: formData.price,
+        original_price: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
         currency: formData.currency,
         image: mainImage,   // always use first uploaded image as the main one
         images: JSON.stringify(validImages), // store clean array as JSON string
@@ -342,18 +345,37 @@ export function ProductForm({ product }: { product?: Product }) {
         />
       </div>
 
-      <div>
-        <Label htmlFor="price">Prix *</Label>
-        <Input
-          id="price"
-          type="number"
-          required
-          value={formData.price}
-          onChange={(e) =>
-            setFormData({ ...formData, price: parseInt(e.target.value) })
-          }
-          className="mt-1"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="price">Prix de vente (actuel) *</Label>
+          <Input
+            id="price"
+            type="number"
+            required
+            value={formData.price}
+            onChange={(e) =>
+              setFormData({ ...formData, price: parseInt(e.target.value) || 0 })
+            }
+            className="mt-1"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="originalPrice">Prix original barré (Promotion)</Label>
+          <Input
+            id="originalPrice"
+            type="number"
+            value={formData.originalPrice}
+            onChange={(e) =>
+              setFormData({ ...formData, originalPrice: e.target.value })
+            }
+            className="mt-1"
+            placeholder="Ex: 10000 (laisser vide si pas de promo)"
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            💡 Si renseigné, ce prix sera barré et un badge « PROMO » sera affiché.
+          </div>
+        </div>
       </div>
 
       <div>

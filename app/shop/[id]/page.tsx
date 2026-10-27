@@ -221,6 +221,13 @@ export default function ProductDetailPage() {
                   quality={90}
                 />
                 <div className="absolute top-4 left-4 z-20 flex flex-col gap-1 pointer-events-none">
+                  {/* Badge PROMO */}
+                  {product.original_price && Number(product.original_price) > product.price && !product.sold_out && (
+                    <div className="bg-red-600 text-white text-[10px] px-3 py-1 tracking-widest uppercase font-bold">
+                      PROMO
+                    </div>
+                  )}
+
                   {/* Badge SOLD OUT */}
                   {product.sold_out && (
                     <div className="bg-black/80 text-white text-[10px] px-3 py-1 tracking-widest uppercase">
@@ -271,9 +278,16 @@ export default function ProductDetailPage() {
                 <h1 className="text-2xl font-black uppercase tracking-tight mb-3">
                   {product.name}
                 </h1>
-                <p className="text-xl font-medium text-black">
-                  {formatPrice(convertPrice(product.price, product.currency))}
-                </p>
+                <div className="flex items-baseline gap-3">
+                  <p className="text-xl font-medium text-black">
+                    {formatPrice(convertPrice(product.price, product.currency))}
+                  </p>
+                  {product.original_price && Number(product.original_price) > product.price && (
+                    <p className="text-base font-normal text-gray-400 line-through">
+                      {formatPrice(convertPrice(Number(product.original_price), product.currency))}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Description */}
