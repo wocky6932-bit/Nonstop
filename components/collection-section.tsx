@@ -27,12 +27,6 @@ export function CollectionSection({
   const { toast } = useToast()
   const { convertPrice, formatPrice } = useCurrency()
 
-  // Contrôles de vue (comme sur Torom Paris)
-  // viewMode: 'grid' (2 colonnes) | 'single' (1 colonne large)
-  const [viewMode, setViewMode] = useState<'grid' | 'single'>('grid')
-  // isMannequin: false (vue packshot / première image) | true (vue portée / deuxième image si disponible)
-  const [isMannequin, setIsMannequin] = useState<boolean>(false)
-
   // Indice carrousel individuel pour chaque carte produit
   const [activeImageIndices, setActiveImageIndices] = useState<Record<string, number>>({})
 
@@ -127,62 +121,14 @@ export function CollectionSection({
       {/* ── 2. CATALOGUE DE LA COLLECTION ───────────── */}
       <div id="collection-products-anchor" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-12">
         {/* En-tête de section */}
-        <div className="mb-4">
+        <div className="mb-6">
           <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-[0.2em] text-black">
             {title}
           </h3>
         </div>
 
-        {/* Barre de contrôles Torom : VUE + MANNEQUIN */}
-        <div className="flex items-center justify-between py-3 border-b border-neutral-100 text-xs tracking-[0.18em] uppercase text-neutral-500 mb-6">
-          {/* Bascule de grille VUE */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] sm:text-[11px] font-medium text-neutral-500">VUE</span>
-            <button
-              onClick={() => setViewMode(viewMode === 'grid' ? 'single' : 'grid')}
-              aria-label="Changer l'affichage de la grille"
-              className="flex items-center gap-0.5 p-1 hover:text-black transition-colors"
-            >
-              {viewMode === 'grid' ? (
-                // Icône 2 colonnes
-                <div className="flex gap-0.5">
-                  <span className="w-2.5 h-3 bg-neutral-900" />
-                  <span className="w-2.5 h-3 bg-neutral-900" />
-                </div>
-              ) : (
-                // Icône 1 colonne pleine
-                <span className="w-5 h-3 bg-neutral-900" />
-              )}
-            </button>
-          </div>
-
-          {/* Bascule MANNEQUIN (Porté vs Packshot) */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] sm:text-[11px] font-medium text-neutral-500">MANNEQUIN</span>
-            <button
-              onClick={() => setIsMannequin(!isMannequin)}
-              aria-label="Basculer affichage mannequin"
-              className={`w-7 h-3.5 border border-neutral-400 p-0.5 transition-colors flex items-center ${
-                isMannequin ? 'bg-black border-black' : 'bg-transparent'
-              }`}
-            >
-              <span
-                className={`w-2.5 h-2.5 transition-transform ${
-                  isMannequin ? 'bg-white translate-x-3' : 'bg-neutral-400 translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-
         {/* Grille de produits */}
-        <div
-          className={`grid ${
-            viewMode === 'grid'
-              ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10'
-              : 'grid-cols-1 sm:grid-cols-2 gap-8'
-          }`}
-        >
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10">
           {collectionProducts.map((product) => {
             // Liste d'images normalisées
             const productImages: string[] = (
@@ -191,14 +137,7 @@ export function CollectionSection({
                 : [product.image]
             ).filter(Boolean)
 
-            // Si le mode "MANNEQUIN" est activé, on préfère afficher la 2ème image si disponible
-            let displayedIndex = activeImageIndices[product.id] || 0
-            if (isMannequin && productImages.length > 1 && displayedIndex === 0) {
-              displayedIndex = 1
-            } else if (!isMannequin && displayedIndex === 1 && productImages.length > 1) {
-              displayedIndex = 0
-            }
-
+            const displayedIndex = activeImageIndices[product.id] || 0
             const activeImg = productImages[displayedIndex] || productImages[0] || product.image
 
             return (
