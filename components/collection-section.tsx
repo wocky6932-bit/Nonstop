@@ -64,7 +64,14 @@ export function CollectionSection({
   const handleScrollToProducts = () => {
     const el = document.getElementById('collection-products-anchor')
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' })
+      const headerOffset = 60 // compense le header sticky s'il y a
+      const elementPosition = el.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
     }
   }
 
