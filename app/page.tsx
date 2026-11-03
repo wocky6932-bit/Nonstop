@@ -278,14 +278,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section Collection Éditoriale style Torom Paris (Plein écran / Edge-to-edge) */}
-      <CollectionSection
-        title="TARTAN"
-        bannerImage="/images/collection-essentiels-banner.jpg"
-        products={visibleProducts}
-      />
-
-      {/* Main Content */}
+      {/* Main Content (immédiatement après le Hero) */}
       <main className="container mx-auto px-4 lg:px-8 py-8 space-y-12">
         {/* Section Produits prioritaires demandés par l'utilisateur */}
         {(() => {
@@ -342,8 +335,14 @@ export default function HomePage() {
             <ShoppableLookbook lookbook={lookbook} />
           </section>
         )}
-
       </main>
+
+      {/* Section Collection Éditoriale style Torom Paris */}
+      <CollectionSection
+        title="TARTAN"
+        bannerImage="/images/collection-essentiels-banner.jpg"
+        products={visibleProducts}
+      />
 
 
 
