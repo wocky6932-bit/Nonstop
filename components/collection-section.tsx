@@ -14,12 +14,14 @@ interface CollectionSectionProps {
   title?: string
   bannerImage?: string
   products: Product[]
+  targetProductIds?: string[]
 }
 
 export function CollectionSection({
   title = 'ESSENTIELS',
   bannerImage = '/images/collection-essentiels-banner.jpg',
   products,
+  targetProductIds = ['1793314904004', '1792639100833', '1792616909279'],
 }: CollectionSectionProps) {
   const { addToCart } = useCart()
   const { toast } = useToast()
@@ -72,8 +74,13 @@ export function CollectionSection({
     }
   }
 
-  // Filtrer les produits visibles (au moins 2 à 4 pour avoir une belle collection)
-  const collectionProducts = products.filter((p) => !p.is_preorder)
+  // Filtrer uniquement les t-shirts tartan demandés par l'utilisateur
+  const collectionProducts = products.filter((p) => {
+    if (targetProductIds.length > 0) {
+      return targetProductIds.includes(p.id) || p.name.toLowerCase().includes('tartan')
+    }
+    return !p.is_preorder
+  })
 
   return (
     <section className="w-full my-12">
