@@ -151,12 +151,12 @@ export function CollectionSection({
               <div key={product.id} className="min-w-0 group flex flex-col justify-between">
                 <Link href={`/shop/${product.id}`} className="block">
                   {/* Conteneur Image fond blanc pur style Torom */}
-                  <div className="relative aspect-square sm:aspect-[4/5] bg-white overflow-hidden mb-3 border border-neutral-100/80">
+                  <div className="relative aspect-[3/4] bg-[#fdfdfd] overflow-hidden mb-3 border border-neutral-100/80">
                     <Image
                       src={getValidImageUrl(activeImg)}
                       alt={product.name}
                       fill
-                      className="object-contain p-3 sm:p-4 transition-transform duration-500 group-hover:scale-105"
+                      className="object-cover scale-110 sm:scale-115 transition-transform duration-500 group-hover:scale-120"
                       sizes="(max-width: 768px) 50vw, 33vw"
                     />
 
