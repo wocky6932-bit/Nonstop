@@ -278,30 +278,41 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Section Collection Éditoriale style Torom Paris (Plein écran / Edge-to-edge) */}
+      <CollectionSection
+        title="TARTAN"
+        bannerImage="/images/collection-essentiels-banner.jpg"
+        products={visibleProducts}
+      />
+
       {/* Main Content */}
       <main className="container mx-auto px-4 lg:px-8 py-8 space-y-12">
-        {/* Section Collection Éditoriale style Torom Paris */}
-        <CollectionSection
-          title="TARTAN"
-          bannerImage="/images/collection-essentiels-banner.jpg"
-          products={visibleProducts}
-        />
+        {/* Section Nos Produits (autres produits du catalogue) */}
+        {(() => {
+          // Éviter de dupliquer les produits Tartan déjà mis en avant dans la collection juste au-dessus
+          const nonCollectionProducts = visibleProducts.filter(
+            (p) => !['1793314904004', '1792639100833', '1792616909279'].includes(p.id) &&
+                   !p.name.toLowerCase().includes('tartan')
+          )
+          const displayProducts = nonCollectionProducts.length > 0 ? nonCollectionProducts : visibleProducts
 
-        {/* Section Nos Produits */}
-        <section className="w-full pt-4">
-          <div className="flex items-center justify-center gap-4 mb-2">
-            <span className="h-px w-8 sm:w-16 bg-neutral-300" />
-            <h2 className="text-xl sm:text-2xl font-black uppercase tracking-[0.25em] text-black">
-              NOS PRODUITS
-            </h2>
-            <span className="h-px w-8 sm:w-16 bg-neutral-300" />
-          </div>
-          <p className="text-center text-xs text-neutral-500 tracking-wider mb-8">
-            Découvrez tous nos articles
-          </p>
+          return (
+            <section className="w-full pt-4">
+              <div className="flex items-center justify-center gap-4 mb-2">
+                <span className="h-px w-8 sm:w-16 bg-neutral-300" />
+                <h2 className="text-xl sm:text-2xl font-black uppercase tracking-[0.25em] text-black">
+                  AUTRES CRÉATIONS
+                </h2>
+                <span className="h-px w-8 sm:w-16 bg-neutral-300" />
+              </div>
+              <p className="text-center text-xs text-neutral-500 tracking-wider mb-8">
+                Découvrez toute la collection NONSTOPP
+              </p>
 
-          <ProductGrid products={visibleProducts} />
-        </section>
+              <ProductGrid products={displayProducts} />
+            </section>
+          )
+        })()}
 
         {/* Shoppable Lookbook (s'il y en a un actif) */}
         {lookbook && (
