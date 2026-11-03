@@ -289,7 +289,7 @@ export default function HomePage() {
       <main className="container mx-auto px-4 lg:px-8 py-8 space-y-12">
         {/* Section Produits prioritaires demandés par l'utilisateur */}
         {(() => {
-          // IDs prioritaires à afficher en haut
+          // IDs prioritaires à afficher en premier
           const priorityIds = [
             '1792120820288', // Longue sleeves
             '1791674451992', // PROMO Longue sleeves
@@ -298,17 +298,17 @@ export default function HomePage() {
             '1782610673338', // PROMO Long sleeves
           ]
 
-          // Produits prioritaires ordonnés
+          // Produits prioritaires ordonnés avec comparaison robuste String(id)
           const topProducts = priorityIds
-            .map((id) => visibleProducts.find((p) => p.id === id))
-            .filter(Boolean)
+            .map((id) => visibleProducts.find((p) => String(p.id).trim() === id))
+            .filter((p): p is any => Boolean(p))
 
           // Reste des produits (excluant Tartan déjà dans la collection et les prioritaires ci-dessus)
           const tartanIds = ['1793314904004', '1792639100833', '1792616909279']
           const remainingProducts = visibleProducts.filter(
-            (p) => !tartanIds.includes(p.id) &&
+            (p) => !tartanIds.includes(String(p.id).trim()) &&
                    !p.name.toLowerCase().includes('tartan') &&
-                   !priorityIds.includes(p.id)
+                   !priorityIds.includes(String(p.id).trim())
           )
 
           const orderedProducts = [...topProducts, ...remainingProducts]
