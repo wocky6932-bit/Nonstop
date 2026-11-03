@@ -228,6 +228,15 @@ export function CollectionSection({
             )
           })}
         </div>
+
+        {/* Bouton VOIR TOUT sous la collection */}
+        <div className="flex justify-center mt-12">
+          <Link href="/shop">
+            <button className="border border-neutral-900 bg-white text-neutral-900 hover:bg-neutral-900 hover:text-white px-10 py-3.5 text-xs font-semibold uppercase tracking-[0.25em] transition-all duration-300 shadow-sm">
+              VOIR TOUT
+            </button>
+          </Link>
+        </div>
       </div>
     </section>
   )
