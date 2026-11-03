@@ -282,7 +282,7 @@ export default function HomePage() {
       <main className="container mx-auto px-4 lg:px-8 py-8 space-y-12">
         {/* Section Collection Éditoriale style Torom Paris */}
         <CollectionSection
-          title="ESSENTIELS"
+          title="TARTAN"
           bannerImage="/images/collection-essentiels-banner.jpg"
           products={visibleProducts}
         />

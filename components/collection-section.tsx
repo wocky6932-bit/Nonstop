@@ -18,7 +18,7 @@ interface CollectionSectionProps {
 }
 
 export function CollectionSection({
-  title = 'ESSENTIELS',
+  title = 'TARTAN',
   bannerImage = '/images/collection-essentiels-banner.jpg',
   products,
   targetProductIds = ['1793314904004', '1792639100833', '1792616909279'],
