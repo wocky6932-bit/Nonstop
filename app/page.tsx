@@ -11,6 +11,7 @@ import { CartDrawer } from '@/components/cart-drawer'
 import { useToast } from '@/hooks/use-toast'
 import { Toaster } from '@/components/ui/toaster'
 import { ProductGrid } from '@/components/product-grid'
+import { CollectionSection } from '@/components/collection-section'
 import { ShoppableLookbook } from '@/components/shoppable-lookbook'
 import { ComingSoonSection } from '@/components/coming-soon-section'
 import { getValidImageUrl } from '@/lib/image-utils'
@@ -279,6 +280,13 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 lg:px-8 py-8 space-y-12">
+        {/* Section Collection Éditoriale style Torom Paris */}
+        <CollectionSection
+          title="ESSENTIELS"
+          bannerImage="/images/collection-essentiels-banner.jpg"
+          products={visibleProducts}
+        />
+
         {/* Section Nos Produits */}
         <section className="w-full pt-4">
           <div className="flex items-center justify-center gap-4 mb-2">
