@@ -98,28 +98,28 @@ export function CollectionSection({
         />
 
         {/* Overlay pour contraster élégamment */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/70" />
 
-        {/* Espace supérieur */}
-        <div className="relative z-10 p-6 sm:p-10" />
-
-        {/* Titre & Bouton au centre avec la typo Torom */}
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 py-8">
-          <h2 className="text-3xl sm:text-5xl md:text-6xl font-light uppercase tracking-[0.28em] text-white drop-shadow-sm mb-6">
+        {/* Titre positionné au-dessus du logo t-shirt */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-10 sm:pt-16">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-light uppercase tracking-[0.28em] text-white drop-shadow-md">
             {title}
           </h2>
+        </div>
 
+        {/* Bouton DÉCOUVRIR positionné en bas, dégageant ainsi le logo NONSTOP sur le t-shirt */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pb-12 sm:pb-16">
           <button
             onClick={handleScrollToProducts}
-            className="bg-white text-black text-[11px] sm:text-xs font-semibold uppercase tracking-[0.25em] px-8 sm:px-10 py-3 sm:py-3.5 hover:bg-neutral-100 transition-colors shadow-sm"
+            className="bg-white text-black text-[11px] sm:text-xs font-semibold uppercase tracking-[0.25em] px-8 sm:px-10 py-3 sm:py-3.5 hover:bg-neutral-100 transition-colors shadow-lg"
           >
             DÉCOUVRIR
           </button>
         </div>
 
         {/* Rappel du titre en bas à gauche de la photo */}
-        <div className="relative z-10 p-6 sm:p-10">
-          <span className="text-white/90 text-[11px] sm:text-xs uppercase tracking-[0.25em] font-light">
+        <div className="absolute bottom-3 left-6 sm:bottom-6 sm:left-10 z-10">
+          <span className="text-white/80 text-[10px] sm:text-xs uppercase tracking-[0.25em] font-light">
             {title}
           </span>
         </div>
