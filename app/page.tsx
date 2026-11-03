@@ -320,18 +320,6 @@ export default function HomePage() {
               </p>
 
               <ProductGrid products={orderedProducts.length > 0 ? orderedProducts : visibleProducts} />
-
-              {/* Bouton VOIR TOUT sous NOS PRODUITS */}
-              <div className="flex justify-center mt-10">
-                <Link href="/shop">
-                  <Button
-                    variant="outline"
-                    className="border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white px-8 py-3 text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300"
-                  >
-                    VOIR TOUT
-                  </Button>
-                </Link>
-              </div>
             </section>
           )
         })()}

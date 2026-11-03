@@ -126,16 +126,6 @@ export function ProductGrid({ products }: { products: Product[] }) {
           </div>
         ))}
       </div>
-
-      {/* Voir toute la boutique */}
-      <div className="text-center mt-10">
-        <Link
-          href="/shop"
-          className="inline-block text-xs tracking-widest font-medium uppercase border border-black px-10 py-4 hover:bg-black hover:text-white transition-colors duration-300"
-        >
-          VOIR TOUT
-        </Link>
-      </div>
     </section>
   )
 }
