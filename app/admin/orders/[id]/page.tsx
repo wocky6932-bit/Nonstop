@@ -155,31 +155,48 @@ export default function OrderDetailPage({
               <h2 className="text-lg font-medium">Articles commandés</h2>
             </div>
             <div className="divide-y">
-              {order.items?.map((item: any) => (
-                <div key={item.id} className="px-6 py-4 flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={getValidImageUrl(item.product_image)}
-                      alt={item.product_name}
-                      className="w-16 h-16 object-cover rounded border"
-                    />
-                    <div>
-                      <h3 className="font-medium">{item.product_name}</h3>
-                      <p className="text-sm text-gray-600">
-                        Quantité: {item.quantity}
+              {order.items?.map((item: any) => {
+                const itemSize = item.selected_size || item.size
+                const itemVariant = item.selected_variant || item.variant
+
+                return (
+                  <div key={item.id} className="px-6 py-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center space-x-4 min-w-0">
+                      <img
+                        src={getValidImageUrl(item.product_image)}
+                        alt={item.product_name}
+                        className="w-16 h-16 object-cover rounded border flex-shrink-0 bg-neutral-100"
+                      />
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-neutral-900 truncate">{item.product_name}</h3>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          {itemSize && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-neutral-900 text-white tracking-wider uppercase">
+                              Taille : {itemSize}
+                            </span>
+                          )}
+                          {itemVariant && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 text-neutral-700 border border-neutral-200">
+                              Variante : {itemVariant}
+                            </span>
+                          )}
+                          <span className="text-xs text-gray-500 font-medium">
+                            Qté : {item.quantity}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-semibold text-neutral-900">
+                        {(item.product_price * item.quantity).toLocaleString()} XOF
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {item.product_price.toLocaleString()} XOF × {item.quantity}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium">
-                      {(item.product_price * item.quantity).toLocaleString()} XOF
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {item.product_price.toLocaleString()} XOF × {item.quantity}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>

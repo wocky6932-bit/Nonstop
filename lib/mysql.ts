@@ -361,11 +361,17 @@ export async function createOrder(orderData: {
     `
 
     for (const item of orderData.items) {
-      // Nettoyer / tronquer si base64 ou URL trop longue pour éviter tout crash SQL
       let imageVal = item.image || ''
-      if (typeof imageVal === 'string' && imageVal.startsWith('data:image')) {
-        // Ne pas stocker de gros base64 brut dans la table order_items pour la commande
-        imageVal = '/placeholder.jpg'
+      // Si aucune image fournie ou placeholder, essayer de récupérer l'image originale du produit
+      if (!imageVal || imageVal === '/placeholder.jpg' || imageVal === '/placeholder.svg') {
+        try {
+          const [prodRows]: any = await connection.execute('SELECT image FROM products WHERE id = ? LIMIT 1', [item.id])
+          if (prodRows && prodRows.length > 0 && prodRows[0].image) {
+            imageVal = prodRows[0].image
+          }
+        } catch (e) {
+          // ignorer et conserver imageVal
+        }
       }
 
       await connection.execute(itemSql, [
@@ -459,7 +465,13 @@ export async function getOrderById(orderId: string) {
 
     if (orders.length === 0) return null
 
-    const itemsSql = 'SELECT * FROM order_items WHERE order_id = ?'
+    const itemsSql = `
+      SELECT oi.*, 
+             COALESCE(NULLIF(NULLIF(oi.product_image, ''), '/placeholder.jpg'), p.image, oi.product_image) as product_image
+      FROM order_items oi
+      LEFT JOIN products p ON oi.product_id = p.id
+      WHERE oi.order_id = ?
+    `
     const items = await query(itemsSql, [orderId])
 
     return { ...orders[0], items }
