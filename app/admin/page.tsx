@@ -265,6 +265,25 @@ export default function AdminPage() {
                 </div>
               </Link>
 
+              <Link href="/admin/drop">
+                <div className="bg-white p-6 rounded-xl border-2 border-black/80 hover:shadow-lg transition-all cursor-pointer group">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-black text-white rounded-lg group-hover:scale-110 transition-transform">
+                        <Calendar className="h-6 w-6 text-amber-400" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-black">Drop & Compte à Rebours</h3>
+                          <span className="text-[10px] bg-black text-white px-2 py-0.5 rounded font-black tracking-wider">NOUVEAU</span>
+                        </div>
+                        <p className="text-sm text-gray-500">Gérer le drop et le lancement</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
               <Link href="/admin/coming-soon">
                 <div className="bg-white p-6 rounded-xl border hover:shadow-lg transition-all cursor-pointer group">
                   <div className="flex items-center justify-between">

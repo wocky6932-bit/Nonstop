@@ -14,6 +14,7 @@ import { ProductGrid } from '@/components/product-grid'
 import { CollectionSection } from '@/components/collection-section'
 import { ShoppableLookbook } from '@/components/shoppable-lookbook'
 import { ComingSoonSection } from '@/components/coming-soon-section'
+import { DropSection } from '@/components/drop-section'
 import { getValidImageUrl } from '@/lib/image-utils'
 import { normalizeProductData } from '@/lib/product-utils'
 import { useCurrency } from '@/lib/currency-context'
@@ -32,6 +33,7 @@ export default function HomePage() {
   const [connectionError, setConnectionError] = useState(false)
   const [hasPreorder, setHasPreorder] = useState(false)
   const [comingSoonConfig, setComingSoonConfig] = useState<any>(null)
+  const [dropConfig, setDropConfig] = useState<any>(null)
 
   useEffect(() => {
     // Charger les produits depuis MySQL
@@ -88,9 +90,22 @@ export default function HomePage() {
       }
     }
 
+    const fetchDropConfig = async () => {
+      try {
+        const response = await fetch('/api/admin/site-config?key=drop_config')
+        if (response.ok) {
+          const data = await response.json()
+          setDropConfig(data)
+        }
+      } catch (error) {
+        console.error('Error fetching drop config:', error)
+      }
+    }
+
     fetchProducts()
     fetchLookbook()
     fetchComingSoonConfig()
+    fetchDropConfig()
   }, [])
 
   const handleSearch = (query: string) => {
@@ -343,6 +358,9 @@ export default function HomePage() {
         bannerImage="/images/collection-essentiels-banner.jpg"
         products={visibleProducts}
       />
+
+      {/* Section Drop Exclusif avec Compte à Rebours (Blank Street Style) */}
+      <DropSection config={dropConfig} />
 
 
 

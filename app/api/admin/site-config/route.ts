@@ -49,6 +49,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(config)
     }
 
+    if (key === 'drop_config') {
+      const config = await getSiteConfig('drop_config', null)
+      return NextResponse.json(config)
+    }
+
     const config = await getSiteConfig(key, '')
     return NextResponse.json(config)
   } catch (error: any) {
