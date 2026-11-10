@@ -154,8 +154,8 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
           </div>
         </div>
 
-        {/* Grille des 2 Produits du Drop (Style épuré Blank Street) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-12 max-w-4xl mx-auto">
+        {/* Grille des 2 Produits du Drop (Style épuré Blank Street - 2 colonnes sur mobile et desktop) */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-8 md:gap-12 max-w-4xl mx-auto">
           {filteredProducts.map((product) => {
             const availableSizes = product.sizes && product.sizes.length > 0 ? product.sizes : ['S', 'M', 'L', 'XL']
             const activeSize = selectedSizes[product.id] || availableSizes[0] || 'M'
@@ -166,53 +166,55 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
                 key={product.id}
                 className="group flex flex-col justify-between bg-white text-center"
               >
-                {/* Image du produit avec fond propre et zoom subtil */}
-                <div className="relative aspect-[4/5] sm:aspect-square w-full overflow-hidden bg-neutral-50/70 rounded-md mb-4 flex items-center justify-center p-4">
-                  {product.badge && (
-                    <span className="absolute top-3 left-3 bg-black text-white text-[9px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-sm">
-                      {product.badge}
-                    </span>
+                <div>
+                  {/* Image du produit avec fond propre et zoom subtil */}
+                  <div className="relative aspect-[4/5] sm:aspect-square w-full overflow-hidden bg-neutral-50/70 rounded-md mb-2 sm:mb-4 flex items-center justify-center p-2 sm:p-4">
+                    {product.badge && (
+                      <span className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-black text-white text-[8px] sm:text-[9px] font-bold tracking-widest uppercase px-1.5 py-0.5 sm:px-2 rounded-sm z-10">
+                        {product.badge}
+                      </span>
+                    )}
+                    <img
+                      src={getValidImageUrl(product.image, '/placeholder.jpg')}
+                      alt={product.name}
+                      className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+
+                  {/* Nom du produit en majuscules style Blank Street */}
+                  <h3 className="text-xs sm:text-base font-bold uppercase tracking-[0.14em] sm:tracking-[0.18em] text-black mb-1 line-clamp-2 sm:line-clamp-none">
+                    {product.name}
+                  </h3>
+
+                  {product.subtitle && (
+                    <p className="text-[10px] sm:text-[11px] text-neutral-400 tracking-wider mb-1 sm:mb-2 line-clamp-1">
+                      {product.subtitle}
+                    </p>
                   )}
-                  <img
-                    src={getValidImageUrl(product.image, '/placeholder.jpg')}
-                    alt={product.name}
-                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
 
-                {/* Nom du produit en majuscules style Blank Street */}
-                <h3 className="text-sm sm:text-base font-bold uppercase tracking-[0.18em] text-black mb-1">
-                  {product.name}
-                </h3>
+                  {/* Prix du produit */}
+                  <div className="mb-1 sm:mb-3">
+                    <span className="text-xs sm:text-base font-semibold text-black tracking-wide">
+                      {product.price.toLocaleString('fr-FR')} {product.currency || 'CFA'}
+                    </span>
+                    {product.originalPrice && (
+                      <span className="text-[10px] sm:text-xs text-neutral-400 line-through ml-1.5 sm:ml-2">
+                        {product.originalPrice.toLocaleString('fr-FR')} {product.currency || 'CFA'}
+                      </span>
+                    )}
+                  </div>
 
-                {product.subtitle && (
-                  <p className="text-[11px] text-neutral-400 tracking-wider mb-2">
-                    {product.subtitle}
+                  {/* Statut sous le prix (Coming soon ou Précommande) */}
+                  <p className="text-[10px] sm:text-xs text-neutral-500 uppercase tracking-widest font-medium mb-3 sm:mb-4">
+                    {product.statusText || 'Coming soon'}
                   </p>
-                )}
-
-                {/* Prix du produit */}
-                <div className="mb-3">
-                  <span className="text-sm sm:text-base font-semibold text-black tracking-wide">
-                    {product.price.toLocaleString('fr-FR')} {product.currency || 'CFA'}
-                  </span>
-                  {product.originalPrice && (
-                    <span className="text-xs text-neutral-400 line-through ml-2">
-                      {product.originalPrice.toLocaleString('fr-FR')} {product.currency || 'CFA'}
-                    </span>
-                  )}
                 </div>
-
-                {/* Statut sous le prix (Coming soon ou Précommande) */}
-                <p className="text-xs text-neutral-500 uppercase tracking-widest font-medium mb-4">
-                  {product.statusText || 'Coming soon'}
-                </p>
 
                 {/* Sélecteur de taille & Bouton de précommande */}
                 {currentConfig.allowPreorder && (
-                  <div className="space-y-3 pt-2">
-                    <div className="flex justify-center gap-1.5">
+                  <div className="space-y-2 sm:space-y-3 pt-1">
+                    <div className="flex justify-center gap-1 sm:gap-1.5">
                       {availableSizes.map((size) => {
                         const isSelected = activeSize === size
                         return (
@@ -220,7 +222,7 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
                             key={size}
                             type="button"
                             onClick={() => setSelectedSizes((prev) => ({ ...prev, [product.id]: size }))}
-                            className={`w-9 h-8 rounded text-xs font-bold tracking-wider transition-all duration-150 ${
+                            className={`h-7 px-2 sm:w-9 sm:h-8 rounded text-[10px] sm:text-xs font-bold tracking-wider transition-all duration-150 ${
                               isSelected
                                 ? 'bg-black text-white'
                                 : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -235,7 +237,7 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
                     <button
                       type="button"
                       onClick={() => handleAddToCart(product)}
-                      className={`w-full py-3 px-4 rounded text-xs font-bold uppercase tracking-[0.25em] transition-all duration-200 flex items-center justify-center gap-2 ${
+                      className={`w-full py-2.5 sm:py-3 px-2 sm:px-4 rounded text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em] sm:tracking-[0.25em] transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 ${
                         isAdded
                           ? 'bg-neutral-900 text-white'
                           : 'bg-black text-white hover:bg-neutral-800 active:scale-[0.98]'
@@ -243,13 +245,13 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
                     >
                       {isAdded ? (
                         <>
-                          <Check className="w-3.5 h-3.5" />
-                          AJOUTÉ EN TAILLE {activeSize}
+                          <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                          <span>AJOUTÉ ({activeSize})</span>
                         </>
                       ) : (
                         <>
-                          <ShoppingBag className="w-3.5 h-3.5" />
-                          {currentConfig.buttonText || 'PRÉCOMMANDER'} ({activeSize})
+                          <ShoppingBag className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                          <span>{currentConfig.buttonText || 'PRÉCOMMANDER'} ({activeSize})</span>
                         </>
                       )}
                     </button>

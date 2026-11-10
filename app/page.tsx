@@ -293,7 +293,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Main Content (immédiatement après le Hero) */}
+      {/* Section Drop Exclusif avec Compte à Rebours (Blank Street Style) - Immédiatement après le Hero */}
+      <DropSection config={dropConfig} />
+
+      {/* Main Content */}
       <main className="container mx-auto px-4 lg:px-8 py-8 space-y-12">
         {/* Section Produits prioritaires demandés par l'utilisateur */}
         {(() => {
@@ -358,9 +361,6 @@ export default function HomePage() {
         bannerImage="/images/collection-essentiels-banner.jpg"
         products={visibleProducts}
       />
-
-      {/* Section Drop Exclusif avec Compte à Rebours (Blank Street Style) */}
-      <DropSection config={dropConfig} />
 
 
 
