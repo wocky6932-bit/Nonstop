@@ -35,7 +35,7 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
   const { addToCart } = useCart()
   const currentConfig = useMemo(() => normalizeDropConfig(config), [config])
 
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => calculateTimeLeft(currentConfig.targetDate))
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: false })
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({})
   const [addedProductId, setAddedProductId] = useState<string | null>(null)
@@ -43,6 +43,7 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
 
   useEffect(() => {
     setMounted(true)
+    setTimeLeft(calculateTimeLeft(currentConfig.targetDate))
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft(currentConfig.targetDate))
     }, 1000)
