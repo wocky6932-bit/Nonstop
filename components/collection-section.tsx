@@ -180,15 +180,22 @@ export function CollectionSection({
                 : [product.image]
             ).filter(Boolean)
 
-            // Si le mode mannequin est actif et qu'une 2ème image existe, on l'affiche
-            let displayedIndex = activeImageIndices[product.id] || 0
-            if (isMannequin && productImages.length > 1 && displayedIndex === 0) {
-              displayedIndex = 1
-            } else if (!isMannequin && displayedIndex === 1 && productImages.length > 1) {
-              displayedIndex = 0
+            // Si le mode mannequin est actif :
+            // 1) Si le produit a un mannequin_image dédié, on le prend en priorité
+            // 2) Sinon si une 2ème image existe dans images[], on l'affiche
+            let activeImg = product.image
+            if (isMannequin) {
+              if (product.mannequin_image) {
+                activeImg = product.mannequin_image
+              } else if (productImages.length > 1) {
+                activeImg = productImages[1]
+              } else {
+                activeImg = productImages[0] || product.image
+              }
+            } else {
+              let displayedIndex = activeImageIndices[product.id] || 0
+              activeImg = productImages[displayedIndex] || productImages[0] || product.image
             }
-
-            const activeImg = productImages[displayedIndex] || productImages[0] || product.image
 
             return (
               <div key={product.id} className="min-w-0 group flex flex-col justify-between">

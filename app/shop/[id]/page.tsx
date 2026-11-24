@@ -130,11 +130,19 @@ export default function ProductDetailPage() {
     })
   }
 
-  const images: string[] = product
-    ? product.images && product.images.length > 0
+  const images: string[] = (() => {
+    if (!product) return []
+    const baseImages: string[] = product.images && product.images.length > 0
       ? product.images.map((img: any) => getValidImageUrl(img))
       : [getValidImageUrl(product.image)]
-    : []
+    if (product.mannequin_image) {
+      const mannequinUrl = getValidImageUrl(product.mannequin_image)
+      if (!baseImages.includes(mannequinUrl)) {
+        baseImages.push(mannequinUrl)
+      }
+    }
+    return baseImages
+  })()
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -246,6 +254,13 @@ export default function ProductDetailPage() {
                   {(product as any).is_new && !product.sold_out && !(product as any).is_preorder && (
                     <div className="bg-white/90 text-black text-[10px] px-3 py-1 tracking-widest uppercase border border-gray-200">
                       NEW
+                    </div>
+                  )}
+
+                  {/* Badge PORTÉ MANNEQUIN */}
+                  {product.mannequin_image && images[selectedImage] === getValidImageUrl(product.mannequin_image) && (
+                    <div className="bg-black text-white text-[10px] px-3 py-1 tracking-widest uppercase font-bold">
+                      PORTÉ (MANNEQUIN)
                     </div>
                   )}
                 </div>

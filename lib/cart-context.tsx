@@ -18,6 +18,7 @@ export interface Product {
   variant_options?: string[] // Options de variante (ex: ["Cropped", "Non cropped"])
   selectedVariant?: string // Variante choisie par le client
   is_preorder?: boolean
+  mannequin_image?: string | null // Photo portée sur mannequin (optionnelle)
 }
 
 export interface CartItem extends Product {

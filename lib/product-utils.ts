@@ -31,7 +31,8 @@ export function normalizeProductForCart(product: any): Product {
       ? product.variant_options
       : [],
     selectedVariant: product.selectedVariant,
-    is_preorder: product.is_preorder === 1 || product.is_preorder === true
+    is_preorder: product.is_preorder === 1 || product.is_preorder === true,
+    mannequin_image: product.mannequin_image || null
   }
 
   return normalizedProduct
@@ -121,6 +122,7 @@ export function normalizeProductData(product: any): Product {
     sizes: productSizes,
     variant_options: productVariants,
     sold_out: product.sold_out === 1 || product.sold_out === true,
-    is_preorder: product.is_preorder === 1 || product.is_preorder === true
+    is_preorder: product.is_preorder === 1 || product.is_preorder === true,
+    mannequin_image: product.mannequin_image || null
   }
 }

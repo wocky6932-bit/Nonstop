@@ -78,15 +78,25 @@ export async function setSiteConfig(key: string, value: any) {
 }
 
 async function ensureProductColumns() {
-  await query(`
-    ALTER TABLE products
-      ADD COLUMN IF NOT EXISTS category VARCHAR(255) DEFAULT 'general',
-      ADD COLUMN IF NOT EXISTS sizes JSON,
-      ADD COLUMN IF NOT EXISTS variant_options JSON,
-      ADD COLUMN IF NOT EXISTS sold_out BOOLEAN DEFAULT FALSE,
-      ADD COLUMN IF NOT EXISTS is_preorder TINYINT(1) NOT NULL DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS original_price DECIMAL(10,2) NULL
-  `)
+  try {
+    await query(`
+      ALTER TABLE products
+        ADD COLUMN IF NOT EXISTS category VARCHAR(255) DEFAULT 'general',
+        ADD COLUMN IF NOT EXISTS sizes JSON,
+        ADD COLUMN IF NOT EXISTS variant_options JSON,
+        ADD COLUMN IF NOT EXISTS sold_out BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS is_preorder TINYINT(1) NOT NULL DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS original_price DECIMAL(10,2) NULL,
+        ADD COLUMN IF NOT EXISTS mannequin_image LONGTEXT NULL
+    `)
+  } catch (e) {
+    // Si ALTER ADD COLUMN IF NOT EXISTS échoue sur certaines versions de MySQL, tenter sans IF NOT EXISTS
+    try {
+      await query(`ALTER TABLE products ADD COLUMN mannequin_image LONGTEXT NULL`)
+    } catch (e2) {
+      // Ignorer si la colonne existe déjà
+    }
+  }
 }
 
 async function ensureOrderItemColumns() {
@@ -237,13 +247,14 @@ export async function createProduct(productData: {
   sizes?: string[]
   variant_options?: string[]
   is_preorder?: boolean
+  mannequin_image?: string | null
 }) {
   try {
     await ensureProductColumns()
     const id = Date.now().toString()
     const sql = `
-      INSERT INTO products (id, name, price, original_price, currency, image, images, description, category, sizes, variant_options, is_preorder)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (id, name, price, original_price, currency, image, images, description, category, sizes, variant_options, is_preorder, mannequin_image)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
 
     await query(sql, [
@@ -258,7 +269,8 @@ export async function createProduct(productData: {
       productData.category || 'general',
       JSON.stringify(productData.sizes || []),
       JSON.stringify(productData.variant_options || []),
-      productData.is_preorder ? 1 : 0
+      productData.is_preorder ? 1 : 0,
+      productData.mannequin_image || null
     ])
 
     return { success: true, product: { id, ...productData } }

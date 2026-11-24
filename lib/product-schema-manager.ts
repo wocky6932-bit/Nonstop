@@ -10,11 +10,12 @@ export interface ProductData {
   images?: string[]
   category?: string
   description?: string
+  mannequin_image?: string | null
 }
 
 export async function getAvailableColumns(): Promise<Set<string>> {
   // In MySQL, we know our schema
-  return new Set(['name', 'price', 'currency', 'image', 'sold_out', 'images', 'category', 'description'])
+  return new Set(['name', 'price', 'currency', 'image', 'sold_out', 'images', 'category', 'description', 'mannequin_image'])
 }
 
 export async function prepareProductData(data: ProductData): Promise<ProductData> {
@@ -40,6 +41,10 @@ export async function prepareProductData(data: ProductData): Promise<ProductData
     result.description = data.description
   }
 
+  if (availableColumns.has('mannequin_image') && data.mannequin_image !== undefined) {
+    result.mannequin_image = data.mannequin_image
+  }
+
   return result
 }
 
@@ -57,6 +62,10 @@ export async function prepareUpdateData(data: Partial<ProductData>): Promise<Par
   // Ajouter les colonnes avancées seulement si elles existent et sont définies
   if (availableColumns.has('images') && data.images !== undefined) {
     result.images = data.images
+  }
+
+  if (availableColumns.has('mannequin_image') && data.mannequin_image !== undefined) {
+    result.mannequin_image = data.mannequin_image
   }
 
   if (availableColumns.has('category') && data.category !== undefined && data.category.trim() !== '') {

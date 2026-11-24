@@ -19,6 +19,7 @@ interface Product {
   currency: string
   image: string
   images?: string[] // Array of image URLs for carousel
+  mannequin_image?: string | null // Photo sur mannequin / portée
   category?: string // Product category for filtering
   sizes?: string[] // Available sizes
   variant_options?: string[] // Available product variants
@@ -101,7 +102,8 @@ const parseImages = (images: any): string[] => {
 export function ProductForm({ product }: { product?: Product }) {
   const { toast } = useToast()
   const router = useRouter()
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploadingMannequin, setIsUploadingMannequin] = useState(false)
+  const mannequinInputRef = useRef<HTMLInputElement>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState("")
@@ -126,6 +128,7 @@ export function ProductForm({ product }: { product?: Product }) {
     currency: product?.currency || "XOF",
     image: product?.image || "",
     images: initialImages,
+    mannequin_image: product?.mannequin_image || "",
     category: product?.category || "general",
     sizes: parseStringArray(product?.sizes),
     variantOptions: parseStringArray(product?.variant_options),
@@ -238,6 +241,55 @@ export function ProductForm({ product }: { product?: Product }) {
     }
   }
 
+  const handleMannequinUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploadingMannequin(true)
+    try {
+      let fileToUpload: Blob | File = file
+      if (file.type.startsWith('image/')) {
+        try {
+          fileToUpload = await compressImage(file, 900, 1200, 0.75)
+        } catch (err) {
+          console.warn('Compression mannequin échouée, envoi direct', err)
+        }
+      }
+
+      const uploadData = new FormData()
+      uploadData.append('file', fileToUpload, file.name)
+
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: uploadData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erreur lors de l\'upload')
+      }
+
+      const result = await response.json()
+      setFormData(prev => ({ ...prev, mannequin_image: result.url }))
+      toast({
+        title: "Photo mannequin enregistrée",
+        description: "L'image portée a été ajoutée avec succès.",
+      })
+    } catch (error: any) {
+      console.error('Erreur upload mannequin:', error)
+      toast({
+        title: "Erreur d'upload",
+        description: error.message || "Impossible d'uploader la photo mannequin.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploadingMannequin(false)
+      if (mannequinInputRef.current) {
+        mannequinInputRef.current.value = ""
+      }
+    }
+  }
+
   const removeImage = (index: number) => {
     // Get the original image URL at this filtered index
     const validImages = formData.images.filter(img => img && img.trim() !== '')
@@ -281,6 +333,7 @@ export function ProductForm({ product }: { product?: Product }) {
         variant_options: formData.variantOptions,
         sold_out: formData.soldOut, // Utiliser sold_out pour MySQL
         is_preorder: formData.isPreorder,
+        mannequin_image: formData.mannequin_image || null,
       }
 
       // Only add category if it's not empty
@@ -563,6 +616,88 @@ export function ProductForm({ product }: { product?: Product }) {
             {formData.images.length > 1 && ` ${formData.images.length} images ajoutées.`}
           </div>
         </div>
+      </div>
+
+      {/* ── PHOTO MANNEQUIN (PORTÉ) ────────────────────── */}
+      <div className="p-4 border rounded-lg bg-neutral-50/80 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="text-sm font-bold uppercase tracking-wider text-black flex items-center gap-2">
+              <span>Photo Portée sur Mannequin</span>
+              <span className="text-[10px] bg-black text-white px-1.5 py-0.5 rounded font-normal">NOUVEAU</span>
+            </Label>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Permet aux clients de basculer en mode "MANNEQUIN" sur la boutique ou la collection pour voir le vêtement porté.
+            </p>
+          </div>
+          {formData.mannequin_image && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setFormData(prev => ({ ...prev, mannequin_image: '' }))}
+              className="text-xs text-red-600 hover:text-red-700 h-7 px-2"
+            >
+              Supprimer
+            </Button>
+          )}
+        </div>
+
+        <input
+          type="file"
+          ref={mannequinInputRef}
+          accept="image/*"
+          onChange={handleMannequinUpload}
+          className="hidden"
+          disabled={isUploadingMannequin}
+        />
+
+        {formData.mannequin_image ? (
+          <div className="flex items-center gap-4 p-3 bg-white border rounded">
+            <div className="relative w-20 h-24 bg-neutral-100 rounded overflow-hidden border shrink-0">
+              <img
+                src={getValidImageUrl(formData.mannequin_image)}
+                alt="Mannequin preview"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0 space-y-2">
+              <p className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Photo mannequin configurée
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => mannequinInputRef.current?.click()}
+                disabled={isUploadingMannequin}
+                className="text-xs h-8"
+              >
+                {isUploadingMannequin ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                ) : null}
+                Changer la photo mannequin
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => mannequinInputRef.current?.click()}
+            disabled={isUploadingMannequin}
+            className="w-full flex items-center justify-center gap-2 border-dashed border-2 py-6 bg-white hover:bg-neutral-50"
+          >
+            {isUploadingMannequin ? (
+              <Loader2 className="w-4 h-4 animate-spin text-neutral-600" />
+            ) : (
+              <Plus className="w-4 h-4 text-neutral-600" />
+            )}
+            <span className="text-xs font-medium text-neutral-700">
+              {isUploadingMannequin ? 'Téléversement en cours...' : 'Ajouter une photo sur mannequin (porté)'}
+            </span>
+          </Button>
+        )}
       </div>
 
       <div className="flex items-center space-x-2">
