@@ -310,7 +310,3 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
     </section>
   )
 }
-      </div>
-    </section>
-  )
-}
