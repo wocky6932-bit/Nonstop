@@ -112,49 +112,57 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
 
         {/* Header : Tagline & Date */}
         <div className="text-center mb-8 sm:mb-12">
+          {currentConfig.saleMode === 'instant' ? (
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] mb-3 border border-emerald-500/20">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>DISPONIBLE MAINTENANT</span>
+            </div>
+          ) : null}
           <p className="text-[11px] sm:text-xs font-black uppercase tracking-[0.35em] text-neutral-500 mb-2">
-            {currentConfig.tagline || 'DROP 1 · COMING SOON'}
+            {currentConfig.tagline || (currentConfig.saleMode === 'instant' ? 'VENTE FLASH · ÉDITION LIMITÉE' : 'DROP 1 · COMING SOON')}
           </p>
           <p className="text-xs sm:text-sm font-semibold tracking-wider text-neutral-800">
-            {currentConfig.dateLabel || '08/12/26 19:00 GMT'}
+            {currentConfig.dateLabel || (currentConfig.saleMode === 'instant' ? 'EN STOCK · EXPÉDITION IMMÉDIATE' : '08/12/26 19:00 GMT')}
           </p>
         </div>
 
-        {/* Compteur interactif Blank Street (Jours / Heures / Minutes / Secondes) */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-6 max-w-lg mx-auto mb-10 sm:mb-14 text-center">
-          <div className="flex flex-col items-center">
-            <span className="text-3xl sm:text-5xl md:text-6xl font-light tracking-tight text-black tabular-nums">
-              {mounted ? String(timeLeft.days).padStart(2, '0') : '00'}
-            </span>
-            <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.25em] text-neutral-400 mt-1 sm:mt-2 font-medium">
-              DAYS
-            </span>
+        {/* Compteur interactif Blank Street (uniquement si saleMode === 'countdown') */}
+        {currentConfig.saleMode !== 'instant' && (
+          <div className="grid grid-cols-4 gap-2 sm:gap-6 max-w-lg mx-auto mb-10 sm:mb-14 text-center">
+            <div className="flex flex-col items-center">
+              <span className="text-3xl sm:text-5xl md:text-6xl font-light tracking-tight text-black tabular-nums">
+                {mounted ? String(timeLeft.days).padStart(2, '0') : '00'}
+              </span>
+              <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.25em] text-neutral-400 mt-1 sm:mt-2 font-medium">
+                DAYS
+              </span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-3xl sm:text-5xl md:text-6xl font-light tracking-tight text-black tabular-nums">
+                {mounted ? String(timeLeft.hours).padStart(2, '0') : '00'}
+              </span>
+              <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.25em] text-neutral-400 mt-1 sm:mt-2 font-medium">
+                HOURS
+              </span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-3xl sm:text-5xl md:text-6xl font-light tracking-tight text-black tabular-nums">
+                {mounted ? String(timeLeft.minutes).padStart(2, '0') : '00'}
+              </span>
+              <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.25em] text-neutral-400 mt-1 sm:mt-2 font-medium">
+                MINUTES
+              </span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-3xl sm:text-5xl md:text-6xl font-light tracking-tight text-black tabular-nums">
+                {mounted ? String(timeLeft.seconds).padStart(2, '0') : '00'}
+              </span>
+              <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.25em] text-neutral-400 mt-1 sm:mt-2 font-medium">
+                SECONDS
+              </span>
+            </div>
           </div>
-          <div className="flex flex-col items-center">
-            <span className="text-3xl sm:text-5xl md:text-6xl font-light tracking-tight text-black tabular-nums">
-              {mounted ? String(timeLeft.hours).padStart(2, '0') : '00'}
-            </span>
-            <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.25em] text-neutral-400 mt-1 sm:mt-2 font-medium">
-              HOURS
-            </span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-3xl sm:text-5xl md:text-6xl font-light tracking-tight text-black tabular-nums">
-              {mounted ? String(timeLeft.minutes).padStart(2, '0') : '00'}
-            </span>
-            <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.25em] text-neutral-400 mt-1 sm:mt-2 font-medium">
-              MINUTES
-            </span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-3xl sm:text-5xl md:text-6xl font-light tracking-tight text-black tabular-nums">
-              {mounted ? String(timeLeft.seconds).padStart(2, '0') : '00'}
-            </span>
-            <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.25em] text-neutral-400 mt-1 sm:mt-2 font-medium">
-              SECONDS
-            </span>
-          </div>
-        </div>
+        )}
 
         {/* Barre de bascule Torom Paris : VUE / MANNEQUIN */}
         {currentConfig.enableMannequinToggle && (
@@ -250,13 +258,13 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
                     )}
                   </div>
 
-                  {/* Statut sous le prix (Coming soon ou Précommande) */}
+                  {/* Statut sous le prix (Coming soon ou Précommande ou En Stock) */}
                   <p className="text-[10px] sm:text-xs text-neutral-500 uppercase tracking-widest font-medium mb-3 sm:mb-4">
-                    {product.statusText || 'Coming soon'}
+                    {product.statusText || (currentConfig.saleMode === 'instant' ? 'En stock' : 'Coming soon')}
                   </p>
                 </div>
 
-                {/* Sélecteur de taille & Bouton de précommande */}
+                {/* Sélecteur de taille & Bouton de commande / précommande */}
                 {currentConfig.allowPreorder && (
                   <div className="space-y-2 sm:space-y-3 pt-1">
                     <div className="flex justify-center gap-1 sm:gap-1.5">
@@ -296,7 +304,9 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
                       ) : (
                         <>
                           <ShoppingBag className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                          <span>{currentConfig.buttonText || 'PRÉCOMMANDER'} ({activeSize})</span>
+                          <span>
+                            {currentConfig.buttonText || (currentConfig.saleMode === 'instant' ? 'ACHETER MAINTENANT' : 'PRÉCOMMANDER')} ({activeSize})
+                          </span>
                         </>
                       )}
                     </button>

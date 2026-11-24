@@ -264,13 +264,69 @@ export default function AdminDropPage() {
           {/* Section Paramètres Généraux */}
           <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-6">
             <h2 className="text-lg font-bold uppercase tracking-wider text-black border-b pb-3">
-              1. Paramètres du Compte à Rebours
+              1. Mode de Vente & Compte à Rebours
             </h2>
+
+            {/* SÉLECTEUR : COMPTE À REBOURS VS VENDRE MAINTENANT */}
+            <div className="p-4 bg-neutral-900 text-white rounded-xl space-y-3">
+              <Label className="text-xs font-black uppercase tracking-widest text-neutral-300 block">
+                Décision de vente (Stratégie Drop)
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setForm((prev) => ({
+                    ...prev,
+                    saleMode: 'countdown',
+                    tagline: prev.tagline && prev.tagline !== 'DROP DISPONIBLE · VENTE IMMÉDIATE' ? prev.tagline : 'DROP 1 · COMING SOON',
+                    dateLabel: prev.dateLabel && prev.dateLabel !== 'EN STOCK · LIVRAISON DIRECTE' ? prev.dateLabel : '08/12/26 19:00 GMT',
+                    buttonText: 'PRÉCOMMANDER'
+                  }))}
+                  className={`p-4 rounded-lg text-left transition-all border ${
+                    (form.saleMode || 'countdown') === 'countdown'
+                      ? 'bg-white text-black border-white shadow-md'
+                      : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-750'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-black text-sm uppercase tracking-wide">Compte à Rebours</span>
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <p className="text-xs opacity-80 leading-relaxed">
+                    Affiche le compte à rebours (jours/heures/min) et prépare la communauté au drop.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setForm((prev) => ({
+                    ...prev,
+                    saleMode: 'instant',
+                    tagline: 'DROP DISPONIBLE · VENTE IMMÉDIATE',
+                    dateLabel: 'EN STOCK · LIVRAISON DIRECTE',
+                    buttonText: 'ACHETER MAINTENANT'
+                  }))}
+                  className={`p-4 rounded-lg text-left transition-all border ${
+                    form.saleMode === 'instant'
+                      ? 'bg-emerald-500 text-white border-emerald-400 shadow-md'
+                      : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-750'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-black text-sm uppercase tracking-wide">Vendre Maintenant</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                  </div>
+                  <p className="text-xs opacity-90 leading-relaxed">
+                    Masque le compte à rebours, active la vente directe immédiate en stock pour les clients.
+                  </p>
+                </button>
+              </div>
+            </div>
 
             <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-200">
               <div>
                 <p className="font-bold text-sm text-black uppercase tracking-wide">Activer le Drop sur l'accueil</p>
-                <p className="text-xs text-neutral-500">Affiche ou masque la section Drop & compte à rebours</p>
+                <p className="text-xs text-neutral-500">Affiche ou masque la section Drop sur la page d'accueil</p>
               </div>
               <input
                 type="checkbox"
@@ -289,45 +345,66 @@ export default function AdminDropPage() {
                   id="tagline"
                   value={form.tagline}
                   onChange={(e) => setForm((prev) => ({ ...prev, tagline: e.target.value }))}
-                  placeholder="DROP 1 · COMING SOON"
+                  placeholder={form.saleMode === 'instant' ? 'DROP DISPONIBLE · VENTE IMMÉDIATE' : 'DROP 1 · COMING SOON'}
                   className="mt-1"
                 />
               </div>
 
               <div>
                 <Label htmlFor="dateLabel" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                  Libellé date affiché
+                  Libellé date / disponibilité affiché
                 </Label>
                 <Input
                   id="dateLabel"
                   value={form.dateLabel}
                   onChange={(e) => setForm((prev) => ({ ...prev, dateLabel: e.target.value }))}
-                  placeholder="08/12/26 19:00 GMT"
+                  placeholder={form.saleMode === 'instant' ? 'EN STOCK · EXPÉDITION IMMÉDIATE' : '08/12/26 19:00 GMT'}
                   className="mt-1"
                 />
               </div>
             </div>
 
+            {form.saleMode !== 'instant' && (
+              <div>
+                <Label htmlFor="targetDate" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
+                  Date & Heure cible du Compte à Rebours (ISO)
+                </Label>
+                <Input
+                  id="targetDate"
+                  value={form.targetDate}
+                  onChange={(e) => setForm((prev) => ({ ...prev, targetDate: e.target.value }))}
+                  placeholder="2026-12-08T19:00:00Z"
+                  className="mt-1"
+                />
+                <p className="text-[11px] text-neutral-400 mt-1">
+                  Format standard ISO (ex : 2026-12-08T19:00:00Z pour le 8 décembre 2026 à 19h00).
+                </p>
+              </div>
+            )}
+
             <div>
-              <Label htmlFor="targetDate" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                Date & Heure cible du Compte à Rebours (ISO)
+              <Label htmlFor="buttonText" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
+                Texte du bouton d'achat
               </Label>
               <Input
-                id="targetDate"
-                value={form.targetDate}
-                onChange={(e) => setForm((prev) => ({ ...prev, targetDate: e.target.value }))}
-                placeholder="2026-12-08T19:00:00Z"
+                id="buttonText"
+                value={form.buttonText}
+                onChange={(e) => setForm((prev) => ({ ...prev, buttonText: e.target.value }))}
+                placeholder={form.saleMode === 'instant' ? 'ACHETER MAINTENANT' : 'PRÉCOMMANDER'}
                 className="mt-1"
               />
-              <p className="text-[11px] text-neutral-400 mt-1">
-                Format standard ISO (ex : 2026-12-08T19:00:00Z pour le 8 décembre 2026 à 19h00).
-              </p>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-200">
               <div>
-                <p className="font-bold text-sm text-black uppercase tracking-wide">Autoriser les Précommandes directes</p>
-                <p className="text-xs text-neutral-500">Permet aux clients de choisir leur taille et de réserver le produit</p>
+                <p className="font-bold text-sm text-black uppercase tracking-wide">
+                  {form.saleMode === 'instant' ? 'Autoriser l\'ajout au panier' : 'Autoriser les Précommandes directes'}
+                </p>
+                <p className="text-xs text-neutral-500">
+                  {form.saleMode === 'instant'
+                    ? 'Permet aux clients de sélectionner leur taille et de passer commande immédiatement'
+                    : 'Permet aux clients de choisir leur taille et de réserver le produit avant le drop'}
+                </p>
               </div>
               <input
                 type="checkbox"

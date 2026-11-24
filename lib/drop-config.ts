@@ -17,20 +17,22 @@ export type DropProduct = {
 
 export type DropConfig = {
   enabled: boolean
-  tagline: string // ex: "DROP 1 · COMING SOON"
+  saleMode?: 'countdown' | 'instant' // 'countdown' = compte à rebours, 'instant' = vente immédiate en direct
+  tagline: string // ex: "DROP 1 · COMING SOON" ou "DISPONIBLE MAINTENANT"
   title: string // ex: "DROP EXCLUSIF"
   targetDate: string // Format ISO string ou "YYYY-MM-DDTHH:mm:ss"
-  dateLabel: string // ex: "08/12/26 19:00 GMT"
+  dateLabel: string // ex: "08/12/26 19:00 GMT" ou "EN STOCK - LIVRAISON IMMÉDIATE"
   categories: string[] // ex: ["ALL", "DROP 1"]
   activeCategory?: string
   products: DropProduct[]
-  buttonText: string // ex: "PRÉCOMMANDER" ou "Bientôt disponible"
+  buttonText: string // ex: "PRÉCOMMANDER" ou "ACHETER MAINTENANT"
   allowPreorder: boolean // si vrai, l'utilisateur peut choisir sa taille et ajouter au panier
   enableMannequinToggle: boolean // Active le bouton VUE / MANNEQUIN
 }
 
 export const DEFAULT_DROP_CONFIG: DropConfig = {
   enabled: true,
+  saleMode: 'countdown',
   tagline: 'DROP 1 · COMING SOON',
   title: 'COLLECTION NONSTOP',
   targetDate: '2026-12-08T19:00:00Z',
@@ -100,13 +102,14 @@ export function normalizeDropConfig(config: any): DropConfig {
 
   return {
     enabled: config.enabled !== false,
-    tagline: config.tagline || DEFAULT_DROP_CONFIG.tagline,
+    saleMode: config.saleMode === 'instant' ? 'instant' : 'countdown',
+    tagline: config.tagline || (config.saleMode === 'instant' ? 'DROP DISPONIBLE · VENTE IMMÉDIATE' : DEFAULT_DROP_CONFIG.tagline),
     title: config.title || DEFAULT_DROP_CONFIG.title,
     targetDate: config.targetDate || DEFAULT_DROP_CONFIG.targetDate,
-    dateLabel: config.dateLabel || DEFAULT_DROP_CONFIG.dateLabel,
+    dateLabel: config.dateLabel || (config.saleMode === 'instant' ? 'EN STOCK · LIVRAISON DIRECTE' : DEFAULT_DROP_CONFIG.dateLabel),
     categories: Array.isArray(config.categories) && config.categories.length > 0 ? config.categories : DEFAULT_DROP_CONFIG.categories,
     activeCategory: config.activeCategory || 'ALL',
-    buttonText: config.buttonText || DEFAULT_DROP_CONFIG.buttonText,
+    buttonText: config.buttonText || (config.saleMode === 'instant' ? 'AJOUTER AU PANIER' : DEFAULT_DROP_CONFIG.buttonText),
     allowPreorder: config.allowPreorder !== false,
     enableMannequinToggle: config.enableMannequinToggle !== false,
     products
