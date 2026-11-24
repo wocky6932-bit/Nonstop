@@ -3,7 +3,8 @@ export type DropProduct = {
   name: string
   subtitle?: string
   description?: string
-  image: string
+  image: string // Photo à plat (packshot)
+  mannequinImage?: string // Photo portée sur mannequin
   images?: string[]
   price: number
   originalPrice?: number
@@ -25,6 +26,7 @@ export type DropConfig = {
   products: DropProduct[]
   buttonText: string // ex: "PRÉCOMMANDER" ou "Bientôt disponible"
   allowPreorder: boolean // si vrai, l'utilisateur peut choisir sa taille et ajouter au panier
+  enableMannequinToggle: boolean // Active le bouton VUE / MANNEQUIN
 }
 
 export const DEFAULT_DROP_CONFIG: DropConfig = {
@@ -37,6 +39,7 @@ export const DEFAULT_DROP_CONFIG: DropConfig = {
   activeCategory: 'ALL',
   buttonText: 'PRÉCOMMANDER',
   allowPreorder: true,
+  enableMannequinToggle: true,
   products: [
     {
       id: 'drop-longsleeve-black',
@@ -44,6 +47,7 @@ export const DEFAULT_DROP_CONFIG: DropConfig = {
       subtitle: 'Édition Collector • Noir Profond',
       description: 'Long sleeves signature NONSTOP en coton lourd avec motifs graphiques blancs sur les manches et logo poitrine brodé.',
       image: '/images/drop-longsleeve-black.jpg',
+      mannequinImage: '',
       images: ['/images/drop-longsleeve-black.jpg'],
       price: 11000,
       currency: 'CFA',
@@ -58,6 +62,7 @@ export const DEFAULT_DROP_CONFIG: DropConfig = {
       subtitle: 'Édition Collector • Navy Blue',
       description: 'Long sleeves signature NONSTOP en coton lourd avec détails floraux cyan/bleu clair sur les manches et logo poitrine contrasté.',
       image: '/images/drop-longsleeve-navy.jpg',
+      mannequinImage: '',
       images: ['/images/drop-longsleeve-navy.jpg'],
       price: 11000,
       currency: 'CFA',
@@ -81,6 +86,7 @@ export function normalizeDropConfig(config: any): DropConfig {
         subtitle: p.subtitle || '',
         description: p.description || '',
         image: p.image || '/placeholder.jpg',
+        mannequinImage: p.mannequinImage || '',
         images: Array.isArray(p.images) && p.images.length > 0 ? p.images : [p.image || '/placeholder.jpg'],
         price: Number(p.price) || 11000,
         originalPrice: p.originalPrice ? Number(p.originalPrice) : undefined,
@@ -102,6 +108,7 @@ export function normalizeDropConfig(config: any): DropConfig {
     activeCategory: config.activeCategory || 'ALL',
     buttonText: config.buttonText || DEFAULT_DROP_CONFIG.buttonText,
     allowPreorder: config.allowPreorder !== false,
+    enableMannequinToggle: config.enableMannequinToggle !== false,
     products
   }
 }

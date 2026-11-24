@@ -20,6 +20,7 @@ export default function AdminDropPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
+  const [uploadingMannequinIndex, setUploadingMannequinIndex] = useState<number | null>(null)
   const [newCategoryInput, setNewCategoryInput] = useState('')
 
   useEffect(() => {
@@ -113,6 +114,51 @@ export default function AdminDropPage() {
       alert("Échec de l'upload de l'image.")
     } finally {
       setUploadingIndex(null)
+      if (event.target) event.target.value = ''
+    }
+  }
+
+  const handleMannequinImageUpload = async (productIndex: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setUploadingMannequinIndex(productIndex)
+    try {
+      let fileToUpload: Blob | File = file
+      if (file.type.startsWith('image/')) {
+        try {
+          fileToUpload = await compressImage(file, 1000, 1000, 0.75)
+        } catch (e) {
+          console.warn('Compression ignorée:', e)
+        }
+      }
+
+      const formData = new FormData()
+      formData.append('file', fileToUpload, file.name)
+
+      const res = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!res.ok) throw new Error('Upload image mannequin impossible')
+      const data = await res.json()
+
+      setForm((prev) => ({
+        ...prev,
+        products: prev.products.map((p, idx) => {
+          if (idx !== productIndex) return p
+          return {
+            ...p,
+            mannequinImage: data.url
+          }
+        })
+      }))
+    } catch (err) {
+      console.error(err)
+      alert("Échec de l'upload de la photo mannequin.")
+    } finally {
+      setUploadingMannequinIndex(null)
       if (event.target) event.target.value = ''
     }
   }
@@ -290,6 +336,19 @@ export default function AdminDropPage() {
                 className="h-5 w-5 accent-black rounded cursor-pointer"
               />
             </div>
+
+            <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+              <div>
+                <p className="font-bold text-sm text-black uppercase tracking-wide">Activer le bouton VUE / MANNEQUIN</p>
+                <p className="text-xs text-neutral-500">Permet aux clients de basculer entre la photo à plat et la photo portée sur mannequin</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={form.enableMannequinToggle}
+                onChange={(e) => setForm((prev) => ({ ...prev, enableMannequinToggle: e.target.checked }))}
+                className="h-5 w-5 accent-black rounded cursor-pointer"
+              />
+            </div>
           </div>
 
           {/* Section Produits du Drop */}
@@ -325,49 +384,124 @@ export default function AdminDropPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Colonne Image */}
-                    <div>
-                      <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700 mb-2 block">
-                        Image du vêtement
-                      </Label>
-                      <div className="relative aspect-square w-full rounded border bg-white overflow-hidden flex items-center justify-center p-2 mb-2">
-                        <img
-                          src={getValidImageUrl(product.image, '/placeholder.jpg')}
-                          alt={product.name}
-                          className="w-full h-full object-contain"
-                        />
+                    {/* Colonne Images (Packshot & Mannequin) */}
+                    <div className="space-y-4">
+                      {/* Photo Produit standard */}
+                      <div>
+                        <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700 mb-2 block">
+                          1. Photo à plat (VUE)
+                        </Label>
+                        <div className="relative aspect-square w-full rounded border bg-white overflow-hidden flex items-center justify-center p-2 mb-2">
+                          <img
+                            src={getValidImageUrl(product.image, '/placeholder.jpg')}
+                            alt={product.name}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <label className="cursor-pointer">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handleProductImageUpload(pIndex, e)}
+                            />
+                            <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-bold border border-neutral-300 rounded bg-white hover:bg-neutral-100 transition-colors">
+                              {uploadingIndex === pIndex ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <ImageIcon className="w-3.5 h-3.5" />
+                              )}
+                              Changer photo à plat
+                            </span>
+                          </label>
+                          <Input
+                            value={product.image}
+                            onChange={(e) =>
+                              setForm((prev) => ({
+                                ...prev,
+                                products: prev.products.map((p, idx) =>
+                                  idx === pIndex ? { ...p, image: e.target.value } : p
+                                )
+                              }))
+                            }
+                            placeholder="/images/..."
+                            className="text-xs font-mono h-8"
+                          />
+                        </div>
                       </div>
 
-                      <div className="flex flex-col gap-2">
-                        <label className="cursor-pointer">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleProductImageUpload(pIndex, e)}
+                      {/* Photo Mannequin portée */}
+                      <div className="pt-2 border-t border-neutral-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700 block">
+                            2. Photo MANNEQUIN (Porté)
+                          </Label>
+                          {product.mannequinImage && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setForm((prev) => ({
+                                  ...prev,
+                                  products: prev.products.map((p, idx) =>
+                                    idx === pIndex ? { ...p, mannequinImage: '' } : p
+                                  )
+                                }))
+                              }
+                              className="text-[10px] text-red-500 hover:underline"
+                            >
+                              Retirer
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="relative aspect-square w-full rounded border bg-white overflow-hidden flex items-center justify-center p-2 mb-2">
+                          {product.mannequinImage ? (
+                            <img
+                              src={getValidImageUrl(product.mannequinImage, '/placeholder.jpg')}
+                              alt={`${product.name} sur mannequin`}
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <div className="text-center p-4 text-neutral-400">
+                              <ImageIcon className="w-8 h-8 mx-auto mb-1 opacity-40" />
+                              <p className="text-[11px]">Aucune photo mannequin</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <label className="cursor-pointer">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handleMannequinImageUpload(pIndex, e)}
+                            />
+                            <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-bold border border-neutral-300 rounded bg-white hover:bg-neutral-100 transition-colors">
+                              {uploadingMannequinIndex === pIndex ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <ImageIcon className="w-3.5 h-3.5" />
+                              )}
+                              Uploader photo mannequin
+                            </span>
+                          </label>
+                          <Input
+                            value={product.mannequinImage || ''}
+                            onChange={(e) =>
+                              setForm((prev) => ({
+                                ...prev,
+                                products: prev.products.map((p, idx) =>
+                                  idx === pIndex ? { ...p, mannequinImage: e.target.value } : p
+                                )
+                              }))
+                            }
+                            placeholder="URL ou téléverser..."
+                            className="text-xs font-mono h-8"
                           />
-                          <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-bold border border-neutral-300 rounded bg-white hover:bg-neutral-100 transition-colors">
-                            {uploadingIndex === pIndex ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <ImageIcon className="w-3.5 h-3.5" />
-                            )}
-                            Changer l'image
-                          </span>
-                        </label>
-                        <Input
-                          value={product.image}
-                          onChange={(e) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              products: prev.products.map((p, idx) =>
-                                idx === pIndex ? { ...p, image: e.target.value } : p
-                              )
-                            }))
-                          }
-                          placeholder="/images/..."
-                          className="text-xs font-mono h-8"
-                        />
+                        </div>
                       </div>
                     </div>
 

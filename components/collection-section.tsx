@@ -15,6 +15,7 @@ interface CollectionSectionProps {
   bannerImage?: string
   products: Product[]
   targetProductIds?: string[]
+  enableMannequinToggle?: boolean
 }
 
 export function CollectionSection({
@@ -22,10 +23,14 @@ export function CollectionSection({
   bannerImage = '/images/collection-essentiels-banner.jpg',
   products,
   targetProductIds = ['1793314904004', '1792639100833', '1792616909279'],
+  enableMannequinToggle = true,
 }: CollectionSectionProps) {
   const { addToCart } = useCart()
   const { toast } = useToast()
   const { convertPrice, formatPrice } = useCurrency()
+
+  // Mode Mannequin (Porté vs Packshot)
+  const [isMannequin, setIsMannequin] = useState<boolean>(false)
 
   // Indice carrousel individuel pour chaque carte produit
   const [activeImageIndices, setActiveImageIndices] = useState<Record<string, number>>({})
@@ -127,11 +132,42 @@ export function CollectionSection({
 
       {/* ── 2. CATALOGUE DE LA COLLECTION ───────────── */}
       <div id="collection-products-anchor" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-12">
-        {/* En-tête de section */}
-        <div className="mb-6">
+        {/* En-tête de section & Bascule Mannequin */}
+        <div className="flex items-center justify-between mb-6 pb-2 border-b border-neutral-100">
           <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-[0.2em] text-black">
             {title}
           </h3>
+
+          {enableMannequinToggle && (
+            <div className="flex items-center gap-3 text-xs tracking-[0.18em] uppercase">
+              <button
+                type="button"
+                onClick={() => setIsMannequin(false)}
+                className={`py-1 px-2 rounded transition-colors ${
+                  !isMannequin ? 'font-black text-black bg-neutral-100' : 'text-neutral-400 hover:text-black'
+                }`}
+              >
+                VUE
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsMannequin(!isMannequin)}
+                className={`flex items-center gap-1.5 py-1 px-2 rounded transition-colors ${
+                  isMannequin ? 'font-black text-black bg-neutral-100' : 'text-neutral-400 hover:text-black'
+                }`}
+              >
+                <span>MANNEQUIN</span>
+                <span className={`w-5 h-3 border border-neutral-400 p-0.5 rounded-full transition-colors flex items-center ${
+                  isMannequin ? 'bg-black border-black' : 'bg-transparent'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full transition-transform ${
+                    isMannequin ? 'bg-white translate-x-2' : 'bg-neutral-400 translate-x-0'
+                  }`} />
+                </span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Grille de produits */}
@@ -144,7 +180,14 @@ export function CollectionSection({
                 : [product.image]
             ).filter(Boolean)
 
-            const displayedIndex = activeImageIndices[product.id] || 0
+            // Si le mode mannequin est actif et qu'une 2ème image existe, on l'affiche
+            let displayedIndex = activeImageIndices[product.id] || 0
+            if (isMannequin && productImages.length > 1 && displayedIndex === 0) {
+              displayedIndex = 1
+            } else if (!isMannequin && displayedIndex === 1 && productImages.length > 1) {
+              displayedIndex = 0
+            }
+
             const activeImg = productImages[displayedIndex] || productImages[0] || product.image
 
             return (

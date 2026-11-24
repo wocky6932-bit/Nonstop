@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from "@/hooks/use-session"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Package, ShoppingBag, Users, LogOut, Home, TrendingUp, DollarSign, Calendar } from 'lucide-react'
+import { Package, ShoppingBag, Users, LogOut, Home, TrendingUp, DollarSign, Calendar, LayoutTemplate } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { 
   BarChart, 
@@ -243,6 +243,25 @@ export default function AdminPage() {
                       <div>
                         <h3 className="font-medium">Clients</h3>
                         <p className="text-sm text-gray-500">Base utilisateurs</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/admin/sections">
+                <div className="bg-white p-6 rounded-xl border-2 border-black hover:shadow-lg transition-all cursor-pointer group">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-black text-white rounded-lg group-hover:scale-110 transition-transform">
+                        <LayoutTemplate className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-black">Gestion des Sections & Images</h3>
+                          <span className="text-[10px] bg-black text-white px-2 py-0.5 rounded font-black tracking-wider">ADMIN</span>
+                        </div>
+                        <p className="text-sm text-gray-500">Hero, Collections, Mannequin, Titres</p>
                       </div>
                     </div>
                   </div>

@@ -15,6 +15,7 @@ import { CollectionSection } from '@/components/collection-section'
 import { ShoppableLookbook } from '@/components/shoppable-lookbook'
 import { ComingSoonSection } from '@/components/coming-soon-section'
 import { DropSection } from '@/components/drop-section'
+import { SiteHomepageConfig, DEFAULT_HOMEPAGE_CONFIG, normalizeHomepageConfig } from '@/lib/homepage-config'
 import { getValidImageUrl } from '@/lib/image-utils'
 import { normalizeProductData } from '@/lib/product-utils'
 import { useCurrency } from '@/lib/currency-context'
@@ -34,6 +35,7 @@ export default function HomePage() {
   const [hasPreorder, setHasPreorder] = useState(false)
   const [comingSoonConfig, setComingSoonConfig] = useState<any>(null)
   const [dropConfig, setDropConfig] = useState<any>(null)
+  const [homepageConfig, setHomepageConfig] = useState<SiteHomepageConfig>(DEFAULT_HOMEPAGE_CONFIG)
 
   useEffect(() => {
     // Charger les produits depuis MySQL
@@ -102,10 +104,25 @@ export default function HomePage() {
       }
     }
 
+    const fetchHomepageConfig = async () => {
+      try {
+        const response = await fetch('/api/admin/site-config?key=homepage_config')
+        if (response.ok) {
+          const data = await response.json()
+          if (data && typeof data === 'object') {
+            setHomepageConfig(normalizeHomepageConfig(data))
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching homepage config:', error)
+      }
+    }
+
     fetchProducts()
     fetchLookbook()
     fetchComingSoonConfig()
     fetchDropConfig()
+    fetchHomepageConfig()
   }, [])
 
   const handleSearch = (query: string) => {
@@ -271,27 +288,39 @@ export default function HomePage() {
       )}
 
       {/* Hero Section */}
-      <section className="relative w-full aspect-[1672/941] flex items-end justify-center overflow-hidden bg-black pb-8 md:pb-12">
-        {/* Hero background image */}
-        <Image
-          src="/images/ChatGPT_Image_23_aout_2026_04_21_30.png"
-          alt="Nonstop Hero"
-          fill
-          className="object-cover object-center"
-          priority
-          quality={90}
-        />
-        {/* Subtle dark overlay for text readability */}
-        <div className="absolute inset-0 bg-black/10" />
+      {homepageConfig.hero.enabled && (
+        <section className="relative w-full aspect-[1672/941] flex items-end justify-center overflow-hidden bg-black pb-8 md:pb-12">
+          {/* Hero background image */}
+          <Image
+            src={getValidImageUrl(homepageConfig.hero.image, '/images/ChatGPT_Image_23_aout_2026_04_21_30.png')}
+            alt="Nonstop Hero"
+            fill
+            className="object-cover object-center"
+            priority
+            quality={90}
+          />
+          {/* Subtle dark overlay for text readability */}
+          <div className="absolute inset-0 bg-black/10" />
 
-        <div className="relative z-10 flex flex-col items-center text-center px-4">
-          <Link href="/shop">
-            <button className="inline-flex items-center justify-center border border-white bg-transparent text-white transition-all duration-300 text-sm tracking-widest uppercase font-medium px-8 md:px-10 py-3 md:py-4 hover:bg-white hover:text-black">
-              DÉCOUVRIR LA COLLECTION
-            </button>
-          </Link>
-        </div>
-      </section>
+          <div className="relative z-10 flex flex-col items-center text-center px-4">
+            {homepageConfig.hero.title && (
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white uppercase tracking-[0.2em] mb-2 drop-shadow-md">
+                {homepageConfig.hero.title}
+              </h1>
+            )}
+            {homepageConfig.hero.subtitle && (
+              <p className="text-xs sm:text-sm text-white/90 uppercase tracking-[0.2em] mb-4">
+                {homepageConfig.hero.subtitle}
+              </p>
+            )}
+            <Link href={homepageConfig.hero.buttonLink || '/shop'}>
+              <button className="inline-flex items-center justify-center border border-white bg-transparent text-white transition-all duration-300 text-sm tracking-widest uppercase font-medium px-8 md:px-10 py-3 md:py-4 hover:bg-white hover:text-black">
+                {homepageConfig.hero.buttonText || 'DÉCOUVRIR LA COLLECTION'}
+              </button>
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Section Drop Exclusif avec Compte à Rebours (Blank Street Style) - Immédiatement après le Hero */}
       <DropSection config={dropConfig} />
@@ -299,9 +328,9 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 lg:px-8 py-8 space-y-12">
         {/* Section Produits prioritaires demandés par l'utilisateur */}
-        {(() => {
-          // IDs prioritaires à afficher en premier
-          const priorityIds = [
+        {homepageConfig.productsSection.enabled && (() => {
+          // IDs prioritaires configurables depuis l'admin
+          const priorityIds = homepageConfig.productsSection.priorityProductIds || [
             '1792120820288', // Longue sleeves
             '1791674451992', // PROMO Longue sleeves
             '1786383165433', // PROMO Tee 2004
@@ -314,8 +343,8 @@ export default function HomePage() {
             .map((id) => visibleProducts.find((p) => String(p.id).trim() === id))
             .filter((p): p is any => Boolean(p))
 
-          // Reste des produits (excluant Tartan déjà dans la collection et les prioritaires ci-dessus)
-          const tartanIds = ['1793314904004', '1792639100833', '1792616909279']
+          // Reste des produits
+          const tartanIds = homepageConfig.collectionSection.selectedProductIds || ['1793314904004', '1792639100833', '1792616909279']
           const remainingProducts = visibleProducts.filter(
             (p) => !tartanIds.includes(String(p.id).trim()) &&
                    !p.name.toLowerCase().includes('tartan') &&
@@ -329,12 +358,12 @@ export default function HomePage() {
               <div className="flex items-center justify-center gap-4 mb-2">
                 <span className="h-px w-8 sm:w-16 bg-neutral-300" />
                 <h2 className="text-xl sm:text-2xl font-black uppercase tracking-[0.25em] text-black">
-                  NOS PRODUITS
+                  {homepageConfig.productsSection.title || 'NOS PRODUITS'}
                 </h2>
                 <span className="h-px w-8 sm:w-16 bg-neutral-300" />
               </div>
               <p className="text-center text-xs text-neutral-500 tracking-wider mb-8">
-                Découvrez tous nos articles
+                {homepageConfig.productsSection.subtitle || 'Découvrez tous nos articles'}
               </p>
 
               <ProductGrid products={orderedProducts.length > 0 ? orderedProducts : visibleProducts} />
@@ -343,11 +372,11 @@ export default function HomePage() {
         })()}
 
         {/* Shoppable Lookbook (s'il y en a un actif) */}
-        {lookbook && (
+        {homepageConfig.lookbookSection.enabled && lookbook && (
           <section className="mt-8">
             <div className="text-center mb-8">
               <h2 className="text-2xl md:text-3xl font-black tracking-tight text-black uppercase">
-                ACHETER LE LOOK
+                {homepageConfig.lookbookSection.title || 'ACHETER LE LOOK'}
               </h2>
             </div>
             <ShoppableLookbook lookbook={lookbook} />
@@ -356,11 +385,15 @@ export default function HomePage() {
       </main>
 
       {/* Section Collection Éditoriale style Torom Paris */}
-      <CollectionSection
-        title="TARTAN"
-        bannerImage="/images/collection-essentiels-banner.jpg"
-        products={visibleProducts}
-      />
+      {homepageConfig.collectionSection.enabled && (
+        <CollectionSection
+          title={homepageConfig.collectionSection.title || 'TARTAN'}
+          bannerImage={homepageConfig.collectionSection.bannerImage || '/images/collection-essentiels-banner.jpg'}
+          products={visibleProducts}
+          targetProductIds={homepageConfig.collectionSection.selectedProductIds}
+          enableMannequinToggle={homepageConfig.collectionSection.enableMannequinToggle}
+        />
+      )}
 
 
 
