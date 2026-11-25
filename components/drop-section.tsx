@@ -39,7 +39,6 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({})
   const [addedProductId, setAddedProductId] = useState<string | null>(null)
-  const [isMannequin, setIsMannequin] = useState<boolean>(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -58,7 +57,7 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
   const handleAddToCart = (product: DropProduct) => {
     const availableSizes = product.sizes && product.sizes.length > 0 ? product.sizes : ['S', 'M', 'L', 'XL']
     const chosenSize = selectedSizes[product.id] || availableSizes[0] || 'M'
-    const chosenImage = (isMannequin && product.mannequinImage) ? product.mannequinImage : product.image
+    const chosenImage = product.image
 
     const safeProduct = {
       id: product.id,
@@ -164,50 +163,13 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
           </div>
         )}
 
-        {/* Barre de bascule Torom Paris : VUE / MANNEQUIN */}
-        {currentConfig.enableMannequinToggle && (
-          <div className="flex items-center justify-between pb-4 mb-6 border-b border-neutral-100 text-xs tracking-[0.2em] uppercase max-w-4xl mx-auto">
-            <button
-              type="button"
-              onClick={() => setIsMannequin(false)}
-              className={`flex items-center gap-2 py-1 px-2.5 rounded transition-colors ${
-                !isMannequin ? 'font-black text-black bg-neutral-100' : 'font-medium text-neutral-400 hover:text-black'
-              }`}
-            >
-              <span className="w-2.5 h-2.5 rounded-full border border-black inline-block bg-black" />
-              <span>VUE PRODUIT</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsMannequin(true)}
-              className={`flex items-center gap-2 py-1 px-2.5 rounded transition-colors ${
-                isMannequin ? 'font-black text-black bg-neutral-100' : 'font-medium text-neutral-400 hover:text-black'
-              }`}
-            >
-              <span>MANNEQUIN</span>
-              <span className={`w-6 h-3.5 border border-neutral-400 p-0.5 rounded-full transition-colors flex items-center ${
-                isMannequin ? 'bg-black border-black' : 'bg-transparent'
-              }`}>
-                <span className={`w-2 h-2 rounded-full transition-transform ${
-                  isMannequin ? 'bg-white translate-x-2.5' : 'bg-neutral-400 translate-x-0'
-                }`} />
-              </span>
-            </button>
-          </div>
-        )}
-
         {/* Grille des 2 Produits du Drop (Style épuré Blank Street - 2 colonnes sur mobile et desktop) */}
         <div className="grid grid-cols-2 gap-3 sm:gap-8 md:gap-12 max-w-4xl mx-auto">
           {filteredProducts.map((product) => {
             const availableSizes = product.sizes && product.sizes.length > 0 ? product.sizes : ['S', 'M', 'L', 'XL']
             const activeSize = selectedSizes[product.id] || availableSizes[0] || 'M'
             const isAdded = addedProductId === product.id
-
-            // Si le mode mannequin est activé et qu'une photo mannequin est disponible, l'afficher
-            const displayImage = (isMannequin && product.mannequinImage)
-              ? product.mannequinImage
-              : product.image
+            const displayImage = product.image
 
             return (
               <div
@@ -220,11 +182,6 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
                     {product.badge && (
                       <span className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-black text-white text-[8px] sm:text-[9px] font-bold tracking-widest uppercase px-1.5 py-0.5 sm:px-2 rounded-sm z-10">
                         {product.badge}
-                      </span>
-                    )}
-                    {isMannequin && product.mannequinImage && (
-                      <span className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-neutral-900/80 backdrop-blur-xs text-white text-[7px] sm:text-[8px] font-medium tracking-widest uppercase px-1.5 py-0.5 rounded-sm z-10">
-                        PORTÉ
                       </span>
                     )}
                     <img

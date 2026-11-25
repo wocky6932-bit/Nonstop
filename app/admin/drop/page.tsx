@@ -413,19 +413,6 @@ export default function AdminDropPage() {
                 className="h-5 w-5 accent-black rounded cursor-pointer"
               />
             </div>
-
-            <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-              <div>
-                <p className="font-bold text-sm text-black uppercase tracking-wide">Activer le bouton VUE / MANNEQUIN</p>
-                <p className="text-xs text-neutral-500">Permet aux clients de basculer entre la photo à plat et la photo portée sur mannequin</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={form.enableMannequinToggle}
-                onChange={(e) => setForm((prev) => ({ ...prev, enableMannequinToggle: e.target.checked }))}
-                className="h-5 w-5 accent-black rounded cursor-pointer"
-              />
-            </div>
           </div>
 
           {/* Section Produits du Drop */}
@@ -466,7 +453,7 @@ export default function AdminDropPage() {
                       {/* Photo Produit standard */}
                       <div>
                         <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700 mb-2 block">
-                          1. Photo à plat (VUE)
+                          Photo du produit
                         </Label>
                         <div className="relative aspect-square w-full rounded border bg-white overflow-hidden flex items-center justify-center p-2 mb-2">
                           <img
@@ -490,7 +477,7 @@ export default function AdminDropPage() {
                               ) : (
                                 <ImageIcon className="w-3.5 h-3.5" />
                               )}
-                              Changer photo à plat
+                              Changer photo
                             </span>
                           </label>
                           <Input
@@ -504,78 +491,6 @@ export default function AdminDropPage() {
                               }))
                             }
                             placeholder="/images/..."
-                            className="text-xs font-mono h-8"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Photo Mannequin portée */}
-                      <div className="pt-2 border-t border-neutral-200">
-                        <div className="flex items-center justify-between mb-2">
-                          <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700 block">
-                            2. Photo MANNEQUIN (Porté)
-                          </Label>
-                          {product.mannequinImage && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setForm((prev) => ({
-                                  ...prev,
-                                  products: prev.products.map((p, idx) =>
-                                    idx === pIndex ? { ...p, mannequinImage: '' } : p
-                                  )
-                                }))
-                              }
-                              className="text-[10px] text-red-500 hover:underline"
-                            >
-                              Retirer
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="relative aspect-square w-full rounded border bg-white overflow-hidden flex items-center justify-center p-2 mb-2">
-                          {product.mannequinImage ? (
-                            <img
-                              src={getValidImageUrl(product.mannequinImage, '/placeholder.jpg')}
-                              alt={`${product.name} sur mannequin`}
-                              className="w-full h-full object-contain"
-                            />
-                          ) : (
-                            <div className="text-center p-4 text-neutral-400">
-                              <ImageIcon className="w-8 h-8 mx-auto mb-1 opacity-40" />
-                              <p className="text-[11px]">Aucune photo mannequin</p>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                          <label className="cursor-pointer">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => handleMannequinImageUpload(pIndex, e)}
-                            />
-                            <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-bold border border-neutral-300 rounded bg-white hover:bg-neutral-100 transition-colors">
-                              {uploadingMannequinIndex === pIndex ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <ImageIcon className="w-3.5 h-3.5" />
-                              )}
-                              Uploader photo mannequin
-                            </span>
-                          </label>
-                          <Input
-                            value={product.mannequinImage || ''}
-                            onChange={(e) =>
-                              setForm((prev) => ({
-                                ...prev,
-                                products: prev.products.map((p, idx) =>
-                                  idx === pIndex ? { ...p, mannequinImage: e.target.value } : p
-                                )
-                              }))
-                            }
-                            placeholder="URL ou téléverser..."
                             className="text-xs font-mono h-8"
                           />
                         </div>

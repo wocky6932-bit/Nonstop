@@ -33,9 +33,6 @@ export function CollectionSection({
   const { toast } = useToast()
   const { convertPrice, formatPrice } = useCurrency()
 
-  // Mode Mannequin (Porté vs Packshot)
-  const [isMannequin, setIsMannequin] = useState<boolean>(false)
-
   // Indice carrousel individuel pour chaque carte produit
   const [activeImageIndices, setActiveImageIndices] = useState<Record<string, number>>({})
 
@@ -138,42 +135,11 @@ export function CollectionSection({
 
       {/* ── 2. CATALOGUE DE LA COLLECTION ───────────── */}
       <div id={anchorId} className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-12">
-        {/* En-tête de section & Bascule Mannequin */}
+        {/* En-tête de section */}
         <div className="flex items-center justify-between mb-6 pb-2 border-b border-neutral-100">
           <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-[0.2em] text-black">
             {title}
           </h3>
-
-          {enableMannequinToggle && (
-            <div className="flex items-center gap-3 text-xs tracking-[0.18em] uppercase">
-              <button
-                type="button"
-                onClick={() => setIsMannequin(false)}
-                className={`py-1 px-2 rounded transition-colors ${
-                  !isMannequin ? 'font-black text-black bg-neutral-100' : 'text-neutral-400 hover:text-black'
-                }`}
-              >
-                VUE
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsMannequin(!isMannequin)}
-                className={`flex items-center gap-1.5 py-1 px-2 rounded transition-colors ${
-                  isMannequin ? 'font-black text-black bg-neutral-100' : 'text-neutral-400 hover:text-black'
-                }`}
-              >
-                <span>MANNEQUIN</span>
-                <span className={`w-5 h-3 border border-neutral-400 p-0.5 rounded-full transition-colors flex items-center ${
-                  isMannequin ? 'bg-black border-black' : 'bg-transparent'
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full transition-transform ${
-                    isMannequin ? 'bg-white translate-x-2' : 'bg-neutral-400 translate-x-0'
-                  }`} />
-                </span>
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Grille de produits */}
@@ -186,22 +152,8 @@ export function CollectionSection({
                 : [product.image]
             ).filter(Boolean)
 
-            // Si le mode mannequin est actif :
-            // 1) Si le produit a un mannequin_image dédié, on le prend en priorité
-            // 2) Sinon si une 2ème image existe dans images[], on l'affiche
-            let activeImg = product.image
-            if (isMannequin) {
-              if (product.mannequin_image) {
-                activeImg = product.mannequin_image
-              } else if (productImages.length > 1) {
-                activeImg = productImages[1]
-              } else {
-                activeImg = productImages[0] || product.image
-              }
-            } else {
-              let displayedIndex = activeImageIndices[product.id] || 0
-              activeImg = productImages[displayedIndex] || productImages[0] || product.image
-            }
+            let displayedIndex = activeImageIndices[product.id] || 0
+            const activeImg = productImages[displayedIndex] || productImages[0] || product.image
 
             return (
               <div key={product.id} className="min-w-0 group flex flex-col justify-between">

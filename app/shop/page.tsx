@@ -31,7 +31,6 @@ function ShopContent() {
     const searchParams = useSearchParams()
     const filterParam = searchParams.get('filter')
     const [preorderFilter, setPreorderFilter] = useState(false)
-    const [isMannequin, setIsMannequin] = useState(false)
 
     useEffect(() => {
         if (filterParam === 'preorder') {
@@ -215,53 +214,20 @@ function ShopContent() {
                 </div>
 
                 {/* Category pills */}
-                <div className="flex items-center justify-between border-t border-gray-100 px-4">
-                    <div className="flex gap-0 overflow-x-auto scrollbar-hide">
-                        {categories.map((cat) => (
-                            <button
-                                key={cat}
-                                onClick={() => setActiveCategory(cat)}
-                                className={`flex-shrink-0 px-4 py-3 text-[11px] tracking-[0.2em] uppercase transition-all duration-150 border-b-2 ${
-                                    activeCategory === cat
-                                        ? 'border-black text-black font-medium'
-                                        : 'border-transparent text-gray-400 hover:text-black'
-                                }`}
-                            >
-                                {cat}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Bascule VUE / MANNEQUIN */}
-                    {products.some(p => Boolean(p.mannequin_image)) && (
-                        <div className="flex items-center gap-2 text-xs tracking-[0.18em] uppercase py-2 shrink-0">
-                            <button
-                                type="button"
-                                onClick={() => setIsMannequin(false)}
-                                className={`py-1 px-2 rounded transition-colors text-[10px] ${
-                                    !isMannequin ? 'font-black text-black bg-neutral-100' : 'text-neutral-400 hover:text-black'
-                                }`}
-                            >
-                                VUE
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setIsMannequin(!isMannequin)}
-                                className={`flex items-center gap-1.5 py-1 px-2 rounded transition-colors text-[10px] ${
-                                    isMannequin ? 'font-black text-black bg-neutral-100' : 'text-neutral-400 hover:text-black'
-                                }`}
-                            >
-                                <span>MANNEQUIN</span>
-                                <span className={`w-5 h-3 border border-neutral-400 p-0.5 rounded-full transition-colors flex items-center ${
-                                    isMannequin ? 'bg-black border-black' : 'bg-transparent'
-                                }`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full transition-transform ${
-                                        isMannequin ? 'bg-white translate-x-2' : 'bg-neutral-400 translate-x-0'
-                                    }`} />
-                                </span>
-                            </button>
-                        </div>
-                    )}
+                <div className="flex gap-0 overflow-x-auto border-t border-gray-100 scrollbar-hide">
+                    {categories.map((cat) => (
+                        <button
+                            key={cat}
+                            onClick={() => setActiveCategory(cat)}
+                            className={`flex-shrink-0 px-5 py-3 text-[11px] tracking-[0.2em] uppercase transition-all duration-150 border-b-2 ${
+                                activeCategory === cat
+                                    ? 'border-black text-black font-medium'
+                                    : 'border-transparent text-gray-400 hover:text-black'
+                            }`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -295,13 +261,6 @@ function ShopContent() {
                                 {/* Wrapper image + badges + bouton */}
                                 <div className="relative">
                                     <div className="absolute top-2 left-2 z-20 flex flex-col gap-1 pointer-events-none">
-                                        {/* Badge PORTÉ MANNEQUIN */}
-                                        {isMannequin && product.mannequin_image && (
-                                            <div className="bg-black text-white text-[9px] px-2 py-0.5 tracking-widest font-bold uppercase">
-                                                PORTÉ
-                                            </div>
-                                        )}
-
                                         {/* Badge PROMO */}
                                         {product.original_price && Number(product.original_price) > product.price && !product.sold_out && (
                                             <div className="bg-red-600 text-white text-[10px] px-2 py-0.5 tracking-widest font-bold uppercase">
@@ -333,19 +292,7 @@ function ShopContent() {
 
                                     {/* Image — overflow-hidden ici seulement */}
                                     <div className="overflow-hidden bg-gray-50">
-                                        {isMannequin && product.mannequin_image ? (
-                                            <div className="relative aspect-square">
-                                                <Image
-                                                    src={getValidImageUrl(product.mannequin_image)}
-                                                    alt={`${product.name} sur mannequin`}
-                                                    fill
-                                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                                    sizes="(max-width: 1024px) 50vw, 25vw"
-                                                    loading="lazy"
-                                                    quality={85}
-                                                />
-                                            </div>
-                                        ) : product.images && product.images.length > 1 ? (
+                                        {product.images && product.images.length > 1 ? (
                                             <ImageCarousel
                                                 images={product.images}
                                                 alt={product.name}

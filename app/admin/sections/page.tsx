@@ -283,7 +283,7 @@ export default function AdminHomepageSectionsPage() {
             Sections, Images & Textes de la page d'accueil
           </h1>
           <p className="text-sm text-neutral-500 mt-1">
-            Gérez toutes les sections du site : Grande bannière Hero, Collection Éditoriale style Torom Paris, Mannequin et Produits.
+            Gérez toutes les sections du site : Grande bannière Hero, Collections Éditoriales, Produits et Visuels.
           </p>
         </div>
 
@@ -368,7 +368,7 @@ export default function AdminHomepageSectionsPage() {
                 2. Drop & Compte à Rebours (Longues Manches)
               </h2>
               <p className="text-xs text-neutral-500 mt-1">
-                Gérez le compte à rebours, les 2 modèles de longues manches, les tailles et les photos portées sur mannequin.
+                Gérez le compte à rebours, les 2 modèles de longues manches, les prix et les tailles.
               </p>
             </div>
             <Link href="/admin/drop">
@@ -427,10 +427,10 @@ export default function AdminHomepageSectionsPage() {
                   <span>SECTIONS ÉDITORIALES</span>
                 </div>
                 <h2 className="text-xl font-black uppercase tracking-tight text-neutral-900">
-                  Collections & Bannières Style Torom Paris
+                  Collections & Bannières
                 </h2>
                 <p className="text-xs text-neutral-500">
-                  Ajoutez autant de sections bannières + lookbook + toggle mannequin que vous le souhaitez sur la page d'accueil.
+                  Ajoutez autant de sections bannières + articles que vous le souhaitez sur la page d'accueil.
                 </p>
               </div>
 
@@ -576,27 +576,6 @@ export default function AdminHomepageSectionsPage() {
                           }}
                           placeholder="DÉCOUVRIR ou SHOP NOW"
                           className="mt-1"
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                        <div>
-                          <p className="font-bold text-xs text-black uppercase tracking-wide">Activer le bouton VUE / MANNEQUIN</p>
-                          <p className="text-[11px] text-neutral-500">Permet aux visiteurs de basculer sur la photo portée sur modèle</p>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={col.enableMannequinToggle}
-                          onChange={(e) => {
-                            const updatedCols = [...collections]
-                            updatedCols[cIndex] = { ...col, enableMannequinToggle: e.target.checked }
-                            setForm((prev) => ({
-                              ...prev,
-                              editorialCollections: updatedCols,
-                              collectionSection: updatedCols[0]
-                            }))
-                          }}
-                          className="h-4 w-4 accent-black"
                         />
                       </div>
                     </div>

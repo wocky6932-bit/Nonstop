@@ -261,7 +261,7 @@ export default function AdminPage() {
                           <h3 className="font-bold text-black">Gestion des Sections & Images</h3>
                           <span className="text-[10px] bg-black text-white px-2 py-0.5 rounded font-black tracking-wider">ADMIN</span>
                         </div>
-                        <p className="text-sm text-gray-500">Hero, Collections, Mannequin, Titres</p>
+                        <p className="text-sm text-gray-500">Hero, Collections, Produits, Titres</p>
                       </div>
                     </div>
                   </div>
