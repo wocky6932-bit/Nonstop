@@ -25,7 +25,7 @@ export function CollectionSection({
   title = 'TARTAN',
   bannerImage = '/images/collection-essentiels-banner.jpg',
   buttonText = 'DÉCOUVRIR',
-  products,
+  products = [],
   targetProductIds = ['1793314904004', '1792639100833', '1792616909279'],
   enableMannequinToggle = true,
 }: CollectionSectionProps) {
@@ -36,7 +36,8 @@ export function CollectionSection({
   // Indice carrousel individuel pour chaque carte produit
   const [activeImageIndices, setActiveImageIndices] = useState<Record<string, number>>({})
 
-  const anchorId = `collection-products-anchor-${id.replace(/[^a-zA-Z0-9_-]/g, '')}`
+  const safeId = (typeof id === 'string' && id) ? id : 'collection-section'
+  const anchorId = `collection-products-anchor-${safeId.replace(/[^a-zA-Z0-9_-]/g, '')}`
 
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
     e.preventDefault()
@@ -84,9 +85,16 @@ export function CollectionSection({
   }
 
   // Filtrer les articles de la collection
-  const collectionProducts = products.filter((p) => {
-    if (targetProductIds.length > 0) {
-      return targetProductIds.includes(String(p.id)) || p.name.toLowerCase().includes(title.toLowerCase())
+  const safeProducts = Array.isArray(products) ? products : []
+  const safeTargetIds = Array.isArray(targetProductIds) ? targetProductIds : []
+  const safeTitle = (title || '').toLowerCase()
+
+  const collectionProducts = safeProducts.filter((p) => {
+    if (!p) return false
+    if (safeTargetIds.length > 0) {
+      const matchId = safeTargetIds.includes(String(p.id))
+      const matchTitle = safeTitle ? (p.name && p.name.toLowerCase().includes(safeTitle)) : false
+      return matchId || matchTitle
     }
     return !p.is_preorder
   })

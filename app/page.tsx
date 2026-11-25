@@ -15,6 +15,7 @@ import { CollectionSection } from '@/components/collection-section'
 import { ShoppableLookbook } from '@/components/shoppable-lookbook'
 import { ComingSoonSection } from '@/components/coming-soon-section'
 import { DropSection } from '@/components/drop-section'
+import { SafeErrorBoundary } from '@/components/safe-error-boundary'
 import { SiteHomepageConfig, DEFAULT_HOMEPAGE_CONFIG, normalizeHomepageConfig } from '@/lib/homepage-config'
 import { getValidImageUrl } from '@/lib/image-utils'
 import { normalizeProductData } from '@/lib/product-utils'
@@ -323,89 +324,99 @@ export default function HomePage() {
       )}
 
       {/* Section Drop Exclusif avec Compte à Rebours (Blank Street Style) - Immédiatement après le Hero */}
-      <DropSection config={dropConfig} />
+      <SafeErrorBoundary>
+        <DropSection config={dropConfig} />
+      </SafeErrorBoundary>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 lg:px-8 py-8 space-y-12">
         {/* Section Produits prioritaires demandés par l'utilisateur */}
-        {homepageConfig.productsSection.enabled && (() => {
-          // IDs prioritaires configurables depuis l'admin
-          const priorityIds = homepageConfig.productsSection.priorityProductIds || [
-            '1792120820288', // Longue sleeves
-            '1791674451992', // PROMO Longue sleeves
-            '1786383165433', // PROMO Tee 2004
-            '1785721613619', // Bonnets
-            '1782610673338', // PROMO Long sleeves
-          ]
+        {homepageConfig?.productsSection?.enabled && (
+          <SafeErrorBoundary>
+            {(() => {
+              // IDs prioritaires configurables depuis l'admin
+              const priorityIds = homepageConfig?.productsSection?.priorityProductIds || [
+                '1792120820288', // Longue sleeves
+                '1791674451992', // PROMO Longue sleeves
+                '1786383165433', // PROMO Tee 2004
+                '1785721613619', // Bonnets
+                '1782610673338', // PROMO Long sleeves
+              ]
 
-          // Produits prioritaires ordonnés avec comparaison robuste String(id)
-          const topProducts = priorityIds
-            .map((id) => visibleProducts.find((p) => String(p.id).trim() === id))
-            .filter((p): p is any => Boolean(p))
+              // Produits prioritaires ordonnés avec comparaison robuste String(id)
+              const topProducts = priorityIds
+                .map((id) => visibleProducts.find((p) => p && String(p.id).trim() === id))
+                .filter((p): p is any => Boolean(p))
 
-          // Reste des produits
-          const tartanIds = homepageConfig.collectionSection.selectedProductIds || ['1793314904004', '1792639100833', '1792616909279']
-          const remainingProducts = visibleProducts.filter(
-            (p) => !tartanIds.includes(String(p.id).trim()) &&
-                   !p.name.toLowerCase().includes('tartan') &&
-                   !priorityIds.includes(String(p.id).trim())
-          )
+              // Reste des produits
+              const tartanIds = homepageConfig?.collectionSection?.selectedProductIds || ['1793314904004', '1792639100833', '1792616909279']
+              const remainingProducts = visibleProducts.filter(
+                (p) => p && !tartanIds.includes(String(p.id).trim()) &&
+                       !(p.name && p.name.toLowerCase().includes('tartan')) &&
+                       !priorityIds.includes(String(p.id).trim())
+              )
 
-          const orderedProducts = [...topProducts, ...remainingProducts]
+              const orderedProducts = [...topProducts, ...remainingProducts]
 
-          return (
-            <section className="w-full pt-4">
-              <div className="flex items-center justify-center gap-4 mb-2">
-                <span className="h-px w-8 sm:w-16 bg-neutral-300" />
-                <h2 className="text-xl sm:text-2xl font-black uppercase tracking-[0.25em] text-black">
-                  {homepageConfig.productsSection.title || 'NOS PRODUITS'}
-                </h2>
-                <span className="h-px w-8 sm:w-16 bg-neutral-300" />
-              </div>
-              <p className="text-center text-xs text-neutral-500 tracking-wider mb-8">
-                {homepageConfig.productsSection.subtitle || 'Découvrez tous nos articles'}
-              </p>
+              return (
+                <section className="w-full pt-4">
+                  <div className="flex items-center justify-center gap-4 mb-2">
+                    <span className="h-px w-8 sm:w-16 bg-neutral-300" />
+                    <h2 className="text-xl sm:text-2xl font-black uppercase tracking-[0.25em] text-black">
+                      {homepageConfig?.productsSection?.title || 'NOS PRODUITS'}
+                    </h2>
+                    <span className="h-px w-8 sm:w-16 bg-neutral-300" />
+                  </div>
+                  <p className="text-center text-xs text-neutral-500 tracking-wider mb-8">
+                    {homepageConfig?.productsSection?.subtitle || 'Découvrez tous nos articles'}
+                  </p>
 
-              <ProductGrid products={orderedProducts.length > 0 ? orderedProducts : visibleProducts} />
-            </section>
-          )
-        })()}
+                  <ProductGrid products={orderedProducts.length > 0 ? orderedProducts : visibleProducts} />
+                </section>
+              )
+            })()}
+          </SafeErrorBoundary>
+        )}
 
         {/* Shoppable Lookbook (s'il y en a un actif) */}
-        {homepageConfig.lookbookSection.enabled && lookbook && (
-          <section className="mt-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-black tracking-tight text-black uppercase">
-                {homepageConfig.lookbookSection.title || 'ACHETER LE LOOK'}
-              </h2>
-            </div>
-            <ShoppableLookbook lookbook={lookbook} />
-          </section>
+        {homepageConfig?.lookbookSection?.enabled && lookbook && (
+          <SafeErrorBoundary>
+            <section className="mt-8">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl md:text-3xl font-black tracking-tight text-black uppercase">
+                  {homepageConfig?.lookbookSection?.title || 'ACHETER LE LOOK'}
+                </h2>
+              </div>
+              <ShoppableLookbook lookbook={lookbook} />
+            </section>
+          </SafeErrorBoundary>
         )}
       </main>
 
-      {/* Sections Collections Éditoriales style Torom Paris (Multiples collections avec bannières et toggle Mannequin) */}
-      {(() => {
-        const collectionsToRender = (homepageConfig.editorialCollections && homepageConfig.editorialCollections.length > 0)
-          ? homepageConfig.editorialCollections
-          : (homepageConfig.collectionSection?.enabled ? [homepageConfig.collectionSection] : [])
+      {/* Sections Collections Éditoriales style Torom Paris (Multiples collections avec bannières) */}
+      <SafeErrorBoundary>
+        {(() => {
+          const collectionsToRender = (homepageConfig?.editorialCollections && homepageConfig.editorialCollections.length > 0)
+            ? homepageConfig.editorialCollections
+            : (homepageConfig?.collectionSection?.enabled ? [homepageConfig.collectionSection] : [])
 
-        return collectionsToRender.map((col, idx) => {
-          if (!col.enabled) return null
-          return (
-            <CollectionSection
-              key={col.id || `editorial-col-${idx}`}
-              id={col.id || `editorial-col-${idx}`}
-              title={col.title || 'COLLECTION'}
-              bannerImage={col.bannerImage || '/images/collection-essentiels-banner.jpg'}
-              buttonText={col.buttonText || 'DÉCOUVRIR'}
-              products={visibleProducts}
-              targetProductIds={col.selectedProductIds || []}
-              enableMannequinToggle={col.enableMannequinToggle !== false}
-            />
-          )
-        })
-      })()}
+          return collectionsToRender.map((col, idx) => {
+            if (!col || !col.enabled) return null
+            return (
+              <CollectionSection
+                key={col.id || `editorial-col-${idx}`}
+                id={col.id || `editorial-col-${idx}`}
+                title={col.title || 'COLLECTION'}
+                bannerImage={col.bannerImage || '/images/collection-essentiels-banner.jpg'}
+                buttonText={col.buttonText || 'DÉCOUVRIR'}
+                products={visibleProducts}
+                targetProductIds={col.selectedProductIds || []}
+                enableMannequinToggle={col.enableMannequinToggle !== false}
+              />
+            )
+          })
+        })()}
+      </SafeErrorBoundary>
 
 
 
