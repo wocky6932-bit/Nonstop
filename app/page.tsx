@@ -328,70 +328,19 @@ export default function HomePage() {
         <DropSection config={dropConfig} />
       </SafeErrorBoundary>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 lg:px-8 py-8 space-y-12">
-        {/* Section Produits prioritaires demandés par l'utilisateur */}
-        {homepageConfig?.productsSection?.enabled && (
-          <SafeErrorBoundary>
-            {(() => {
-              // IDs prioritaires configurables depuis l'admin
-              const priorityIds = homepageConfig?.productsSection?.priorityProductIds || [
-                '1792120820288', // Longue sleeves
-                '1791674451992', // PROMO Longue sleeves
-                '1786383165433', // PROMO Tee 2004
-                '1785721613619', // Bonnets
-                '1782610673338', // PROMO Long sleeves
-              ]
-
-              // Produits prioritaires ordonnés avec comparaison robuste String(id)
-              const topProducts = priorityIds
-                .map((id) => visibleProducts.find((p) => p && String(p.id).trim() === id))
-                .filter((p): p is any => Boolean(p))
-
-              // Reste des produits
-              const tartanIds = homepageConfig?.collectionSection?.selectedProductIds || ['1793314904004', '1792639100833', '1792616909279']
-              const remainingProducts = visibleProducts.filter(
-                (p) => p && !tartanIds.includes(String(p.id).trim()) &&
-                       !(p.name && p.name.toLowerCase().includes('tartan')) &&
-                       !priorityIds.includes(String(p.id).trim())
-              )
-
-              const orderedProducts = [...topProducts, ...remainingProducts]
-
-              return (
-                <section className="w-full pt-4">
-                  <div className="flex items-center justify-center gap-4 mb-2">
-                    <span className="h-px w-8 sm:w-16 bg-neutral-300" />
-                    <h2 className="text-xl sm:text-2xl font-black uppercase tracking-[0.25em] text-black">
-                      {homepageConfig?.productsSection?.title || 'NOS PRODUITS'}
-                    </h2>
-                    <span className="h-px w-8 sm:w-16 bg-neutral-300" />
-                  </div>
-                  <p className="text-center text-xs text-neutral-500 tracking-wider mb-8">
-                    {homepageConfig?.productsSection?.subtitle || 'Découvrez tous nos articles'}
-                  </p>
-
-                  <ProductGrid products={orderedProducts.length > 0 ? orderedProducts : visibleProducts} />
-                </section>
-              )
-            })()}
-          </SafeErrorBoundary>
-        )}
-
-        {/* Shoppable Lookbook (s'il y en a un actif) */}
-        {homepageConfig?.lookbookSection?.enabled && lookbook && (
-          <SafeErrorBoundary>
-            <section className="mt-8">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl md:text-3xl font-black tracking-tight text-black uppercase">
-                  {homepageConfig?.lookbookSection?.title || 'ACHETER LE LOOK'}
-                </h2>
-              </div>
-              <ShoppableLookbook lookbook={lookbook} />
-            </section>
-          </SafeErrorBoundary>
-        )}
-      </main>
+      {/* Shoppable Lookbook (s'il y en a un actif) */}
+      {homepageConfig?.lookbookSection?.enabled && lookbook && (
+        <SafeErrorBoundary>
+          <section className="container mx-auto px-4 lg:px-8 py-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-black tracking-tight text-black uppercase">
+                {homepageConfig?.lookbookSection?.title || 'ACHETER LE LOOK'}
+              </h2>
+            </div>
+            <ShoppableLookbook lookbook={lookbook} />
+          </section>
+        </SafeErrorBoundary>
+      )}
 
       {/* Sections Collections Éditoriales style Torom Paris (Multiples collections avec bannières) */}
       <SafeErrorBoundary>
