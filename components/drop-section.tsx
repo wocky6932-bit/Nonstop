@@ -78,37 +78,12 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
     }, 2200)
   }
 
-  const filteredProducts = currentConfig.products.filter((product) => {
-    if (selectedCategory === 'ALL') return true
-    return product.badge?.toLowerCase() === selectedCategory.toLowerCase()
-  })
+  // Les produits du drop doivent toujours s'afficher (pas de filtre masquant)
+  const displayProducts = currentConfig.products
 
   return (
     <section className="w-full bg-white text-black py-12 md:py-16 border-t border-b border-neutral-100">
       <div className="container mx-auto px-4 max-w-5xl">
-        {/* Navigation Drop Filter (ALL / DROP 1 / ...) style Blank Street */}
-        {currentConfig.categories && currentConfig.categories.length > 1 && (
-          <div className="flex items-center justify-center gap-6 sm:gap-10 mb-8 sm:mb-12">
-            {currentConfig.categories.map((cat) => {
-              const isActive = selectedCategory.toUpperCase() === cat.toUpperCase()
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`text-xs sm:text-sm uppercase tracking-[0.25em] font-bold transition-all duration-200 pb-1 ${
-                    isActive
-                      ? 'text-black border-b-2 border-black'
-                      : 'text-neutral-400 hover:text-neutral-700'
-                  }`}
-                >
-                  {cat}
-                </button>
-              )
-            })}
-          </div>
-        )}
-
         {/* Header : Tagline & Date */}
         <div className="text-center mb-8 sm:mb-12">
           {currentConfig.saleMode === 'instant' ? (
@@ -165,7 +140,7 @@ export function DropSection({ config }: { config?: Partial<DropConfig> }) {
 
         {/* Grille des 2 Produits du Drop (Style épuré Blank Street - 2 colonnes sur mobile et desktop) */}
         <div className="grid grid-cols-2 gap-3 sm:gap-8 md:gap-12 max-w-4xl mx-auto">
-          {filteredProducts.map((product) => {
+          {displayProducts.map((product) => {
             const availableSizes = product.sizes && product.sizes.length > 0 ? product.sizes : ['S', 'M', 'L', 'XL']
             const activeSize = selectedSizes[product.id] || availableSizes[0] || 'M'
             const isAdded = addedProductId === product.id
