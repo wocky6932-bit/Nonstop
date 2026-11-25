@@ -102,8 +102,9 @@ const parseImages = (images: any): string[] => {
 export function ProductForm({ product }: { product?: Product }) {
   const { toast } = useToast()
   const router = useRouter()
-  const [isUploadingMannequin, setIsUploadingMannequin] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const mannequinInputRef = useRef<HTMLInputElement>(null)
+  const [isUploadingMannequin, setIsUploadingMannequin] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState("")
