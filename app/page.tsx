@@ -384,16 +384,28 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* Section Collection Éditoriale style Torom Paris */}
-      {homepageConfig.collectionSection.enabled && (
-        <CollectionSection
-          title={homepageConfig.collectionSection.title || 'TARTAN'}
-          bannerImage={homepageConfig.collectionSection.bannerImage || '/images/collection-essentiels-banner.jpg'}
-          products={visibleProducts}
-          targetProductIds={homepageConfig.collectionSection.selectedProductIds}
-          enableMannequinToggle={homepageConfig.collectionSection.enableMannequinToggle}
-        />
-      )}
+      {/* Sections Collections Éditoriales style Torom Paris (Multiples collections avec bannières et toggle Mannequin) */}
+      {(() => {
+        const collectionsToRender = (homepageConfig.editorialCollections && homepageConfig.editorialCollections.length > 0)
+          ? homepageConfig.editorialCollections
+          : (homepageConfig.collectionSection?.enabled ? [homepageConfig.collectionSection] : [])
+
+        return collectionsToRender.map((col, idx) => {
+          if (!col.enabled) return null
+          return (
+            <CollectionSection
+              key={col.id || `editorial-col-${idx}`}
+              id={col.id || `editorial-col-${idx}`}
+              title={col.title || 'COLLECTION'}
+              bannerImage={col.bannerImage || '/images/collection-essentiels-banner.jpg'}
+              buttonText={col.buttonText || 'DÉCOUVRIR'}
+              products={visibleProducts}
+              targetProductIds={col.selectedProductIds || []}
+              enableMannequinToggle={col.enableMannequinToggle !== false}
+            />
+          )
+        })
+      })()}
 
 
 

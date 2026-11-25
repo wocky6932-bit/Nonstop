@@ -7,8 +7,8 @@ import { useSession } from '@/hooks/use-session'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, ImageIcon, Loader2, Save, Eye, LayoutTemplate, Layers, Check } from 'lucide-react'
-import { SiteHomepageConfig, DEFAULT_HOMEPAGE_CONFIG, normalizeHomepageConfig } from '@/lib/homepage-config'
+import { ArrowLeft, ImageIcon, Loader2, Save, Eye, Plus, Trash2, Check, Sparkles } from 'lucide-react'
+import { SiteHomepageConfig, EditorialCollection, DEFAULT_HOMEPAGE_CONFIG, normalizeHomepageConfig } from '@/lib/homepage-config'
 import { compressImage, getValidImageUrl } from '@/lib/image-utils'
 
 export default function AdminHomepageSectionsPage() {
@@ -18,7 +18,7 @@ export default function AdminHomepageSectionsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploadingHero, setUploadingHero] = useState(false)
-  const [uploadingCollection, setUploadingCollection] = useState(false)
+  const [uploadingCollectionIndex, setUploadingCollectionIndex] = useState<number | null>(null)
   const [allProducts, setAllProducts] = useState<any[]>([])
 
   useEffect(() => {
@@ -121,11 +121,11 @@ export default function AdminHomepageSectionsPage() {
     }
   }
 
-  const handleCollectionBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCollectionBannerUpload = async (collectionIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    setUploadingCollection(true)
+    setUploadingCollectionIndex(collectionIndex)
     try {
       let fileToUpload: Blob | File = file
       if (file.type.startsWith('image/')) {
@@ -147,34 +147,88 @@ export default function AdminHomepageSectionsPage() {
       if (!res.ok) throw new Error('Upload bannière collection impossible')
       const data = await res.json()
 
-      setForm((prev) => ({
-        ...prev,
-        collectionSection: {
-          ...prev.collectionSection,
-          bannerImage: data.url
+      setForm((prev) => {
+        const collections = [...(prev.editorialCollections || [prev.collectionSection])]
+        if (collections[collectionIndex]) {
+          collections[collectionIndex] = {
+            ...collections[collectionIndex],
+            bannerImage: data.url
+          }
         }
-      }))
+        return {
+          ...prev,
+          editorialCollections: collections,
+          collectionSection: collections[0] || prev.collectionSection
+        }
+      })
     } catch (err) {
       console.error(err)
       alert("Échec de l'upload de la bannière collection.")
     } finally {
-      setUploadingCollection(false)
+      setUploadingCollectionIndex(null)
       if (e.target) e.target.value = ''
     }
   }
 
-  const toggleCollectionProductId = (productId: string) => {
+  const toggleCollectionProductId = (collectionIndex: number, productId: string) => {
     setForm((prev) => {
-      const current = prev.collectionSection.selectedProductIds || []
+      const collections = [...(prev.editorialCollections || [prev.collectionSection])]
+      const targetCol = collections[collectionIndex]
+      if (!targetCol) return prev
+
+      const current = targetCol.selectedProductIds || []
       const updated = current.includes(productId)
         ? current.filter((id) => id !== productId)
         : [...current, productId]
+
+      collections[collectionIndex] = {
+        ...targetCol,
+        selectedProductIds: updated
+      }
+
       return {
         ...prev,
-        collectionSection: {
-          ...prev.collectionSection,
-          selectedProductIds: updated
-        }
+        editorialCollections: collections,
+        collectionSection: collections[0] || prev.collectionSection
+      }
+    })
+  }
+
+  const addEditorialCollection = () => {
+    const newCol: EditorialCollection = {
+      id: `collection-${Date.now()}`,
+      enabled: true,
+      title: 'NOUVELLE COLLECTION',
+      bannerImage: '/images/collection-essentiels-banner.jpg',
+      buttonText: 'DÉCOUVRIR',
+      enableMannequinToggle: true,
+      selectedProductIds: []
+    }
+
+    setForm((prev) => {
+      const currentCols = prev.editorialCollections && prev.editorialCollections.length > 0
+        ? prev.editorialCollections
+        : [prev.collectionSection]
+      const updated = [...currentCols, newCol]
+      return {
+        ...prev,
+        editorialCollections: updated,
+        collectionSection: updated[0]
+      }
+    })
+  }
+
+  const removeEditorialCollection = (index: number) => {
+    if (!confirm('Supprimer cette collection de la page d’accueil ?')) return
+    setForm((prev) => {
+      const currentCols = prev.editorialCollections && prev.editorialCollections.length > 0
+        ? prev.editorialCollections
+        : [prev.collectionSection]
+      const updated = currentCols.filter((_, i) => i !== index)
+      return {
+        ...prev,
+        editorialCollections: updated,
+        collectionSection: updated[0] || DEFAULT_HOMEPAGE_CONFIG.collectionSection
       }
     })
   }
@@ -364,121 +418,224 @@ export default function AdminHomepageSectionsPage() {
             </div>
           </div>
 
-          {/* SECTION 4: COLLECTION ÉDITORIALE STYLE TOROM PARIS (VUE / MANNEQUIN) */}
-          <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-6">
-            <div className="flex items-center justify-between border-b pb-3">
-              <h2 className="text-lg font-bold uppercase tracking-wider text-black">
-                4. Collection Éditoriale Torom Paris (avec Mannequin)
-              </h2>
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold uppercase">
-                <input
-                  type="checkbox"
-                  checked={form.collectionSection.enabled}
-                  onChange={(e) => setForm((prev) => ({ ...prev, collectionSection: { ...prev.collectionSection, enabled: e.target.checked } }))}
-                  className="h-4 w-4 accent-black"
-                />
-                Activer
-              </label>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Image Bannière */}
+          {/* SECTION 4: MULTIPLES COLLECTIONS ÉDITORIALES STYLE TOROM PARIS (VUE / MANNEQUIN) */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
               <div>
-                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700 mb-2 block">
-                  Grande Bannière Éditoriale
-                </Label>
-                <div className="relative aspect-[16/10] w-full rounded-lg border bg-neutral-100 overflow-hidden mb-3">
-                  <img
-                    src={getValidImageUrl(form.collectionSection.bannerImage)}
-                    alt="Collection Banner"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-900 text-white text-xs font-bold uppercase tracking-widest mb-1">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>SECTIONS ÉDITORIALES</span>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="cursor-pointer">
-                    <input type="file" accept="image/*" className="hidden" onChange={handleCollectionBannerUpload} />
-                    <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-bold border border-neutral-300 rounded bg-white hover:bg-neutral-100 transition-colors">
-                      {uploadingCollection ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5" />}
-                      Changer la bannière
-                    </span>
-                  </label>
-                  <Input
-                    value={form.collectionSection.bannerImage}
-                    onChange={(e) => setForm((prev) => ({ ...prev, collectionSection: { ...prev.collectionSection, bannerImage: e.target.value } }))}
-                    placeholder="/images/..."
-                    className="text-xs font-mono h-8"
-                  />
-                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight text-neutral-900">
+                  Collections & Bannières Style Torom Paris
+                </h2>
+                <p className="text-xs text-neutral-500">
+                  Ajoutez autant de sections bannières + lookbook + toggle mannequin que vous le souhaitez sur la page d'accueil.
+                </p>
               </div>
 
-              {/* Paramètres Collection */}
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700">Titre de la Collection</Label>
-                  <Input
-                    value={form.collectionSection.title}
-                    onChange={(e) => setForm((prev) => ({ ...prev, collectionSection: { ...prev.collectionSection, title: e.target.value } }))}
-                    placeholder="TARTAN ou ESSENTIELS"
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700">Texte du Bouton de Bannière</Label>
-                  <Input
-                    value={form.collectionSection.buttonText}
-                    onChange={(e) => setForm((prev) => ({ ...prev, collectionSection: { ...prev.collectionSection, buttonText: e.target.value } }))}
-                    placeholder="DÉCOUVRIR"
-                    className="mt-1"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                  <div>
-                    <p className="font-bold text-xs text-black uppercase tracking-wide">Activer le bouton VUE / MANNEQUIN</p>
-                    <p className="text-[11px] text-neutral-500">Permet d'afficher la 2ème photo (portée sur modèle)</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={form.collectionSection.enableMannequinToggle}
-                    onChange={(e) => setForm((prev) => ({ ...prev, collectionSection: { ...prev.collectionSection, enableMannequinToggle: e.target.checked } }))}
-                    className="h-4 w-4 accent-black"
-                  />
-                </div>
-              </div>
+              <Button
+                type="button"
+                onClick={addEditorialCollection}
+                className="bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                Ajouter une section
+              </Button>
             </div>
 
-            {/* Choix des produits affichés dans la collection */}
-            <div className="pt-4 border-t border-neutral-200">
-              <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700 mb-3 block">
-                Articles affichés dans cette collection ({form.collectionSection.selectedProductIds?.length || 0} sélectionnés)
-              </Label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-60 overflow-y-auto p-2 border rounded-lg bg-neutral-50/50">
-                {allProducts.map((p) => {
-                  const isSelected = form.collectionSection.selectedProductIds?.includes(p.id)
-                  return (
-                    <div
-                      key={p.id}
-                      onClick={() => toggleCollectionProductId(p.id)}
-                      className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-center gap-2.5 ${
-                        isSelected
-                          ? 'border-black bg-white shadow-xs'
-                          : 'border-neutral-200 bg-white/60 opacity-60 hover:opacity-100'
-                      }`}
-                    >
-                      <div className="w-8 h-8 rounded bg-neutral-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                        <img src={getValidImageUrl(p.image)} alt={p.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-black truncate">{p.name}</p>
-                        <p className="text-[10px] text-neutral-500">{p.price} CFA</p>
-                      </div>
-                      {isSelected && <Check className="w-4 h-4 text-black flex-shrink-0" />}
+            {/* Liste de toutes les collections configurées */}
+            {(() => {
+              const collections = form.editorialCollections && form.editorialCollections.length > 0
+                ? form.editorialCollections
+                : [form.collectionSection]
+
+              return collections.map((col, cIndex) => (
+                <div key={col.id || cIndex} className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-6">
+                  <div className="flex items-center justify-between border-b pb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-black uppercase tracking-widest bg-neutral-100 text-neutral-800 px-2.5 py-1 rounded">
+                        SECTION #{cIndex + 1}
+                      </span>
+                      <h3 className="text-base font-bold uppercase tracking-wider text-black">
+                        {col.title || 'Collection sans nom'}
+                      </h3>
                     </div>
-                  )
-                })}
-              </div>
-            </div>
+
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold uppercase">
+                        <input
+                          type="checkbox"
+                          checked={col.enabled}
+                          onChange={(e) => {
+                            const updatedCols = [...collections]
+                            updatedCols[cIndex] = { ...col, enabled: e.target.checked }
+                            setForm((prev) => ({
+                              ...prev,
+                              editorialCollections: updatedCols,
+                              collectionSection: updatedCols[0]
+                            }))
+                          }}
+                          className="h-4 w-4 accent-black"
+                        />
+                        Activer
+                      </label>
+
+                      {collections.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeEditorialCollection(cIndex)}
+                          className="text-red-500 hover:text-red-700 text-xs flex items-center gap-1 font-medium transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Supprimer
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Image Bannière */}
+                    <div>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700 mb-2 block">
+                        Grande Bannière Éditoriale Plein Écran
+                      </Label>
+                      <div className="relative aspect-[16/10] w-full rounded-lg border bg-neutral-100 overflow-hidden mb-3">
+                        <img
+                          src={getValidImageUrl(col.bannerImage)}
+                          alt={col.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleCollectionBannerUpload(cIndex, e)}
+                          />
+                          <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-bold border border-neutral-300 rounded bg-white hover:bg-neutral-100 transition-colors">
+                            {uploadingCollectionIndex === cIndex ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <ImageIcon className="w-3.5 h-3.5" />
+                            )}
+                            Changer la photo bannière
+                          </span>
+                        </label>
+                        <Input
+                          value={col.bannerImage}
+                          onChange={(e) => {
+                            const updatedCols = [...collections]
+                            updatedCols[cIndex] = { ...col, bannerImage: e.target.value }
+                            setForm((prev) => ({
+                              ...prev,
+                              editorialCollections: updatedCols,
+                              collectionSection: updatedCols[0]
+                            }))
+                          }}
+                          placeholder="/images/..."
+                          className="text-xs font-mono h-8"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Paramètres Collection */}
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700">Titre de la Collection</Label>
+                        <Input
+                          value={col.title}
+                          onChange={(e) => {
+                            const updatedCols = [...collections]
+                            updatedCols[cIndex] = { ...col, title: e.target.value }
+                            setForm((prev) => ({
+                              ...prev,
+                              editorialCollections: updatedCols,
+                              collectionSection: updatedCols[0]
+                            }))
+                          }}
+                          placeholder="ex: NEW IN ou TARTAN ou ESSENTIELS"
+                          className="mt-1"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700">Texte du Bouton de Bannière</Label>
+                        <Input
+                          value={col.buttonText || 'DÉCOUVRIR'}
+                          onChange={(e) => {
+                            const updatedCols = [...collections]
+                            updatedCols[cIndex] = { ...col, buttonText: e.target.value }
+                            setForm((prev) => ({
+                              ...prev,
+                              editorialCollections: updatedCols,
+                              collectionSection: updatedCols[0]
+                            }))
+                          }}
+                          placeholder="DÉCOUVRIR ou SHOP NOW"
+                          className="mt-1"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                        <div>
+                          <p className="font-bold text-xs text-black uppercase tracking-wide">Activer le bouton VUE / MANNEQUIN</p>
+                          <p className="text-[11px] text-neutral-500">Permet aux visiteurs de basculer sur la photo portée sur modèle</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={col.enableMannequinToggle}
+                          onChange={(e) => {
+                            const updatedCols = [...collections]
+                            updatedCols[cIndex] = { ...col, enableMannequinToggle: e.target.checked }
+                            setForm((prev) => ({
+                              ...prev,
+                              editorialCollections: updatedCols,
+                              collectionSection: updatedCols[0]
+                            }))
+                          }}
+                          className="h-4 w-4 accent-black"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Choix des produits affichés dans cette collection */}
+                  <div className="pt-4 border-t border-neutral-200">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700 mb-3 block">
+                      Articles affichés sous cette bannière ({col.selectedProductIds?.length || 0} sélectionnés)
+                    </Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-60 overflow-y-auto p-2 border rounded-lg bg-neutral-50/50">
+                      {allProducts.map((p) => {
+                        const isSelected = col.selectedProductIds?.includes(String(p.id))
+                        return (
+                          <div
+                            key={p.id}
+                            onClick={() => toggleCollectionProductId(cIndex, String(p.id))}
+                            className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-center gap-2.5 ${
+                              isSelected
+                                ? 'border-black bg-white shadow-xs ring-1 ring-black'
+                                : 'border-neutral-200 bg-white/60 opacity-60 hover:opacity-100'
+                            }`}
+                          >
+                            <div className="w-8 h-8 rounded bg-neutral-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                              <img src={getValidImageUrl(p.image)} alt={p.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-bold text-black truncate">{p.name}</p>
+                              <p className="text-[10px] text-neutral-500">{p.price} CFA</p>
+                            </div>
+                            {isSelected && <Check className="w-4 h-4 text-black flex-shrink-0" />}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))
+            })()}
           </div>
         </div>
       </div>

@@ -1,3 +1,13 @@
+export type EditorialCollection = {
+  id: string
+  enabled: boolean
+  title: string
+  bannerImage: string
+  buttonText: string
+  enableMannequinToggle: boolean
+  selectedProductIds: string[]
+}
+
 export type SiteHomepageConfig = {
   // 1. Ordre et activation des sections
   sectionsOrder: string[] // ex: ['drop', 'products', 'lookbook', 'collection']
@@ -20,17 +30,13 @@ export type SiteHomepageConfig = {
     priorityProductIds: string[]
   }
 
-  // 4. Section Collection Éditoriale (style Torom Paris avec bouton Mannequin)
-  collectionSection: {
-    enabled: boolean
-    title: string
-    bannerImage: string
-    buttonText: string
-    enableMannequinToggle: boolean
-    selectedProductIds: string[] // IDs des produits à afficher dans cette collection
-  }
+  // 4. Section Collection Éditoriale unique (legacy fallback)
+  collectionSection: EditorialCollection
 
-  // 5. Section Lookbook
+  // 5. Multiples Collections Éditoriales style Torom Paris
+  editorialCollections?: EditorialCollection[]
+
+  // 6. Section Lookbook
   lookbookSection: {
     enabled: boolean
     title: string
@@ -60,6 +66,7 @@ export const DEFAULT_HOMEPAGE_CONFIG: SiteHomepageConfig = {
     ]
   },
   collectionSection: {
+    id: 'collection-tartan',
     enabled: true,
     title: 'TARTAN',
     bannerImage: '/images/collection-essentiels-banner.jpg',
@@ -67,6 +74,17 @@ export const DEFAULT_HOMEPAGE_CONFIG: SiteHomepageConfig = {
     enableMannequinToggle: true,
     selectedProductIds: ['1793314904004', '1792639100833', '1792616909279']
   },
+  editorialCollections: [
+    {
+      id: 'collection-tartan',
+      enabled: true,
+      title: 'TARTAN',
+      bannerImage: '/images/collection-essentiels-banner.jpg',
+      buttonText: 'DÉCOUVRIR',
+      enableMannequinToggle: true,
+      selectedProductIds: ['1793314904004', '1792639100833', '1792616909279']
+    }
+  ],
   lookbookSection: {
     enabled: true,
     title: 'ACHETER LE LOOK'
@@ -76,6 +94,35 @@ export const DEFAULT_HOMEPAGE_CONFIG: SiteHomepageConfig = {
 export function normalizeHomepageConfig(config: any): SiteHomepageConfig {
   if (!config || typeof config !== 'object') {
     return DEFAULT_HOMEPAGE_CONFIG
+  }
+
+  // Normalisation de collectionSection legacy
+  const legacyCollection: EditorialCollection = {
+    id: config.collectionSection?.id || 'collection-default',
+    enabled: config.collectionSection?.enabled !== false,
+    title: config.collectionSection?.title || DEFAULT_HOMEPAGE_CONFIG.collectionSection.title,
+    bannerImage: config.collectionSection?.bannerImage || DEFAULT_HOMEPAGE_CONFIG.collectionSection.bannerImage,
+    buttonText: config.collectionSection?.buttonText || DEFAULT_HOMEPAGE_CONFIG.collectionSection.buttonText,
+    enableMannequinToggle: config.collectionSection?.enableMannequinToggle !== false,
+    selectedProductIds: Array.isArray(config.collectionSection?.selectedProductIds) && config.collectionSection.selectedProductIds.length > 0
+      ? config.collectionSection.selectedProductIds
+      : DEFAULT_HOMEPAGE_CONFIG.collectionSection.selectedProductIds
+  }
+
+  // Multi-collections : si editorialCollections est fourni, on le normalise, sinon on initialise avec legacy
+  let editorialCollections: EditorialCollection[] = []
+  if (Array.isArray(config.editorialCollections) && config.editorialCollections.length > 0) {
+    editorialCollections = config.editorialCollections.map((col: any, idx: number) => ({
+      id: col.id || `collection-${idx}-${Date.now()}`,
+      enabled: col.enabled !== false,
+      title: col.title || 'COLLECTION',
+      bannerImage: col.bannerImage || '/images/collection-essentiels-banner.jpg',
+      buttonText: col.buttonText || 'DÉCOUVRIR',
+      enableMannequinToggle: col.enableMannequinToggle !== false,
+      selectedProductIds: Array.isArray(col.selectedProductIds) ? col.selectedProductIds : []
+    }))
+  } else {
+    editorialCollections = [legacyCollection]
   }
 
   return {
@@ -98,16 +145,8 @@ export function normalizeHomepageConfig(config: any): SiteHomepageConfig {
         ? config.productsSection.priorityProductIds
         : DEFAULT_HOMEPAGE_CONFIG.productsSection.priorityProductIds
     },
-    collectionSection: {
-      enabled: config.collectionSection?.enabled !== false,
-      title: config.collectionSection?.title || DEFAULT_HOMEPAGE_CONFIG.collectionSection.title,
-      bannerImage: config.collectionSection?.bannerImage || DEFAULT_HOMEPAGE_CONFIG.collectionSection.bannerImage,
-      buttonText: config.collectionSection?.buttonText || DEFAULT_HOMEPAGE_CONFIG.collectionSection.buttonText,
-      enableMannequinToggle: config.collectionSection?.enableMannequinToggle !== false,
-      selectedProductIds: Array.isArray(config.collectionSection?.selectedProductIds) && config.collectionSection.selectedProductIds.length > 0
-        ? config.collectionSection.selectedProductIds
-        : DEFAULT_HOMEPAGE_CONFIG.collectionSection.selectedProductIds
-    },
+    collectionSection: legacyCollection,
+    editorialCollections,
     lookbookSection: {
       enabled: config.lookbookSection?.enabled !== false,
       title: config.lookbookSection?.title || DEFAULT_HOMEPAGE_CONFIG.lookbookSection.title

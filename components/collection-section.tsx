@@ -11,16 +11,20 @@ import { getValidImageUrl } from '@/lib/image-utils'
 import { normalizeProductData } from '@/lib/product-utils'
 
 interface CollectionSectionProps {
+  id?: string
   title?: string
   bannerImage?: string
+  buttonText?: string
   products: Product[]
   targetProductIds?: string[]
   enableMannequinToggle?: boolean
 }
 
 export function CollectionSection({
+  id = 'collection-section',
   title = 'TARTAN',
   bannerImage = '/images/collection-essentiels-banner.jpg',
+  buttonText = 'DÉCOUVRIR',
   products,
   targetProductIds = ['1793314904004', '1792639100833', '1792616909279'],
   enableMannequinToggle = true,
@@ -34,6 +38,8 @@ export function CollectionSection({
 
   // Indice carrousel individuel pour chaque carte produit
   const [activeImageIndices, setActiveImageIndices] = useState<Record<string, number>>({})
+
+  const anchorId = `collection-products-anchor-${id.replace(/[^a-zA-Z0-9_-]/g, '')}`
 
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
     e.preventDefault()
@@ -67,7 +73,7 @@ export function CollectionSection({
   }
 
   const handleScrollToProducts = () => {
-    const el = document.getElementById('collection-products-anchor')
+    const el = document.getElementById(anchorId)
     if (el) {
       const headerOffset = 60 // compense le header sticky s'il y a
       const elementPosition = el.getBoundingClientRect().top
@@ -80,10 +86,10 @@ export function CollectionSection({
     }
   }
 
-  // Filtrer uniquement les t-shirts tartan demandés par l'utilisateur
+  // Filtrer les articles de la collection
   const collectionProducts = products.filter((p) => {
     if (targetProductIds.length > 0) {
-      return targetProductIds.includes(p.id) || p.name.toLowerCase().includes('tartan')
+      return targetProductIds.includes(String(p.id)) || p.name.toLowerCase().includes(title.toLowerCase())
     }
     return !p.is_preorder
   })
@@ -118,7 +124,7 @@ export function CollectionSection({
             onClick={handleScrollToProducts}
             className="bg-white text-black text-[11px] sm:text-xs font-semibold uppercase tracking-[0.25em] px-8 sm:px-10 py-3 sm:py-3.5 hover:bg-neutral-100 transition-colors shadow-lg"
           >
-            DÉCOUVRIR
+            {buttonText || 'DÉCOUVRIR'}
           </button>
         </div>
 
@@ -131,7 +137,7 @@ export function CollectionSection({
       </div>
 
       {/* ── 2. CATALOGUE DE LA COLLECTION ───────────── */}
-      <div id="collection-products-anchor" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-12">
+      <div id={anchorId} className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-12">
         {/* En-tête de section & Bascule Mannequin */}
         <div className="flex items-center justify-between mb-6 pb-2 border-b border-neutral-100">
           <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-[0.2em] text-black">
