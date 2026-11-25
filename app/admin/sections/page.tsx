@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { SiteHomepageConfig, EditorialCollection, DEFAULT_HOMEPAGE_CONFIG, normalizeHomepageConfig } from '@/lib/homepage-config'
 import { compressImage, getValidImageUrl } from '@/lib/image-utils'
+import { uploadMediaFile } from '@/lib/chunk-uploader'
 
 export default function AdminHomepageSectionsPage() {
   const router = useRouter()
@@ -31,6 +32,7 @@ export default function AdminHomepageSectionsPage() {
   const [saving, setSaving] = useState(false)
   const [uploadingHero, setUploadingHero] = useState(false)
   const [uploadingCollectionIndex, setUploadingCollectionIndex] = useState<number | null>(null)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [allProducts, setAllProducts] = useState<any[]>([])
 
   // Onglet ou vue simplifiée (Général vs Collections)
@@ -100,42 +102,56 @@ export default function AdminHomepageSectionsPage() {
 
     const isVideo = file.type.startsWith('video/')
     setUploadingHero(true)
+    setUploadProgress(0)
+
     try {
-      let fileToUpload: Blob | File = file
-      if (file.type.startsWith('image/')) {
+      if (isVideo) {
+        // Pour les vidéos : découpage en morceaux (chunks) sécurisé pour Vercel & TiDB
+        const result = await uploadMediaFile(file, (pct) => setUploadProgress(pct))
+        setForm((prev) => ({
+          ...prev,
+          hero: {
+            ...prev.hero,
+            mediaType: 'video',
+            videoUrl: result.url
+          }
+        }))
+      } else {
+        // Pour les images
+        let fileToUpload: Blob | File = file
         try {
           fileToUpload = await compressImage(file, 1920, 1080, 0.8)
         } catch (err) {
           console.warn('Compression ignorée:', err)
         }
+
+        const formData = new FormData()
+        formData.append('file', fileToUpload, file.name)
+
+        const res = await fetch('/api/upload/image', {
+          method: 'POST',
+          body: formData
+        })
+
+        if (!res.ok) throw new Error("Upload de l'image impossible")
+        const data = await res.json()
+
+        setForm((prev) => ({
+          ...prev,
+          hero: {
+            ...prev.hero,
+            mediaType: 'image',
+            image: data.url,
+            videoUrl: undefined
+          }
+        }))
       }
-
-      const formData = new FormData()
-      formData.append('file', fileToUpload, file.name)
-
-      const endpoint = isVideo ? '/api/upload/media' : '/api/upload/image'
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        body: formData
-      })
-
-      if (!res.ok) throw new Error('Upload média impossible')
-      const data = await res.json()
-
-      setForm((prev) => ({
-        ...prev,
-        hero: {
-          ...prev.hero,
-          mediaType: isVideo ? 'video' : 'image',
-          image: isVideo ? (prev.hero.image || data.url) : data.url,
-          videoUrl: isVideo ? data.url : undefined
-        }
-      }))
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
-      alert("Échec de l'upload du média de couverture Hero.")
+      alert(err?.message || "Échec de l'upload du média de couverture Hero.")
     } finally {
       setUploadingHero(false)
+      setUploadProgress(null)
       if (e.target) e.target.value = ''
     }
   }
@@ -146,49 +162,70 @@ export default function AdminHomepageSectionsPage() {
 
     const isVideo = file.type.startsWith('video/')
     setUploadingCollectionIndex(collectionIndex)
+    setUploadProgress(0)
+
     try {
-      let fileToUpload: Blob | File = file
-      if (file.type.startsWith('image/')) {
+      if (isVideo) {
+        // Pour les vidéos : découpage en morceaux (chunks)
+        const result = await uploadMediaFile(file, (pct) => setUploadProgress(pct))
+        setForm((prev) => {
+          const collections = [...(prev.editorialCollections || [prev.collectionSection])]
+          if (collections[collectionIndex]) {
+            collections[collectionIndex] = {
+              ...collections[collectionIndex],
+              mediaType: 'video',
+              videoUrl: result.url
+            }
+          }
+          return {
+            ...prev,
+            editorialCollections: collections,
+            collectionSection: collections[0] || prev.collectionSection
+          }
+        })
+      } else {
+        // Pour les images
+        let fileToUpload: Blob | File = file
         try {
           fileToUpload = await compressImage(file, 1920, 1080, 0.8)
         } catch (err) {
           console.warn('Compression ignorée:', err)
         }
-      }
 
-      const formData = new FormData()
-      formData.append('file', fileToUpload, file.name)
+        const formData = new FormData()
+        formData.append('file', fileToUpload, file.name)
 
-      const endpoint = isVideo ? '/api/upload/media' : '/api/upload/image'
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        body: formData
-      })
+        const res = await fetch('/api/upload/image', {
+          method: 'POST',
+          body: formData
+        })
 
-      if (!res.ok) throw new Error('Upload média collection impossible')
-      const data = await res.json()
+        if (!res.ok) throw new Error("Upload de la bannière impossible")
+        const data = await res.json()
 
-      setForm((prev) => {
-        const collections = [...(prev.editorialCollections || [prev.collectionSection])]
-        if (collections[collectionIndex]) {
-          collections[collectionIndex] = {
-            ...collections[collectionIndex],
-            mediaType: isVideo ? 'video' : 'image',
-            bannerImage: isVideo ? (collections[collectionIndex].bannerImage || data.url) : data.url,
-            videoUrl: isVideo ? data.url : undefined
+        setForm((prev) => {
+          const collections = [...(prev.editorialCollections || [prev.collectionSection])]
+          if (collections[collectionIndex]) {
+            collections[collectionIndex] = {
+              ...collections[collectionIndex],
+              mediaType: 'image',
+              bannerImage: data.url,
+              videoUrl: undefined
+            }
           }
-        }
-        return {
-          ...prev,
-          editorialCollections: collections,
-          collectionSection: collections[0] || prev.collectionSection
-        }
-      })
-    } catch (err) {
+          return {
+            ...prev,
+            editorialCollections: collections,
+            collectionSection: collections[0] || prev.collectionSection
+          }
+        })
+      }
+    } catch (err: any) {
       console.error(err)
-      alert("Échec de l'upload du média collection.")
+      alert(err?.message || "Échec de l'upload du média collection.")
     } finally {
       setUploadingCollectionIndex(null)
+      setUploadProgress(null)
       if (e.target) e.target.value = ''
     }
   }
@@ -469,11 +506,16 @@ export default function AdminHomepageSectionsPage() {
                         />
                         <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold border border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 active:scale-[0.99] transition-all shadow-2xs">
                           {uploadingCollectionIndex === cIndex ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>{uploadProgress !== null ? `Envoi ${uploadProgress}%...` : 'Chargement...'}</span>
+                            </>
                           ) : (
-                            <Video className="w-3.5 h-3.5 text-blue-600" />
+                            <>
+                              <Video className="w-3.5 h-3.5 text-blue-600" />
+                              <span>Vidéo (MP4/WebM)</span>
+                            </>
                           )}
-                          <span>Vidéo (MP4/WebM)</span>
                         </span>
                       </label>
                     </div>
@@ -639,8 +681,17 @@ export default function AdminHomepageSectionsPage() {
                     onChange={handleHeroMediaUpload}
                   />
                   <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold border border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 active:scale-[0.99] transition-all shadow-2xs">
-                    {uploadingHero ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Video className="w-3.5 h-3.5 text-blue-600" />}
-                    <span>Vidéo (MP4/WebM)</span>
+                    {uploadingHero ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>{uploadProgress !== null ? `Envoi ${uploadProgress}%...` : 'Chargement...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Video className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Vidéo (MP4/WebM)</span>
+                      </>
+                    )}
                   </span>
                 </label>
               </div>
