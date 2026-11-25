@@ -1,13 +1,25 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/use-session'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, ImageIcon, Loader2, Plus, Save, Trash2, X, Clock, Eye } from 'lucide-react'
+import {
+  ArrowLeft,
+  ImageIcon,
+  Loader2,
+  Plus,
+  Save,
+  Trash2,
+  Clock,
+  Eye,
+  Check,
+  Zap,
+  Calendar
+} from 'lucide-react'
 import { DropConfig, DropProduct, DEFAULT_DROP_CONFIG, normalizeDropConfig } from '@/lib/drop-config'
 import { compressImage, getValidImageUrl } from '@/lib/image-utils'
 
@@ -20,8 +32,6 @@ export default function AdminDropPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
-  const [uploadingMannequinIndex, setUploadingMannequinIndex] = useState<number | null>(null)
-  const [newCategoryInput, setNewCategoryInput] = useState('')
 
   useEffect(() => {
     if (!sessionLoading && (!session || !session.isAdmin)) {
@@ -63,7 +73,7 @@ export default function AdminDropPage() {
       })
 
       if (!res.ok) throw new Error('Erreur de sauvegarde')
-      alert('Drop et compte à rebours mis à jour avec succès !')
+      alert('Modifications du drop enregistrées avec succès !')
     } catch (err) {
       console.error(err)
       alert('Échec de la sauvegarde.')
@@ -118,51 +128,6 @@ export default function AdminDropPage() {
     }
   }
 
-  const handleMannequinImageUpload = async (productIndex: number, event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    setUploadingMannequinIndex(productIndex)
-    try {
-      let fileToUpload: Blob | File = file
-      if (file.type.startsWith('image/')) {
-        try {
-          fileToUpload = await compressImage(file, 1000, 1000, 0.75)
-        } catch (e) {
-          console.warn('Compression ignorée:', e)
-        }
-      }
-
-      const formData = new FormData()
-      formData.append('file', fileToUpload, file.name)
-
-      const res = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (!res.ok) throw new Error('Upload image mannequin impossible')
-      const data = await res.json()
-
-      setForm((prev) => ({
-        ...prev,
-        products: prev.products.map((p, idx) => {
-          if (idx !== productIndex) return p
-          return {
-            ...p,
-            mannequinImage: data.url
-          }
-        })
-      }))
-    } catch (err) {
-      console.error(err)
-      alert("Échec de l'upload de la photo mannequin.")
-    } finally {
-      setUploadingMannequinIndex(null)
-      if (event.target) event.target.value = ''
-    }
-  }
-
   const addProduct = () => {
     const newProd: DropProduct = {
       id: `drop-prod-${Date.now()}`,
@@ -174,7 +139,7 @@ export default function AdminDropPage() {
       price: 11000,
       currency: 'CFA',
       sizes: ['S', 'M', 'L', 'XL'],
-      statusText: 'Coming soon',
+      statusText: form.saleMode === 'instant' ? 'En stock' : 'Coming soon',
       badge: 'DROP 1',
       is_preorder: true
     }
@@ -186,7 +151,7 @@ export default function AdminDropPage() {
   }
 
   const removeProduct = (index: number) => {
-    if (!confirm('Voulez-vous supprimer ce produit du drop ?')) return
+    if (!confirm('Supprimer ce produit du drop ?')) return
     setForm((prev) => ({
       ...prev,
       products: prev.products.filter((_, i) => i !== index)
@@ -206,431 +171,322 @@ export default function AdminDropPage() {
     }))
   }
 
+  // Convertit format ISO vers "YYYY-MM-DDTHH:mm" pour l'input datetime-local
+  const getDatetimeInputValue = (isoStr: string) => {
+    try {
+      const d = new Date(isoStr)
+      if (isNaN(d.getTime())) return ''
+      // Format local YYYY-MM-DDTHH:mm
+      const pad = (n: number) => String(n).padStart(2, '0')
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+    } catch {
+      return ''
+    }
+  }
+
+  const handleDatetimeChange = (value: string) => {
+    if (!value) return
+    const d = new Date(value)
+    if (!isNaN(d.getTime())) {
+      const pad = (n: number) => String(n).padStart(2, '0')
+      const formattedLabel = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${String(d.getFullYear()).slice(-2)} ${pad(d.getHours())}:${pad(d.getMinutes())} GMT`
+      setForm((prev) => ({
+        ...prev,
+        targetDate: d.toISOString(),
+        dateLabel: formattedLabel
+      }))
+    }
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-neutral-900" />
+      <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
+        <Loader2 className="h-7 w-7 animate-spin text-black" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 pb-20">
-      {/* Barre supérieure */}
-      <div className="sticky top-0 z-40 bg-white border-b px-4 py-4 sm:px-8">
-        <div className="container mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-[#f7f7f8] text-neutral-900 pb-28">
+      {/* ── HEADER MODERNE STICKY AVEC BOUTON ENREGISTRER ULTRA CLAIR ── */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-neutral-200/80 px-4 py-3 shadow-xs">
+        <div className="container mx-auto flex items-center justify-between max-w-3xl">
           <Link
             href="/admin"
-            className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-black transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-neutral-600 hover:text-black transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour au tableau de bord
+            <span className="hidden sm:inline">Tableau de bord</span>
+            <span className="sm:hidden">Retour</span>
           </Link>
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center gap-2">
             <Link href="/" target="_blank">
-              <Button variant="outline" size="sm" className="gap-2">
-                <Eye className="h-4 w-4" />
-                Voir sur le site
+              <Button variant="ghost" size="sm" className="h-9 px-3 text-xs gap-1.5 text-neutral-600 hover:text-black">
+                <Eye className="h-3.5 w-3.5" />
+                <span>Aperçu</span>
               </Button>
             </Link>
+
+            {/* Bouton Enregistrer bien proportionné et lisible sur iPhone */}
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="bg-black text-white hover:bg-neutral-800 gap-2"
-              size="sm"
+              className="h-9 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm gap-2"
             >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              Enregistrer les modifications
+              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              <span>Enregistrer</span>
             </Button>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="container mx-auto max-w-4xl px-4 pt-8">
-        <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-900 text-white text-xs font-bold uppercase tracking-widest mb-2">
-            <Clock className="w-3.5 h-3.5" />
-            <span>DROP & COMPTE À REBOURS</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-neutral-900">
-            Gestion du Drop & Lancement
+      {/* ── CONTENU PRINCIPAL ÉPURÉ & INTUITIF ── */}
+      <main className="container mx-auto max-w-2xl px-4 pt-6 space-y-6">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-black">
+            Drop & Vente
           </h1>
-          <p className="text-sm text-neutral-500 mt-1">
-            Configurez la date du compte à rebours, les visuels des articles et autorisez ou non les précommandes directes.
+          <p className="text-xs text-neutral-500 mt-0.5">
+            Choisissez si vous lancez la vente maintenant ou si vous affichez un compte à rebours.
           </p>
         </div>
 
-        <div className="space-y-8">
-          {/* Section Paramètres Généraux */}
-          <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-6">
-            <h2 className="text-lg font-bold uppercase tracking-wider text-black border-b pb-3">
-              1. Mode de Vente & Compte à Rebours
-            </h2>
-
-            {/* SÉLECTEUR : COMPTE À REBOURS VS VENDRE MAINTENANT */}
-            <div className="p-4 bg-neutral-900 text-white rounded-xl space-y-3">
-              <Label className="text-xs font-black uppercase tracking-widest text-neutral-300 block">
-                Décision de vente (Stratégie Drop)
-              </Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setForm((prev) => ({
-                    ...prev,
-                    saleMode: 'countdown',
-                    tagline: prev.tagline && prev.tagline !== 'DROP DISPONIBLE · VENTE IMMÉDIATE' ? prev.tagline : 'DROP 1 · COMING SOON',
-                    dateLabel: prev.dateLabel && prev.dateLabel !== 'EN STOCK · LIVRAISON DIRECTE' ? prev.dateLabel : '08/12/26 19:00 GMT',
-                    buttonText: 'PRÉCOMMANDER'
-                  }))}
-                  className={`p-4 rounded-lg text-left transition-all border ${
-                    (form.saleMode || 'countdown') === 'countdown'
-                      ? 'bg-white text-black border-white shadow-md'
-                      : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-750'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-black text-sm uppercase tracking-wide">Compte à Rebours</span>
-                    <Clock className="w-4 h-4" />
-                  </div>
-                  <p className="text-xs opacity-80 leading-relaxed">
-                    Affiche le compte à rebours (jours/heures/min) et prépare la communauté au drop.
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setForm((prev) => ({
-                    ...prev,
-                    saleMode: 'instant',
-                    tagline: 'DROP DISPONIBLE · VENTE IMMÉDIATE',
-                    dateLabel: 'EN STOCK · LIVRAISON DIRECTE',
-                    buttonText: 'ACHETER MAINTENANT'
-                  }))}
-                  className={`p-4 rounded-lg text-left transition-all border ${
-                    form.saleMode === 'instant'
-                      ? 'bg-emerald-500 text-white border-emerald-400 shadow-md'
-                      : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-750'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-black text-sm uppercase tracking-wide">Vendre Maintenant</span>
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  </div>
-                  <p className="text-xs opacity-90 leading-relaxed">
-                    Masque le compte à rebours, active la vente directe immédiate en stock pour les clients.
-                  </p>
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-              <div>
-                <p className="font-bold text-sm text-black uppercase tracking-wide">Activer le Drop sur l'accueil</p>
-                <p className="text-xs text-neutral-500">Affiche ou masque la section Drop sur la page d'accueil</p>
-              </div>
+        {/* ── 1. LE CHOIX PRINCIPAL : VENDRE MAINTENANT OU COMPTE À REBOURS ── */}
+        <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-xs p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-black uppercase tracking-wider text-black">
+              1. Mode de Vente
+            </Label>
+            <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-neutral-700">
               <input
                 type="checkbox"
                 checked={form.enabled}
                 onChange={(e) => setForm((prev) => ({ ...prev, enabled: e.target.checked }))}
-                className="h-5 w-5 accent-black rounded cursor-pointer"
+                className="w-4 h-4 accent-black rounded"
               />
-            </div>
+              <span>Section active</span>
+            </label>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="tagline" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                  Tagline haut
-                </Label>
-                <Input
-                  id="tagline"
-                  value={form.tagline}
-                  onChange={(e) => setForm((prev) => ({ ...prev, tagline: e.target.value }))}
-                  placeholder={form.saleMode === 'instant' ? 'DROP DISPONIBLE · VENTE IMMÉDIATE' : 'DROP 1 · COMING SOON'}
-                  className="mt-1"
-                />
+          <div className="grid grid-cols-2 gap-3">
+            {/* Option A: VENDRE MAINTENANT */}
+            <button
+              type="button"
+              onClick={() => setForm((prev) => ({
+                ...prev,
+                saleMode: 'instant',
+                tagline: 'DISPONIBLE MAINTENANT',
+                dateLabel: 'EN STOCK · EXPÉDITION IMMÉDIATE',
+                buttonText: 'ACHETER MAINTENANT'
+              }))}
+              className={`p-4 rounded-xl text-left transition-all border flex flex-col justify-between ${
+                form.saleMode === 'instant'
+                  ? 'bg-black text-white border-black shadow-sm ring-1 ring-black'
+                  : 'bg-neutral-50 text-neutral-700 border-neutral-200 hover:bg-neutral-100'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-xs uppercase tracking-wider">Vendre Maintenant</span>
+                <span className={`w-2.5 h-2.5 rounded-full ${form.saleMode === 'instant' ? 'bg-emerald-400' : 'bg-neutral-300'}`} />
               </div>
+              <p className={`text-[11px] leading-tight ${form.saleMode === 'instant' ? 'text-neutral-300' : 'text-neutral-500'}`}>
+                Disponible tout de suite avec achat direct.
+              </p>
+            </button>
 
-              <div>
-                <Label htmlFor="dateLabel" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                  Libellé date / disponibilité affiché
-                </Label>
-                <Input
-                  id="dateLabel"
-                  value={form.dateLabel}
-                  onChange={(e) => setForm((prev) => ({ ...prev, dateLabel: e.target.value }))}
-                  placeholder={form.saleMode === 'instant' ? 'EN STOCK · EXPÉDITION IMMÉDIATE' : '08/12/26 19:00 GMT'}
-                  className="mt-1"
-                />
+            {/* Option B: COMPTE À REBOURS */}
+            <button
+              type="button"
+              onClick={() => setForm((prev) => ({
+                ...prev,
+                saleMode: 'countdown',
+                tagline: 'DROP 1 · COMING SOON',
+                dateLabel: '08/12/26 19:00 GMT',
+                buttonText: 'PRÉCOMMANDER'
+              }))}
+              className={`p-4 rounded-xl text-left transition-all border flex flex-col justify-between ${
+                (form.saleMode || 'countdown') === 'countdown'
+                  ? 'bg-black text-white border-black shadow-sm ring-1 ring-black'
+                  : 'bg-neutral-50 text-neutral-700 border-neutral-200 hover:bg-neutral-100'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-xs uppercase tracking-wider">Compte à Rebours</span>
+                <Clock className={`w-3.5 h-3.5 ${form.saleMode !== 'instant' ? 'text-white' : 'text-neutral-400'}`} />
               </div>
-            </div>
+              <p className={`text-[11px] leading-tight ${form.saleMode !== 'instant' ? 'text-neutral-300' : 'text-neutral-500'}`}>
+                Affiche le décompte des jours et heures.
+              </p>
+            </button>
+          </div>
 
-            {form.saleMode !== 'instant' && (
-              <div>
-                <Label htmlFor="targetDate" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                  Date & Heure cible du Compte à Rebours (ISO)
-                </Label>
-                <Input
-                  id="targetDate"
-                  value={form.targetDate}
-                  onChange={(e) => setForm((prev) => ({ ...prev, targetDate: e.target.value }))}
-                  placeholder="2026-12-08T19:00:00Z"
-                  className="mt-1"
-                />
-                <p className="text-[11px] text-neutral-400 mt-1">
-                  Format standard ISO (ex : 2026-12-08T19:00:00Z pour le 8 décembre 2026 à 19h00).
-                </p>
-              </div>
-            )}
-
-            <div>
-              <Label htmlFor="buttonText" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                Texte du bouton d'achat
+          {/* SÉLECTEUR DE DATE FACILE (Uniquement si compte à rebours) */}
+          {form.saleMode !== 'instant' && (
+            <div className="pt-2 border-t border-neutral-100 space-y-2">
+              <Label className="text-[11px] font-bold uppercase tracking-wider text-neutral-600 block">
+                Date et Heure du Lancement
               </Label>
-              <Input
-                id="buttonText"
-                value={form.buttonText}
-                onChange={(e) => setForm((prev) => ({ ...prev, buttonText: e.target.value }))}
-                placeholder={form.saleMode === 'instant' ? 'ACHETER MAINTENANT' : 'PRÉCOMMANDER'}
-                className="mt-1"
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-              <div>
-                <p className="font-bold text-sm text-black uppercase tracking-wide">
-                  {form.saleMode === 'instant' ? 'Autoriser l\'ajout au panier' : 'Autoriser les Précommandes directes'}
-                </p>
-                <p className="text-xs text-neutral-500">
-                  {form.saleMode === 'instant'
-                    ? 'Permet aux clients de sélectionner leur taille et de passer commande immédiatement'
-                    : 'Permet aux clients de choisir leur taille et de réserver le produit avant le drop'}
-                </p>
+              <div className="relative">
+                <input
+                  type="datetime-local"
+                  value={getDatetimeInputValue(form.targetDate)}
+                  onChange={(e) => handleDatetimeChange(e.target.value)}
+                  className="w-full h-11 px-3 text-xs font-semibold rounded-xl border border-neutral-300 bg-white focus:outline-hidden focus:ring-1 focus:ring-black"
+                />
               </div>
-              <input
-                type="checkbox"
-                checked={form.allowPreorder}
-                onChange={(e) => setForm((prev) => ({ ...prev, allowPreorder: e.target.checked }))}
-                className="h-5 w-5 accent-black rounded cursor-pointer"
-              />
+              <p className="text-[10px] text-neutral-500">
+                Affiché sur le site : <span className="font-bold text-black">{form.dateLabel}</span>
+              </p>
             </div>
-          </div>
-
-          {/* Section Produits du Drop */}
-          <div className="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-6">
-            <div className="flex items-center justify-between border-b pb-3">
-              <h2 className="text-lg font-bold uppercase tracking-wider text-black">
-                2. Produits du Drop ({form.products.length})
-              </h2>
-              <Button onClick={addProduct} variant="outline" size="sm" className="gap-1.5 text-xs">
-                <Plus className="w-3.5 h-3.5" />
-                Ajouter un produit
-              </Button>
-            </div>
-
-            <div className="space-y-6">
-              {form.products.map((product, pIndex) => (
-                <div
-                  key={product.id || pIndex}
-                  className="p-5 rounded-lg border border-neutral-200 bg-neutral-50/50 relative space-y-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase tracking-widest text-neutral-400">
-                      PRODUIT #{pIndex + 1}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeProduct(pIndex)}
-                      className="text-red-500 hover:text-red-700 text-xs flex items-center gap-1 font-medium"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Supprimer
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Colonne Images (Packshot & Mannequin) */}
-                    <div className="space-y-4">
-                      {/* Photo Produit standard */}
-                      <div>
-                        <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700 mb-2 block">
-                          Photo du produit
-                        </Label>
-                        <div className="relative aspect-square w-full rounded border bg-white overflow-hidden flex items-center justify-center p-2 mb-2">
-                          <img
-                            src={getValidImageUrl(product.image, '/placeholder.jpg')}
-                            alt={product.name}
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                          <label className="cursor-pointer">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => handleProductImageUpload(pIndex, e)}
-                            />
-                            <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-bold border border-neutral-300 rounded bg-white hover:bg-neutral-100 transition-colors">
-                              {uploadingIndex === pIndex ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <ImageIcon className="w-3.5 h-3.5" />
-                              )}
-                              Changer photo
-                            </span>
-                          </label>
-                          <Input
-                            value={product.image}
-                            onChange={(e) =>
-                              setForm((prev) => ({
-                                ...prev,
-                                products: prev.products.map((p, idx) =>
-                                  idx === pIndex ? { ...p, image: e.target.value } : p
-                                )
-                              }))
-                            }
-                            placeholder="/images/..."
-                            className="text-xs font-mono h-8"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Colonnes Infos */}
-                    <div className="md:col-span-2 space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                            Nom du produit
-                          </Label>
-                          <Input
-                            value={product.name}
-                            onChange={(e) =>
-                              setForm((prev) => ({
-                                ...prev,
-                                products: prev.products.map((p, idx) =>
-                                  idx === pIndex ? { ...p, name: e.target.value } : p
-                                )
-                              }))
-                            }
-                            placeholder="ex: LONG SLEEVES NS NOIR"
-                            className="mt-1"
-                          />
-                        </div>
-
-                        <div>
-                          <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                            Sous-titre / Variante
-                          </Label>
-                          <Input
-                            value={product.subtitle || ''}
-                            onChange={(e) =>
-                              setForm((prev) => ({
-                                ...prev,
-                                products: prev.products.map((p, idx) =>
-                                  idx === pIndex ? { ...p, subtitle: e.target.value } : p
-                                )
-                              }))
-                            }
-                            placeholder="ex: Édition Collector • Noir Profond"
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                            Prix (CFA)
-                          </Label>
-                          <Input
-                            type="number"
-                            value={product.price}
-                            onChange={(e) =>
-                              setForm((prev) => ({
-                                ...prev,
-                                products: prev.products.map((p, idx) =>
-                                  idx === pIndex ? { ...p, price: Number(e.target.value) || 0 } : p
-                                )
-                              }))
-                            }
-                            className="mt-1"
-                          />
-                        </div>
-
-                        <div>
-                          <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                            Badge
-                          </Label>
-                          <Input
-                            value={product.badge || ''}
-                            onChange={(e) =>
-                              setForm((prev) => ({
-                                ...prev,
-                                products: prev.products.map((p, idx) =>
-                                  idx === pIndex ? { ...p, badge: e.target.value } : p
-                                )
-                              }))
-                            }
-                            placeholder="DROP 1"
-                            className="mt-1"
-                          />
-                        </div>
-
-                        <div>
-                          <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                            Statut affiché
-                          </Label>
-                          <Input
-                            value={product.statusText || ''}
-                            onChange={(e) =>
-                              setForm((prev) => ({
-                                ...prev,
-                                products: prev.products.map((p, idx) =>
-                                  idx === pIndex ? { ...p, statusText: e.target.value } : p
-                                )
-                              }))
-                            }
-                            placeholder="Coming soon"
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Tailles disponibles */}
-                      <div>
-                        <Label className="text-xs font-bold uppercase tracking-wider text-neutral-700 mb-2 block">
-                          Tailles disponibles
-                        </Label>
-                        <div className="flex flex-wrap gap-2">
-                          {STANDARD_SIZES.map((size) => {
-                            const isChecked = product.sizes.includes(size)
-                            return (
-                              <button
-                                key={size}
-                                type="button"
-                                onClick={() => toggleSize(pIndex, size)}
-                                className={`px-3 py-1.5 rounded text-xs font-bold tracking-wider transition-colors ${
-                                  isChecked
-                                    ? 'bg-black text-white'
-                                    : 'bg-white text-neutral-600 border border-neutral-300 hover:bg-neutral-100'
-                                }`}
-                              >
-                                {size}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
-      </div>
+
+        {/* ── 2. LES VÊTEMENTS DU DROP ── */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-black uppercase tracking-wider text-black">
+              2. Vêtements du Drop ({form.products.length})
+            </Label>
+            <Button
+              type="button"
+              onClick={addProduct}
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 text-xs font-bold gap-1 rounded-lg border-neutral-300 hover:bg-neutral-100"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Ajouter</span>
+            </Button>
+          </div>
+
+          {form.products.map((product, pIndex) => (
+            <div
+              key={product.id || pIndex}
+              className="bg-white rounded-2xl border border-neutral-200/90 shadow-xs p-5 space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                <span className="w-5 h-5 rounded-full bg-black text-white text-[10px] font-bold flex items-center justify-center">
+                  {pIndex + 1}
+                </span>
+
+                <span className="text-xs font-bold uppercase tracking-wider text-black truncate max-w-[180px]">
+                  {product.name}
+                </span>
+
+                {form.products.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeProduct(pIndex)}
+                    className="text-neutral-400 hover:text-red-600 p-1 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Photo du vêtement */}
+              <div>
+                <Label className="text-[11px] font-bold uppercase tracking-wider text-neutral-600 mb-2 block">
+                  Photo du vêtement
+                </Label>
+                <div className="relative aspect-square max-w-[180px] mx-auto rounded-xl bg-neutral-50 overflow-hidden border border-neutral-200/80 p-2 mb-2 flex items-center justify-center">
+                  <img
+                    src={getValidImageUrl(product.image, '/placeholder.jpg')}
+                    alt={product.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                <label className="cursor-pointer block max-w-[220px] mx-auto">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleProductImageUpload(pIndex, e)}
+                  />
+                  <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-bold border border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 active:scale-[0.99] transition-all shadow-2xs">
+                    {uploadingIndex === pIndex ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <ImageIcon className="w-3.5 h-3.5 text-neutral-600" />
+                    )}
+                    <span>Remplacer la photo</span>
+                  </span>
+                </label>
+              </div>
+
+              {/* Nom & Prix */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <div>
+                  <Label className="text-[11px] font-bold uppercase tracking-wider text-neutral-600 mb-1 block">
+                    Nom du vêtement
+                  </Label>
+                  <Input
+                    value={product.name}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        products: prev.products.map((p, idx) =>
+                          idx === pIndex ? { ...p, name: e.target.value } : p
+                        )
+                      }))
+                    }
+                    placeholder="Ex: Long sleeves noir"
+                    className="h-10 text-xs font-semibold rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-[11px] font-bold uppercase tracking-wider text-neutral-600 mb-1 block">
+                    Prix (CFA)
+                  </Label>
+                  <Input
+                    type="number"
+                    value={product.price}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        products: prev.products.map((p, idx) =>
+                          idx === pIndex ? { ...p, price: Number(e.target.value) || 0 } : p
+                        )
+                      }))
+                    }
+                    placeholder="11000"
+                    className="h-10 text-xs font-semibold rounded-xl"
+                  />
+                </div>
+              </div>
+
+              {/* Tailles sélectionnables en 1 tap */}
+              <div className="pt-2 border-t border-neutral-100">
+                <Label className="text-[11px] font-bold uppercase tracking-wider text-neutral-600 mb-2 block">
+                  Tailles disponibles
+                </Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {STANDARD_SIZES.map((size) => {
+                    const isSelected = product.sizes.includes(size)
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => toggleSize(pIndex, size)}
+                        className={`h-8 px-3 rounded-lg text-xs font-bold tracking-wider transition-all ${
+                          isSelected
+                            ? 'bg-black text-white shadow-2xs'
+                            : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
     </div>
   )
 }
