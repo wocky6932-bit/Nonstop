@@ -288,40 +288,56 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Hero Section */}
-      {homepageConfig.hero.enabled && (
-        <section className="relative w-full aspect-[1672/941] flex items-end justify-center overflow-hidden bg-black pb-8 md:pb-12">
-          {/* Hero background image */}
-          <Image
-            src={getValidImageUrl(homepageConfig.hero.image, '/images/ChatGPT_Image_23_aout_2026_04_21_30.png')}
-            alt="Nonstop Hero"
-            fill
-            className="object-cover object-center"
-            priority
-            quality={90}
-          />
-          {/* Subtle dark overlay for text readability */}
-          <div className="absolute inset-0 bg-black/10" />
+      {/* Hero Section (Supporte Image HD ou Vidéo Cinématique en boucle) */}
+      {homepageConfig.hero.enabled && (() => {
+        const heroMedia = homepageConfig.hero.videoUrl || homepageConfig.hero.image || '/images/ChatGPT_Image_23_aout_2026_04_21_30.png'
+        const isVideo = homepageConfig.hero.mediaType === 'video' || heroMedia.startsWith('data:video') || heroMedia.endsWith('.mp4') || heroMedia.endsWith('.webm')
 
-          <div className="relative z-10 flex flex-col items-center text-center px-4">
-            {homepageConfig.hero.title && (
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white uppercase tracking-[0.2em] mb-2 drop-shadow-md">
-                {homepageConfig.hero.title}
-              </h1>
+        return (
+          <section className="relative w-full aspect-[1672/941] flex items-end justify-center overflow-hidden bg-black pb-8 md:pb-12">
+            {isVideo ? (
+              <video
+                src={heroMedia}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+              />
+            ) : (
+              <Image
+                src={getValidImageUrl(homepageConfig.hero.image, '/images/ChatGPT_Image_23_aout_2026_04_21_30.png')}
+                alt="Nonstop Hero"
+                fill
+                className="object-cover object-center"
+                priority
+                quality={90}
+              />
             )}
-            {homepageConfig.hero.subtitle && (
-              <p className="text-xs sm:text-sm text-white/90 uppercase tracking-[0.2em] mb-4">
-                {homepageConfig.hero.subtitle}
-              </p>
-            )}
-            <Link href={homepageConfig.hero.buttonLink || '/shop'}>
-              <button className="inline-flex items-center justify-center border border-white bg-transparent text-white transition-all duration-300 text-sm tracking-widest uppercase font-medium px-8 md:px-10 py-3 md:py-4 hover:bg-white hover:text-black">
-                {homepageConfig.hero.buttonText || 'DÉCOUVRIR LA COLLECTION'}
-              </button>
-            </Link>
-          </div>
-        </section>
-      )}
+
+            {/* Subtle dark overlay for text readability */}
+            <div className="absolute inset-0 bg-black/25" />
+
+            <div className="relative z-10 flex flex-col items-center text-center px-4">
+              {homepageConfig.hero.title && (
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white uppercase tracking-[0.2em] mb-2 drop-shadow-md">
+                  {homepageConfig.hero.title}
+                </h1>
+              )}
+              {homepageConfig.hero.subtitle && (
+                <p className="text-xs sm:text-sm text-white/90 uppercase tracking-[0.2em] mb-4">
+                  {homepageConfig.hero.subtitle}
+                </p>
+              )}
+              <Link href={homepageConfig.hero.buttonLink || '/shop'}>
+                <button className="inline-flex items-center justify-center border border-white bg-transparent text-white transition-all duration-300 text-sm tracking-widest uppercase font-medium px-8 md:px-10 py-3 md:py-4 hover:bg-white hover:text-black">
+                  {homepageConfig.hero.buttonText || 'DÉCOUVRIR LA COLLECTION'}
+                </button>
+              </Link>
+            </div>
+          </section>
+        )
+      })()}
 
       {/* Section Drop Exclusif avec Compte à Rebours (Blank Street Style) - Immédiatement après le Hero */}
       <SafeErrorBoundary>
@@ -357,6 +373,8 @@ export default function HomePage() {
                 id={col.id || `editorial-col-${idx}`}
                 title={col.title || 'COLLECTION'}
                 bannerImage={col.bannerImage || '/images/collection-essentiels-banner.jpg'}
+                mediaType={col.mediaType || (col.bannerImage?.includes('video') || col.bannerImage?.endsWith('.mp4') ? 'video' : 'image')}
+                videoUrl={col.videoUrl || col.bannerImage}
                 buttonText={col.buttonText || 'DÉCOUVRIR'}
                 products={visibleProducts}
                 targetProductIds={col.selectedProductIds || []}

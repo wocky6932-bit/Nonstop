@@ -3,6 +3,8 @@ export type EditorialCollection = {
   enabled: boolean
   title: string
   bannerImage: string
+  mediaType?: 'image' | 'video'
+  videoUrl?: string
   buttonText: string
   enableMannequinToggle: boolean
   selectedProductIds: string[]
@@ -20,6 +22,8 @@ export type SiteHomepageConfig = {
     buttonText: string
     buttonLink: string
     image: string
+    mediaType?: 'image' | 'video'
+    videoUrl?: string
   }
 
   // 3. Section Nos Produits
@@ -102,6 +106,8 @@ export function normalizeHomepageConfig(config: any): SiteHomepageConfig {
     enabled: config.collectionSection?.enabled !== false,
     title: config.collectionSection?.title || DEFAULT_HOMEPAGE_CONFIG.collectionSection.title,
     bannerImage: config.collectionSection?.bannerImage || DEFAULT_HOMEPAGE_CONFIG.collectionSection.bannerImage,
+    mediaType: config.collectionSection?.mediaType || (config.collectionSection?.bannerImage?.includes('video') ? 'video' : 'image'),
+    videoUrl: config.collectionSection?.videoUrl || '',
     buttonText: config.collectionSection?.buttonText || DEFAULT_HOMEPAGE_CONFIG.collectionSection.buttonText,
     enableMannequinToggle: config.collectionSection?.enableMannequinToggle !== false,
     selectedProductIds: Array.isArray(config.collectionSection?.selectedProductIds) && config.collectionSection.selectedProductIds.length > 0
@@ -117,6 +123,8 @@ export function normalizeHomepageConfig(config: any): SiteHomepageConfig {
       enabled: col.enabled !== false,
       title: col.title || 'COLLECTION',
       bannerImage: col.bannerImage || '/images/collection-essentiels-banner.jpg',
+      mediaType: col.mediaType || (col.bannerImage?.includes('video') || col.bannerImage?.endsWith('.mp4') ? 'video' : 'image'),
+      videoUrl: col.videoUrl || '',
       buttonText: col.buttonText || 'DÉCOUVRIR',
       enableMannequinToggle: col.enableMannequinToggle !== false,
       selectedProductIds: Array.isArray(col.selectedProductIds) ? col.selectedProductIds : []
@@ -135,7 +143,9 @@ export function normalizeHomepageConfig(config: any): SiteHomepageConfig {
       subtitle: config.hero?.subtitle || '',
       buttonText: config.hero?.buttonText || DEFAULT_HOMEPAGE_CONFIG.hero.buttonText,
       buttonLink: config.hero?.buttonLink || DEFAULT_HOMEPAGE_CONFIG.hero.buttonLink,
-      image: config.hero?.image || DEFAULT_HOMEPAGE_CONFIG.hero.image
+      image: config.hero?.image || DEFAULT_HOMEPAGE_CONFIG.hero.image,
+      mediaType: config.hero?.mediaType || (config.hero?.image?.includes('video') || config.hero?.image?.endsWith('.mp4') ? 'video' : 'image'),
+      videoUrl: config.hero?.videoUrl || ''
     },
     productsSection: {
       enabled: config.productsSection?.enabled !== false,

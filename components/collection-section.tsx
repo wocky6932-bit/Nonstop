@@ -14,6 +14,8 @@ interface CollectionSectionProps {
   id?: string
   title?: string
   bannerImage?: string
+  mediaType?: 'image' | 'video'
+  videoUrl?: string
   buttonText?: string
   products: Product[]
   targetProductIds?: string[]
@@ -24,6 +26,8 @@ export function CollectionSection({
   id = 'collection-section',
   title = 'TARTAN',
   bannerImage = '/images/collection-essentiels-banner.jpg',
+  mediaType = 'image',
+  videoUrl,
   buttonText = 'DÉCOUVRIR',
   products = [],
   targetProductIds = ['1793314904004', '1792639100833', '1792616909279'],
@@ -103,18 +107,38 @@ export function CollectionSection({
     <section className="w-full bg-white">
       {/* ── 1. BANNIÈRE ÉDITORIALE PLEIN CADRE EDGE-TO-EDGE STYLE TOROM ────────────────── */}
       <div className="relative w-full aspect-[4/5] sm:aspect-[16/10] md:aspect-[16/9] overflow-hidden bg-black flex flex-col justify-between">
-        {/* Photo de campagne */}
-        <Image
-          src={bannerImage}
-          alt={title}
-          fill
-          className="object-cover object-center"
-          priority
-          quality={95}
-        />
+        {/* Support Vidéo cinématique ou Image haute résolution */}
+        {(() => {
+          const effectiveMedia = videoUrl || bannerImage
+          const isVideo = mediaType === 'video' || effectiveMedia?.startsWith('data:video') || effectiveMedia?.endsWith('.mp4') || effectiveMedia?.endsWith('.webm')
+
+          if (isVideo) {
+            return (
+              <video
+                src={effectiveMedia}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+              />
+            )
+          }
+
+          return (
+            <Image
+              src={bannerImage}
+              alt={title}
+              fill
+              className="object-cover object-center"
+              priority
+              quality={95}
+            />
+          )
+        })()}
 
         {/* Overlay pour contraster élégamment */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/75" />
 
         {/* Titre positionné au-dessus du logo t-shirt */}
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-10 sm:pt-16">

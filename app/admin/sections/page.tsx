@@ -17,7 +17,8 @@ import {
   Trash2,
   Check,
   Sparkles,
-  Zap
+  Zap,
+  Video
 } from 'lucide-react'
 import { SiteHomepageConfig, EditorialCollection, DEFAULT_HOMEPAGE_CONFIG, normalizeHomepageConfig } from '@/lib/homepage-config'
 import { compressImage, getValidImageUrl } from '@/lib/image-utils'
@@ -93,10 +94,11 @@ export default function AdminHomepageSectionsPage() {
     }
   }
 
-  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleHeroMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
+    const isVideo = file.type.startsWith('video/')
     setUploadingHero(true)
     try {
       let fileToUpload: Blob | File = file
@@ -111,34 +113,38 @@ export default function AdminHomepageSectionsPage() {
       const formData = new FormData()
       formData.append('file', fileToUpload, file.name)
 
-      const res = await fetch('/api/upload/image', {
+      const endpoint = isVideo ? '/api/upload/media' : '/api/upload/image'
+      const res = await fetch(endpoint, {
         method: 'POST',
         body: formData
       })
 
-      if (!res.ok) throw new Error('Upload image impossible')
+      if (!res.ok) throw new Error('Upload média impossible')
       const data = await res.json()
 
       setForm((prev) => ({
         ...prev,
         hero: {
           ...prev.hero,
-          image: data.url
+          mediaType: isVideo ? 'video' : 'image',
+          image: isVideo ? (prev.hero.image || data.url) : data.url,
+          videoUrl: isVideo ? data.url : undefined
         }
       }))
     } catch (err) {
       console.error(err)
-      alert("Échec de l'upload de l'image de couverture Hero.")
+      alert("Échec de l'upload du média de couverture Hero.")
     } finally {
       setUploadingHero(false)
       if (e.target) e.target.value = ''
     }
   }
 
-  const handleCollectionBannerUpload = async (collectionIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCollectionMediaUpload = async (collectionIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
+    const isVideo = file.type.startsWith('video/')
     setUploadingCollectionIndex(collectionIndex)
     try {
       let fileToUpload: Blob | File = file
@@ -153,12 +159,13 @@ export default function AdminHomepageSectionsPage() {
       const formData = new FormData()
       formData.append('file', fileToUpload, file.name)
 
-      const res = await fetch('/api/upload/image', {
+      const endpoint = isVideo ? '/api/upload/media' : '/api/upload/image'
+      const res = await fetch(endpoint, {
         method: 'POST',
         body: formData
       })
 
-      if (!res.ok) throw new Error('Upload bannière collection impossible')
+      if (!res.ok) throw new Error('Upload média collection impossible')
       const data = await res.json()
 
       setForm((prev) => {
@@ -166,7 +173,9 @@ export default function AdminHomepageSectionsPage() {
         if (collections[collectionIndex]) {
           collections[collectionIndex] = {
             ...collections[collectionIndex],
-            bannerImage: data.url
+            mediaType: isVideo ? 'video' : 'image',
+            bannerImage: isVideo ? (collections[collectionIndex].bannerImage || data.url) : data.url,
+            videoUrl: isVideo ? data.url : undefined
           }
         }
         return {
@@ -177,7 +186,7 @@ export default function AdminHomepageSectionsPage() {
       })
     } catch (err) {
       console.error(err)
-      alert("Échec de l'upload de la bannière collection.")
+      alert("Échec de l'upload du média collection.")
     } finally {
       setUploadingCollectionIndex(null)
       if (e.target) e.target.value = ''
@@ -401,36 +410,73 @@ export default function AdminHomepageSectionsPage() {
                 </div>
 
                 <div className="p-5 space-y-5">
-                  {/* Photo Bannière */}
+                  {/* Média Bannière (Photo ou Vidéo) */}
                   <div>
-                    <Label className="text-xs font-bold uppercase tracking-wider text-neutral-600 mb-2 block">
-                      Grande photo bannière
-                    </Label>
-
-                    <div className="relative aspect-[16/9] w-full rounded-xl bg-neutral-100 overflow-hidden border border-neutral-200/80 mb-2.5">
-                      <img
-                        src={getValidImageUrl(col.bannerImage)}
-                        alt={col.title}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-neutral-600 block">
+                        Média bannière (Photo ou Vidéo)
+                      </Label>
+                      {col.videoUrl && (
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-blue-600 text-white flex items-center gap-1">
+                          <Video className="w-3 h-3" /> Vidéo active
+                        </span>
+                      )}
                     </div>
 
-                    <label className="cursor-pointer block">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleCollectionBannerUpload(cIndex, e)}
-                      />
-                      <span className="inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold border border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 active:scale-[0.99] transition-all shadow-2xs">
-                        {uploadingCollectionIndex === cIndex ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <ImageIcon className="w-3.5 h-3.5 text-neutral-600" />
-                        )}
-                        <span>Remplacer la photo</span>
-                      </span>
-                    </label>
+                    <div className="relative aspect-[16/9] w-full rounded-xl bg-neutral-100 overflow-hidden border border-neutral-200/80 mb-2.5">
+                      {col.videoUrl ? (
+                        <video
+                          src={col.videoUrl}
+                          className="w-full h-full object-cover"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                        />
+                      ) : (
+                        <img
+                          src={getValidImageUrl(col.bannerImage)}
+                          alt={col.title}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <label className="cursor-pointer flex-1">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleCollectionMediaUpload(cIndex, e)}
+                        />
+                        <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold border border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 active:scale-[0.99] transition-all shadow-2xs">
+                          {uploadingCollectionIndex === cIndex ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <ImageIcon className="w-3.5 h-3.5 text-neutral-600" />
+                          )}
+                          <span>Photo</span>
+                        </span>
+                      </label>
+
+                      <label className="cursor-pointer flex-1">
+                        <input
+                          type="file"
+                          accept="video/mp4,video/webm,video/quicktime,video/mov"
+                          className="hidden"
+                          onChange={(e) => handleCollectionMediaUpload(cIndex, e)}
+                        />
+                        <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold border border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 active:scale-[0.99] transition-all shadow-2xs">
+                          {uploadingCollectionIndex === cIndex ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Video className="w-3.5 h-3.5 text-blue-600" />
+                          )}
+                          <span>Vidéo (MP4/WebM)</span>
+                        </span>
+                      </label>
+                    </div>
                   </div>
 
                   {/* Titre & Bouton côte à côte */}
@@ -546,24 +592,58 @@ export default function AdminHomepageSectionsPage() {
             </div>
 
             <div>
-              <Label className="text-xs font-bold uppercase tracking-wider text-neutral-600 mb-2 block">
-                Photo principale
-              </Label>
-              <div className="relative aspect-[16/9] w-full rounded-xl bg-neutral-100 overflow-hidden border border-neutral-200/80 mb-2.5">
-                <img
-                  src={getValidImageUrl(form.hero.image)}
-                  alt="Hero"
-                  className="w-full h-full object-cover"
-                />
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-600 block">
+                  Média principal (Photo ou Vidéo)
+                </Label>
+                {form.hero.videoUrl && (
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-blue-600 text-white flex items-center gap-1">
+                    <Video className="w-3 h-3" /> Vidéo active
+                  </span>
+                )}
               </div>
 
-              <label className="cursor-pointer block">
-                <input type="file" accept="image/*" className="hidden" onChange={handleHeroImageUpload} />
-                <span className="inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold border border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 active:scale-[0.99] transition-all shadow-2xs">
-                  {uploadingHero ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5 text-neutral-600" />}
-                  <span>Remplacer l'image Hero</span>
-                </span>
-              </label>
+              <div className="relative aspect-[16/9] w-full rounded-xl bg-neutral-100 overflow-hidden border border-neutral-200/80 mb-2.5">
+                {form.hero.videoUrl ? (
+                  <video
+                    src={form.hero.videoUrl}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  <img
+                    src={getValidImageUrl(form.hero.image)}
+                    alt="Hero"
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2">
+                <label className="cursor-pointer flex-1">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleHeroMediaUpload} />
+                  <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold border border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 active:scale-[0.99] transition-all shadow-2xs">
+                    {uploadingHero ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5 text-neutral-600" />}
+                    <span>Photo</span>
+                  </span>
+                </label>
+
+                <label className="cursor-pointer flex-1">
+                  <input
+                    type="file"
+                    accept="video/mp4,video/webm,video/quicktime,video/mov"
+                    className="hidden"
+                    onChange={handleHeroMediaUpload}
+                  />
+                  <span className="inline-flex w-full items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold border border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 active:scale-[0.99] transition-all shadow-2xs">
+                    {uploadingHero ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Video className="w-3.5 h-3.5 text-blue-600" />}
+                    <span>Vidéo (MP4/WebM)</span>
+                  </span>
+                </label>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
