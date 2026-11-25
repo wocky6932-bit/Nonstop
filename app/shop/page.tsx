@@ -290,15 +290,16 @@ function ShopContent() {
                                         )}
                                     </div>
 
-                                    {/* Image — overflow-hidden ici seulement */}
-                                    <div className="overflow-hidden bg-gray-50">
+                                    {/* Image — ratio aspect-[3/4] standardisé et homogène pour tous les produits */}
+                                    <div className="overflow-hidden bg-gray-50 aspect-[3/4]">
                                         {product.images && product.images.length > 1 ? (
                                             <ImageCarousel
                                                 images={product.images}
                                                 alt={product.name}
+                                                className="w-full h-full aspect-[3/4]"
                                             />
                                         ) : (
-                                            <div className="relative aspect-square">
+                                            <div className="relative w-full h-full aspect-[3/4]">
                                                 <Image
                                                     src={getValidImageUrl(product.image)}
                                                     alt={product.name}
