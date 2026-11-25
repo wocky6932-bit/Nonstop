@@ -56,40 +56,45 @@ function ShopContent() {
         fetchProducts()
     }, [])
 
-    const handleAddToCart = (e: React.MouseEvent, product: any) => {
+    const [quickAddProduct, setQuickAddProduct] = useState<any | null>(null)
+    const [quickAddSize, setQuickAddSize] = useState<string>('')
+    const [quickAddVariant, setQuickAddVariant] = useState<string>('')
+
+    const handleOpenQuickAdd = (e: React.MouseEvent, product: any) => {
         e.preventDefault()
         e.stopPropagation()
         const normalized = normalizeProductData(product)
         const hasSizes = normalized.sizes && normalized.sizes.length > 0
         const hasVariants = normalized.variant_options && normalized.variant_options.length > 0
-        const selectedSize = selectedSizes[product.id]
-        const selectedVariant = selectedVariants[product.id]
 
-        if (hasSizes && !selectedSize) {
+        // Si le produit n'a ni taille ni variante, on l'ajoute directement sans modal
+        if (!hasSizes && !hasVariants) {
+            addToCart(normalized)
             toast({
-                title: 'Choisissez une taille',
-                description: `Sélectionnez une taille pour ${product.name}`,
-                variant: 'destructive',
+                title: normalized.is_preorder ? 'Pré-commande ajoutée' : 'Ajouté au panier',
+                description: `${normalized.name} a été ajouté à votre panier`,
             })
             return
         }
 
-        if (hasVariants && !selectedVariant) {
-            toast({
-                title: 'Choisissez une variante',
-                description: `Sélectionnez Cropped ou Non cropped pour ${product.name}`,
-                variant: 'destructive',
-            })
-            return
-        }
+        // Sinon on ouvre la petite modale élégante pour choisir
+        setQuickAddProduct(normalized)
+        setQuickAddSize(hasSizes ? normalized.sizes![0] : '')
+        setQuickAddVariant(hasVariants ? normalized.variant_options![0] : '')
+    }
 
-        addToCart({ ...normalized, selectedSize: selectedSize || undefined, selectedVariant: selectedVariant || undefined })
-        toast({
-            title: normalized.is_preorder ? 'Pré-commande ajoutée' : 'Ajouté au panier',
-            description: selectedVariant || selectedSize
-                ? `${product.name} — ${selectedVariant || selectedSize}`
-                : `${product.name} ajouté au panier`,
+    const handleConfirmQuickAdd = () => {
+        if (!quickAddProduct) return
+        addToCart({
+            ...quickAddProduct,
+            selectedSize: quickAddSize || undefined,
+            selectedVariant: quickAddVariant || undefined
         })
+        toast({
+            title: quickAddProduct.is_preorder ? 'Pré-commande ajoutée' : 'Ajouté au panier',
+            description: `${quickAddProduct.name} (${quickAddSize || quickAddVariant}) ajouté au panier`,
+        })
+        setQuickAddProduct(null)
     }
 
     const categories = ['Tous', ...Array.from(new Set(products.map((p: any) => p.category).filter(Boolean)))]
@@ -316,9 +321,10 @@ function ShopContent() {
                                     {/* Bouton + quick add */}
                                     {!product.sold_out && (
                                         <button
-                                            onClick={(e) => handleAddToCart(e, product)}
-                                            aria-label={`Ajouter ${product.name} au panier`}
-                                            className="absolute bottom-2 right-2 z-20 w-8 h-8 bg-white/95 border border-gray-300 flex items-center justify-center rounded-full shadow-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 hover:bg-black hover:text-white hover:border-black"
+                                            type="button"
+                                            onClick={(e) => handleOpenQuickAdd(e, product)}
+                                            aria-label={`Choisir et ajouter ${product.name}`}
+                                            className="absolute bottom-2 right-2 z-20 w-8 h-8 bg-white/95 border border-gray-300 flex items-center justify-center rounded-full shadow-sm opacity-100 transition-all duration-200 hover:bg-black hover:text-white hover:border-black active:scale-95"
                                         >
                                             <Plus className="w-4 h-4" strokeWidth={1.5} />
                                         </button>
@@ -438,6 +444,101 @@ function ShopContent() {
             </footer>
 
             <Toaster />
+
+            {/* Modale Bottom Sheet de Sélection de Taille pour ajout rapide */}
+            {quickAddProduct && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
+                    onClick={() => setQuickAddProduct(null)}
+                >
+                    <div
+                        className="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl space-y-4 animate-in slide-in-from-bottom duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between border-b pb-3">
+                            <div className="min-w-0 pr-3">
+                                <h3 className="text-xs font-black uppercase tracking-wider text-black truncate">
+                                    {quickAddProduct.name}
+                                </h3>
+                                <p className="text-xs font-bold text-neutral-600 mt-0.5">
+                                    {formatPrice(convertPrice(quickAddProduct.price, quickAddProduct.currency))}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setQuickAddProduct(null)}
+                                className="w-7 h-7 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-600"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Choix de la taille */}
+                        {quickAddProduct.sizes && quickAddProduct.sizes.length > 0 && (
+                            <div>
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-2 block">
+                                    Sélectionnez votre taille :
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    {quickAddProduct.sizes.map((size: string) => {
+                                        const isSelected = quickAddSize === size
+                                        return (
+                                            <button
+                                                key={size}
+                                                type="button"
+                                                onClick={() => setQuickAddSize(size)}
+                                                className={`h-9 px-4 rounded-lg text-xs font-bold tracking-wider transition-all ${
+                                                    isSelected
+                                                        ? 'bg-black text-white shadow-xs scale-105'
+                                                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                                                }`}
+                                            >
+                                                {size}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Choix de la variante */}
+                        {quickAddProduct.variant_options && quickAddProduct.variant_options.length > 0 && (
+                            <div>
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-2 block">
+                                    Option / Coupe :
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    {quickAddProduct.variant_options.map((variant: string) => {
+                                        const isSelected = quickAddVariant === variant
+                                        return (
+                                            <button
+                                                key={variant}
+                                                type="button"
+                                                onClick={() => setQuickAddVariant(variant)}
+                                                className={`h-9 px-3 rounded-lg text-xs font-bold tracking-wider transition-all ${
+                                                    isSelected
+                                                        ? 'bg-black text-white shadow-xs'
+                                                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                                                }`}
+                                            >
+                                                {variant}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        <Button
+                            type="button"
+                            onClick={handleConfirmQuickAdd}
+                            className="w-full h-11 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-[0.2em] rounded-xl shadow-md"
+                        >
+                            Ajouter au panier {quickAddSize ? `(${quickAddSize})` : ''}
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

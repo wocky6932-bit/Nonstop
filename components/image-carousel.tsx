@@ -8,9 +8,10 @@ interface ImageCarouselProps {
   images: string[]
   alt: string
   className?: string
+  enableClickNavigation?: boolean
 }
 
-export function ImageCarousel({ images, alt, className = "" }: ImageCarouselProps) {
+export function ImageCarousel({ images, alt, className = "", enableClickNavigation = false }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const touchStartX = useRef<number | null>(null)
   const touchEndX = useRef<number | null>(null)
@@ -96,23 +97,27 @@ export function ImageCarousel({ images, alt, className = "" }: ImageCarouselProp
 
 
 
-      {/* Zone de click gauche / droite — pour desktop */}
-      <div
-        className="absolute left-0 top-0 w-1/2 h-full z-10 cursor-pointer"
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          goPrev()
-        }}
-      />
-      <div
-        className="absolute right-0 top-0 w-1/2 h-full z-10 cursor-pointer"
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          goNext()
-        }}
-      />
+      {/* Zone de click gauche / droite (désactivée par défaut pour permettre le clic direct vers la page produit) */}
+      {enableClickNavigation && (
+        <>
+          <div
+            className="absolute left-0 top-0 w-1/2 h-full z-10 cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              goPrev()
+            }}
+          />
+          <div
+            className="absolute right-0 top-0 w-1/2 h-full z-10 cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              goNext()
+            }}
+          />
+        </>
+      )}
 
       {/* Indicateurs — petits points en bas */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20 pointer-events-none">
