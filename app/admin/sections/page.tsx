@@ -7,7 +7,7 @@ import { useSession } from '@/hooks/use-session'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, ImageIcon, Loader2, Save, Eye, Plus, Trash2, Check, Sparkles } from 'lucide-react'
+import { ArrowLeft, ImageIcon, Loader2, Save, Eye, Plus, Trash2, Check, Sparkles, LayoutTemplate, Layers } from 'lucide-react'
 import { SiteHomepageConfig, EditorialCollection, DEFAULT_HOMEPAGE_CONFIG, normalizeHomepageConfig } from '@/lib/homepage-config'
 import { compressImage, getValidImageUrl } from '@/lib/image-utils'
 
