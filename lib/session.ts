@@ -7,7 +7,7 @@ const SESSION_COOKIE_NAME = 'nonstop-session'
 export async function createSession(user: User) {
   const cookieStore = await cookies()
 
-  // Créer un cookie de session sécurisé
+  // Créer un cookie de session permanent (valable 10 ans)
   cookieStore.set(SESSION_COOKIE_NAME, JSON.stringify({
     id: user.id,
     email: user.email,
@@ -20,7 +20,7 @@ export async function createSession(user: User) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 jours
+    maxAge: 60 * 60 * 24 * 365 * 10, // 10 ans : reste connecté en continu jusqu'au clic sur déconnexion
     path: '/'
   })
 }
@@ -58,7 +58,7 @@ export async function updateSession(updates: Partial<User>) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 24 * 365 * 10, // 10 ans
     path: '/'
   })
 

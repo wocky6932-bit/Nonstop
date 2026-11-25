@@ -13,22 +13,45 @@ export interface SessionData {
 }
 
 export function useSession() {
-    const [session, setSession] = useState<SessionData | null>(null)
+    const [session, setSession] = useState<SessionData | null>(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                const cached = localStorage.getItem('nonstop-admin-session')
+                if (cached) {
+                    return JSON.parse(cached)
+                }
+            } catch {
+                // Ignore parsing error
+            }
+        }
+        return null
+    })
     const [loading, setLoading] = useState(true)
 
     const checkSession = async () => {
         try {
             const response = await fetch('/api/session')
-            const result = await response.json()
+            if (response.ok) {
+                const result = await response.json()
+                if (result.success && result.session) {
+                    setSession(result.session)
+                    try {
+                        localStorage.setItem('nonstop-admin-session', JSON.stringify(result.session))
+                    } catch {}
+                    return
+                }
+            }
             
-            if (result.success && result.session) {
-                setSession(result.session)
-            } else {
+            // Si la requête échoue explicitement avec 401 Non authentifié
+            if (response.status === 401) {
                 setSession(null)
+                try {
+                    localStorage.removeItem('nonstop-admin-session')
+                } catch {}
             }
         } catch (error) {
             console.warn('Failed to check session:', error)
-            setSession(null)
+            // En cas d'erreur réseau ponctuelle, garder la session existante pour ne pas déconnecter
         } finally {
             setLoading(false)
         }
@@ -36,10 +59,6 @@ export function useSession() {
 
     useEffect(() => {
         checkSession()
-
-        // Désactivé l'intervalle pour éviter les appels en boucle
-        // const interval = setInterval(checkSession, 5000)
-        // return () => clearInterval(interval)
     }, [])
 
     const logout = async () => {
@@ -48,6 +67,9 @@ export function useSession() {
                 method: 'DELETE',
             })
             setSession(null)
+            try {
+                localStorage.removeItem('nonstop-admin-session')
+            } catch {}
             window.location.href = '/auth/login'
         } catch (error) {
             console.error('Logout failed:', error)
