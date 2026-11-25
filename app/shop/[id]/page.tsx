@@ -123,7 +123,16 @@ export default function ProductDetailPage() {
       return
     }
 
-    addToCart({ ...product, selectedSize: selectedSize || undefined, selectedVariant: selectedVariant || undefined }, quantity)
+    // Récupérer l'image exacte actuellement affichée / sélectionnée par le client
+    const activeImage = images[selectedImage] || product.image
+
+    addToCart({
+      ...product,
+      image: activeImage, // Image spécifique choisie par le client
+      selectedSize: selectedSize || undefined,
+      selectedVariant: selectedVariant || undefined
+    }, quantity)
+
     toast({
       title: product.is_preorder ? 'Pré-commande ajoutée ✓' : 'Ajouté au panier ✓',
       description: selectedVariant || selectedSize ? `${product.name} — ${selectedVariant || selectedSize}` : product.name,

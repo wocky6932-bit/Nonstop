@@ -59,6 +59,7 @@ function ShopContent() {
     const [quickAddProduct, setQuickAddProduct] = useState<any | null>(null)
     const [quickAddSize, setQuickAddSize] = useState<string>('')
     const [quickAddVariant, setQuickAddVariant] = useState<string>('')
+    const [quickAddImage, setQuickAddImage] = useState<string>('')
 
     const handleOpenQuickAdd = (e: React.MouseEvent, product: any) => {
         e.preventDefault()
@@ -66,10 +67,11 @@ function ShopContent() {
         const normalized = normalizeProductData(product)
         const hasSizes = normalized.sizes && normalized.sizes.length > 0
         const hasVariants = normalized.variant_options && normalized.variant_options.length > 0
+        const defaultImage = normalized.image || (normalized.images && normalized.images[0]) || '/placeholder.jpg'
 
         // Si le produit n'a ni taille ni variante, on l'ajoute directement sans modal
         if (!hasSizes && !hasVariants) {
-            addToCart(normalized)
+            addToCart({ ...normalized, image: defaultImage })
             toast({
                 title: normalized.is_preorder ? 'Pré-commande ajoutée' : 'Ajouté au panier',
                 description: `${normalized.name} a été ajouté à votre panier`,
@@ -79,6 +81,7 @@ function ShopContent() {
 
         // Sinon on ouvre la petite modale élégante pour choisir
         setQuickAddProduct(normalized)
+        setQuickAddImage(defaultImage)
         setQuickAddSize(hasSizes ? normalized.sizes![0] : '')
         setQuickAddVariant(hasVariants ? normalized.variant_options![0] : '')
     }
@@ -87,6 +90,7 @@ function ShopContent() {
         if (!quickAddProduct) return
         addToCart({
             ...quickAddProduct,
+            image: quickAddImage || quickAddProduct.image,
             selectedSize: quickAddSize || undefined,
             selectedVariant: quickAddVariant || undefined
         })
@@ -456,22 +460,56 @@ function ShopContent() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between border-b pb-3">
-                            <div className="min-w-0 pr-3">
-                                <h3 className="text-xs font-black uppercase tracking-wider text-black truncate">
-                                    {quickAddProduct.name}
-                                </h3>
-                                <p className="text-xs font-bold text-neutral-600 mt-0.5">
-                                    {formatPrice(convertPrice(quickAddProduct.price, quickAddProduct.currency))}
-                                </p>
+                            <div className="flex items-center gap-3 min-w-0 pr-3">
+                                <div className="w-11 h-11 rounded-lg border border-neutral-200 bg-neutral-50 overflow-hidden flex-shrink-0">
+                                    <img
+                                        src={getValidImageUrl(quickAddImage || quickAddProduct.image, '/placeholder.jpg')}
+                                        alt={quickAddProduct.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="text-xs font-black uppercase tracking-wider text-black truncate">
+                                        {quickAddProduct.name}
+                                    </h3>
+                                    <p className="text-xs font-bold text-neutral-600 mt-0.5">
+                                        {formatPrice(convertPrice(quickAddProduct.price, quickAddProduct.currency))}
+                                    </p>
+                                </div>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setQuickAddProduct(null)}
-                                className="w-7 h-7 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-600"
+                                className="w-7 h-7 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-600 flex-shrink-0"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
+
+                        {/* Choix visuel de l'image / coloris si le produit a plusieurs photos */}
+                        {quickAddProduct.images && quickAddProduct.images.length > 1 && (
+                            <div>
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-2 block">
+                                    Sélectionnez le modèle / couleur :
+                                </label>
+                                <div className="flex gap-2 overflow-x-auto pb-1">
+                                    {quickAddProduct.images.map((img: string, idx: number) => {
+                                        const isSelected = quickAddImage === img
+                                        return (
+                                            <div
+                                                key={idx}
+                                                onClick={() => setQuickAddImage(img)}
+                                                className={`w-12 h-12 rounded-lg border-2 cursor-pointer overflow-hidden flex-shrink-0 transition-all ${
+                                                    isSelected ? 'border-black ring-1 ring-black scale-105' : 'border-neutral-200 opacity-60 hover:opacity-100'
+                                                }`}
+                                            >
+                                                <img src={getValidImageUrl(img)} alt="" className="w-full h-full object-cover" />
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Choix de la taille */}
                         {quickAddProduct.sizes && quickAddProduct.sizes.length > 0 && (
